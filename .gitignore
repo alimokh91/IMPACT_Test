@@ -1,0 +1,5 @@
+python/venv
+python/__pycache__
+fortran/*.o
+fortran/*.mod
+
