@@ -30,7 +30,7 @@ subroutine mr_io_read_hdf5(path, mri_inst)
   CALL h5dopen_f(file_id, "voxel_feature", dset_id, error)
 
   ! Read the dataset.
-  CALL h5dread_f(dset_id, H5T_NATIVE_INTEGER, mri_inst%voxel_feature, voxel_feature_dims, error)
+  CALL h5dread_f(dset_id, H5T_NATIVE_DOUBLE, mri_inst%voxel_feature, voxel_feature_dims, error)
 
   ! Close the dataset.
   CALL h5dclose_f(dset_id, error)
@@ -72,7 +72,7 @@ subroutine mr_io_write_hdf5(path, mri_inst)
        dset_id, error)
 
   ! Write the dataset.
-  CALL h5dwrite_f(dset_id, H5T_NATIVE_INTEGER, mri_inst%voxel_feature, voxel_feature_dims, error)
+  CALL h5dwrite_f(dset_id, H5T_NATIVE_DOUBLE, mri_inst%voxel_feature, voxel_feature_dims, error)
   
   ! End access to the dataset and release resources used by it.
   CALL h5dclose_f(dset_id, error)
