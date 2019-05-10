@@ -1,17 +1,11 @@
 module mr_io
 
-USE HDF5 ! This module contains all necessary modules
+use hdf5
+use mr
 
 implicit none
 
-type MRI
-     integer, dimension(2,2) :: voxel_feature
-end type
-
-integer(HSIZE_T), dimension(2) :: voxel_feature_dims = (/2,2/)
-
 contains
-
 
 subroutine mr_io_read_hdf5(path, mri_inst)     
   character(len=*), intent(in) :: path
