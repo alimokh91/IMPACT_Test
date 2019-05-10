@@ -13,7 +13,8 @@ class MRI:
     
     with h5py.File(path, "w") as f:
       # here comes the actual serialization code
-      f.create_dataset("voxel_feature", self.voxel_feature.shape, dtype=self.voxel_feature.dtype)
+      ds = f.create_dataset("voxel_feature", self.voxel_feature.shape, dtype=self.voxel_feature.dtype)
+      ds[:,:] = self.voxel_feature
 
 def read_hdf5(path):
   with h5py.File(path, "r") as f:

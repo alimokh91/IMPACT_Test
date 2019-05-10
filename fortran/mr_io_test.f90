@@ -28,6 +28,7 @@ program mr_io_test
     call mr_io_write_hdf5(path, mri_inst)
     call mr_io_read_hdf5(path, mri_dest)
 
+    print *, mri_inst%voxel_feature_dims    
     print *, mri_inst%voxel_feature
 
 end program mr_io_test
