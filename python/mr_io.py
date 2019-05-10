@@ -3,7 +3,7 @@ import os
 
 class MRI:
   def __init__(self, voxel_feature):
-    # an example numpy array
+    # a numpy array
     self.voxel_feature = voxel_feature
   
   def write_hdf5(self, path):

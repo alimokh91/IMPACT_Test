@@ -22,8 +22,8 @@ program mr_io_test
     /), (/ 2, 2 /) )
 
 
-    mri_inst = mri(a)
-    mri_dest = mri(b)
+    mri_inst = mri(a, (/2,2/))
+    
 
     call mr_io_write_hdf5(path, mri_inst)
     call mr_io_read_hdf5(path, mri_dest)
