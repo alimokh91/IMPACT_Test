@@ -1,5 +1,5 @@
 src/f2py/
-prog/
+prog/data/result/
 **.h5
 **.mod
 **.o
