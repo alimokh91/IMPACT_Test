@@ -1,0 +1,58 @@
+
+                        Re =   3300.0    
+                Dimensions =  0.62800E+01  0.20000E+01  0.62800E+01
+                Resolution =   65   65   33
+                     Procs =    2    2    1
+                   <dtime> =  0.49505E-01
+               n_timesteps =    101
+        elapsed time [sec] =  0.13911E+02
+el. time/n_timesteps [sec] =  0.13773E+00
+               div(vel(0)) =  0.94369E-15  0.88635E-17
+
+number of iterations (number/timestep, <conv. ratio>):
+
+   substep 1:
+      
+      outer Iterations:   0.000       0.000    
+         
+         Poisson   (1):   1.000     -0.4940    
+         Poisson   (2):   0.000       0.000    
+         all          :   1.000     -0.4940    
+         
+         Helmholtz (1):   0.000       0.000    
+         Helmholtz (2):   0.000       0.000    
+         Helmholtz (3):   0.000       0.000    
+         all          :   0.000       0.000    
+         
+   substep 2:
+      
+      outer Iterations:   0.000       0.000    
+         
+         Poisson   (1):   1.000     -0.3950    
+         Poisson   (2):   0.000       0.000    
+         all          :   1.000     -0.3950    
+         
+         Helmholtz (1):   0.000       0.000    
+         Helmholtz (2):   0.000       0.000    
+         Helmholtz (3):   0.000       0.000    
+         all          :   0.000       0.000    
+         
+   substep 3:
+      
+      outer Iterations:   0.000       0.000    
+         
+         Poisson   (1):   1.000     -0.4786    
+         Poisson   (2):   0.000       0.000    
+         all          :   1.000     -0.4786    
+         
+         Helmholtz (1):   0.000       0.000    
+         Helmholtz (2):   0.000       0.000    
+         Helmholtz (3):   0.000       0.000    
+         all          :   0.000       0.000    
+         
+   total:
+      
+      outer Iterations:   0.000       0.000    
+         Poisson      :   3.000     -0.4559    
+         Helmholtz    :   0.000       0.000    
+         

@@ -1,0 +1,56 @@
+ accuracy for null-space solution: eps =      0.100000000000000E-08
+
+  Iteration    0; ||res|| = 0.14502239957398677E-11  (Termination criterion satisfied)
+
+  Iteration    0; ||res|| = 0.65097718190326486E+04
+  Iteration    1; ||res|| = 0.39974650510153839E+03
+  Iteration    2; ||res|| = 0.35106474856757450E+03
+  Iteration    3; ||res|| = 0.70578493832905266E+02
+  Iteration    4; ||res|| = 0.26623916496459245E+02
+  Iteration    5; ||res|| = 0.83566194026257250E+02
+  Iteration    6; ||res|| = 0.17521257142143135E+02
+  Iteration    7; ||res|| = 0.10647337226856841E+02
+  Iteration    8; ||res|| = 0.10236387308389295E+02
+  Iteration    9; ||res|| = 0.86219513459137538E+01
+  Iteration   10; ||res|| = 0.18315363607630459E+02
+  Iteration   11; ||res|| = 0.48502191598695967E+01
+  Iteration   12; ||res|| = 0.37331772666654515E+01
+  Iteration   13; ||res|| = 0.31302694730113494E+01
+  Iteration   14; ||res|| = 0.29312887493285262E+01
+  Iteration   15; ||res|| = 0.28090318703794135E+01
+  Iteration   16; ||res|| = 0.27111960569833395E+01
+  Iteration   17; ||res|| = 0.26115408386938359E+01
+  Iteration   18; ||res|| = 0.25123964788655289E+01
+  Iteration   19; ||res|| = 0.24125496170957512E+01
+  Iteration   20; ||res|| = 0.23114281347962367E+01
+  Iteration   21; ||res|| = 0.18077000676735837E+01
+  Iteration   22; ||res|| = 0.17531049668833469E+01
+  Iteration   23; ||res|| = 0.16851475677920233E+01
+  Iteration   24; ||res|| = 0.15061811692702995E+01
+  Iteration   25; ||res|| = 0.15895298318902416E+01
+  Iteration   26; ||res|| = 0.15950079962816517E+01
+  Iteration   27; ||res|| = 0.16317948036071499E+01
+  Iteration   28; ||res|| = 0.15507276292139296E+01
+  Iteration   29; ||res|| = 0.14379293605410854E+01
+  Iteration   30; ||res|| = 0.13967799528425500E+01
+  Iteration   31; ||res|| = 0.13598009581447743E+01
+  Iteration   32; ||res|| = 0.12308488746775450E+01
+  Iteration   33; ||res|| = 0.11475545609164761E+01
+  Iteration   34; ||res|| = 0.10109454884933213E+01
+  Iteration   35; ||res|| = 0.92944183450195295E+00
+  Iteration   36; ||res|| = 0.75659102514799148E+00
+  Iteration   37; ||res|| = 0.75534810505257799E+00
+  Iteration   38; ||res|| = 0.58787196497210414E+00
+  Iteration   39; ||res|| = 0.50353492897610330E+00
+  Iteration   40; ||res|| = 0.40412405906831544E+00
+  Iteration   41; ||res|| = 0.30586036393765376E+00
+  Iteration   42; ||res|| = 0.19364573790950693E+00
+  Iteration   43; ||res|| = 0.14210413379699360E+00
+  Iteration   44; ||res|| = 0.22987238602940733E-02
+  Iteration   45; ||res|| = 0.95473607368164848E-04
+  Iteration   46; ||res|| = 0.14811505857881299E-04
+  Iteration   47; ||res|| = 0.70224802593551249E-08
+  Iteration   48; ||res|| = 0.58432248682319200E-09  (Termination criterion satisfied)
+
+  Iteration    0; ||res|| = 0.58538329143938461E-11  (Termination criterion satisfied)
+
