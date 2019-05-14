@@ -1,0 +1,7 @@
+<map id="usr_func::local_tri_element_nodes" name="usr_func::local_tri_element_nodes">
+<area shape="rect" id="node2" href="$namespaceusr__func.html#ac6faa77629ea25817f392e9abb59adf1" title="usr_func::total_n_local\l_tri_elements" alt="" coords="180,5,336,47"/>
+<area shape="rect" id="node4" href="$namespaceusr__func.html#a07bbc0973d19b8dfb649cae2f89531a4" title="usr_func::local_elem\l_base_loc_con" alt="" coords="186,136,330,177"/>
+<area shape="rect" id="node6" href="$namespaceusr__func.html#a57a6d4099163e213979f6fa3e90675c9" title="local node IDs with one row of ghost cells included " alt="" coords="180,71,336,112"/>
+<area shape="rect" id="node3" href="$namespaceusr__func.html#a50eb05256c7ee14aa6ae4f46a3bab3f3" title="The stuff in here should be replaced by comuting the dims through the start and end indices for the r..." alt="" coords="384,78,557,105"/>
+<area shape="rect" id="node5" href="$namespaceusr__func.html#afa3eeb58e903c9aacefc5cb10bbdd166" title="usr_func::id2cart" alt="" coords="411,143,531,170"/>
+</map>

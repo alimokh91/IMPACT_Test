@@ -1,0 +1,17 @@
+src/f2py/
+prog/
+**.h5
+**.mod
+**.o
+**.swp
+**.10
+**.exe
+**.x
+**.log
+**.so
+prog/send*
+prog/test*
+src/*.txt
+tests/*.o
+tests/*.mod
+tests/*.F90

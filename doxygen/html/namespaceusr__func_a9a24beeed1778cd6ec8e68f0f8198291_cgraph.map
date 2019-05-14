@@ -1,0 +1,5 @@
+<map id="usr_func::local_to_global_tri_elem_id" name="usr_func::local_to_global_tri_elem_id">
+<area shape="rect" id="node2" href="$namespaceusr__func.html#ab1f1ac9dd7ea46ad49d1e015328fcb9d" title="usr_func::block_id" alt="" coords="204,5,333,32"/>
+<area shape="rect" id="node3" href="$namespaceusr__func.html#ac6faa77629ea25817f392e9abb59adf1" title="usr_func::total_n_local\l_tri_elements" alt="" coords="191,57,347,98"/>
+<area shape="rect" id="node4" href="$namespaceusr__func.html#a50eb05256c7ee14aa6ae4f46a3bab3f3" title="The stuff in here should be replaced by comuting the dims through the start and end indices for the r..." alt="" coords="395,64,568,91"/>
+</map>
