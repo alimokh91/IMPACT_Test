@@ -35,14 +35,14 @@
 
   ALLOCATE(write_mean_gbl(b1L:(N1+b1U),b2L:(N2+b2U),b3L:(N3+b3U),1:3)); write_mean_gbl = 0
 
-  pw = 1
-  strd = 2**pw
+  pw = 1 !define also this for collected data
+  strd = 2**pw !this is then calculated as in usr_stats
 
   n_data = 0
   ALLOCATE(i_data(S1p:N1p,S2p:N2p,S3p:N3p)); i_data = 0
   DO k = S3p, N3p, strd
      DO j = S2p, N2p, strd
-        if (x2p(j).gt.0.4.and.x2p(j).le.1.6) then
+        if (x2p(j).gt.0.4.and.x2p(j).le.1.6) then !define window size of collected data here with if conditions
         DO i = S1p, N1p, strd
            n_data = n_data + 1
            DO ii = i, i+strd-1
@@ -121,8 +121,12 @@
   write_kalm_count = 0
  
   IF (rank == 0 .AND. dtime_out_kalm /= 0.) THEN
-     OPEN(43,FILE='tke_kalm_'//restart_char//'.txt',STATUS='UNKNOWN')
-     OPEN(53,FILE='turb_statxz_kalm_'//restart_char//'.txt',STATUS='UNKNOWN')
+     OPEN(200,FILE='tke_kalm_'//restart_char//'.txt',STATUS='UNKNOWN')
+     OPEN(300,FILE='turb_statxz_kalm_'//restart_char//'.txt',STATUS='UNKNOWN')
+		
+     write_dir = './kf_result/'
+     OPEN(201,FILE=write_dir//'tke_kalm_'//restart_char//'.txt',STATUS='UNKNOWN')
+		 
   END IF
 
   RETURN
@@ -402,8 +406,8 @@
   TKE_global = TKE_global / 2.
   !--- Output ---
   IF (rank == 0) THEN
-    WRITE(33,'(3E25.17)') time, TKE_global(1:2)
-    CALL flush(33)
+    WRITE(201,'(3E25.17)') time, TKE_global(1:2)
+    CALL flush(201)
   END IF
 
   IF (write_out_vect) THEN
@@ -470,8 +474,8 @@
 	TKE_global = TKE_global / 2.
 	!--- Output ---
 	IF (rank == 0) THEN
-	  WRITE(33,'(3E25.17)') time, TKE_global(1:2)
-	  CALL flush(33)
+	  WRITE(200,'(3E25.17)') time, TKE_global(1:2)
+	  CALL flush(200)
 	END IF
   
 
@@ -491,9 +495,9 @@
      mean_xz_km = mean_xz_km_global / (L1*L3)
      CALL MPI_ALLGATHERv(mean_xz_km,(N2p-S2p+1),MPI_REAL8,mean_xz_km_write,bar2_size,bar2_offset,MPI_REAL8,COMM_BAR2,merror)
      IF (rank == 0) THEN
-        WRITE(53,'(7E25.17)') time,y2p(2),mean_xz_km_write(2),sqrt(abs(mean_xz_km_write(2)/(y2p(2)-y2p(1)))/Re)*Re,&
+        WRITE(300,'(7E25.17)') time,y2p(2),mean_xz_km_write(2),sqrt(abs(mean_xz_km_write(2)/(y2p(2)-y2p(1)))/Re)*Re,&
                                    y2p(M2-1),mean_xz_km_write(M2-1),sqrt(abs(mean_xz_km_write(M2-1)/(y2p(M2-1)-y2p(M2)))/Re)*Re
-        CALL flush(53)
+        CALL flush(300)
      END IF
   END IF
   !===========================================================================================================
