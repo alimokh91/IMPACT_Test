@@ -239,12 +239,13 @@ CALL num_to_string(3,M3,M3_char)
 !============================================================================================================
 
 IF (rank == 0 .AND. dtime_out_scal /= 0.) THEN
+  OPEN(0,FILE='tke_'//restart_char//'.txt',STATUS='UNKNOWN')
+  OPEN(100,FILE='turb_statxz_'//restart_char//'_'//M1_char//'x'//M2_char//'x'//M3_char//'.txt',STATUS='UNKNOWN') !added M1 M2 M3 info
+	
 	DO i = 1,num_windows
 		CALL num_to_string(2,i,id_char)
     write_dir = './data_'//id_char//'/'
-
-  	OPEN(33,FILE='tke_'//restart_char//'.txt',STATUS='UNKNOWN')
-  	OPEN(23,FILE='turb_statxz_'//restart_char//'_'//M1_char//'x'//M2_char//'x'//M3_char//'.txt',STATUS='UNKNOWN') !added M1 M2 M3 info
+  	OPEN(i,FILE=write_dir//'tke_'//restart_char//'.txt',STATUS='UNKNOWN')
 	END DO
 END IF
 
@@ -264,10 +265,15 @@ INCLUDE 'mpif.h'
 
 TYPE(stats_group_t), pointer :: stats_group
 TYPE(stats_t), pointer :: stats
+INTEGER :: i
 
 IF (rank == 0 .AND. dtime_out_scal /= 0.) THEN
-  CLOSE(33)
-  CLOSE(23)
+	CLOSE(0)
+	CLOSE(100)
+	
+	DO i = 1,num_windows
+  	CLOSE(i)
+ 	END DO
 END IF
 
 if(associated(stats_group_first)) then
@@ -386,9 +392,9 @@ IF (wallnorm_dir == 1) THEN
   CALL MPI_ALLGATHERv(mean_xz,(N2p-S2p+1),MPI_REAL8,mean_xz_write,bar2_size,bar2_offset,MPI_REAL8,COMM_BAR2,merror)
   IF (rank == 0) THEN
      ! write into file 'turb_statxz_'//restart_char//'.txt'
-     WRITE(23,'(7E25.17)') time,y2p(2),      mean_xz_write(2),   sqrt(abs(mean_xz_write(2)/(y2p(2)-y2p(1)))/Re)*Re,& ! Re_tau = Re * <u_tau(y=0)>_xz
+     WRITE(100,'(7E25.17)') time,y2p(2),      mean_xz_write(2),   sqrt(abs(mean_xz_write(2)/(y2p(2)-y2p(1)))/Re)*Re,& ! Re_tau = Re * <u_tau(y=0)>_xz
                                 y2p(M2-1),   mean_xz_write(M2-1),sqrt(abs(mean_xz_write(M2-1)/(y2p(M2-1)-y2p(M2)))/Re)*Re !Re_tau = Re * <u_tau(y=M2)>_xz
-     CALL flush(23)
+     CALL flush(100)
   END IF
 END IF
 !===========================================================================================================
@@ -547,8 +553,8 @@ do while(associated(stats_group))
   TKE_global = TKE_global / 2.
   !--- Output ---
   IF (rank == 0) THEN
-    WRITE(33,'(3E25.17)') time, TKE_global(1:2)
-    CALL flush(33)
+    WRITE(stats_group%group_id,'(3E25.17)') time, TKE_global(1:2)
+    CALL flush(stats_group%group_id)
   END IF
   !===========================================================================================================
 
@@ -588,6 +594,9 @@ do while(associated(stats_group))
   stats_group => stats_group%next
 end do
 
+
+
+
 !--------------------------------------------------------------------------------------------------------
 !--- <u_i>(t) -------------------------------------------------------------------------------------------
 !--------------------------------------------------------------------------------------------------------
@@ -602,12 +611,14 @@ DO k = S3p, N3p
   END DO
 END DO
 if(write_count.gt.0) write_mean_gbl(:,:,:,1:3) = write_mean_gbl(:,:,:,1:3)/(time-time_start)
+
 !--------------------------------------------------------------------------------------------------------
 !--- <u'_i>(t) ------------------------------------------------------------------------------------------
 !--------------------------------------------------------------------------------------------------------
 write_fluct(:,:,:,1) = work1(:,:,:) - write_mean_gbl(:,:,:,1)
 write_fluct(:,:,:,2) = work2(:,:,:) - write_mean_gbl(:,:,:,2)
 write_fluct(:,:,:,3) = work3(:,:,:) - write_mean_gbl(:,:,:,3)
+
 !=============================================================================================================
 !=== integral energy for the whole domain  =================================================================
 !===========================================================================================================
@@ -627,8 +638,8 @@ CALL MPI_ALLREDUCE(TKE,TKE_global,2,MPI_REAL8,MPI_SUM,COMM_CART,merror)
 TKE_global = TKE_global / 2.
 !--- Output ---
 IF (rank == 0) THEN
- WRITE(33,'(3E25.17)') time, TKE_global(1:2)
- CALL flush(33)
+ WRITE(0,'(3E25.17)') time, TKE_global(1:2)
+ CALL flush(0)
 END IF
 
 write_stats_count = write_stats_count + 1
