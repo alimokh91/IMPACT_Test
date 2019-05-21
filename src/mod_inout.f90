@@ -3331,7 +3331,7 @@ MODULE mod_inout
     CHARACTER(*), PARAMETER       ::  fmt4 = "(a,f15.9,a)"
     CHARACTER(*), PARAMETER       ::  fmt5 = "(a,f15.6,a,i0,a)"
     CHARACTER(*), PARAMETER       ::  fmt6 = "(a,f15.6,a,i0,1x,i0,1x,i0,a)"
-    CHARACTER(LEN=1)              ::  id
+    CHARACTER(LEN=2)              ::  id
     CHARACTER(LEN=50)             ::  write_dir
 
     !=== Open file to write into ==============================================================================
@@ -3443,7 +3443,7 @@ MODULE mod_inout
     IF (write_covariance_yes) THEN
       IF (dtime_out_scal .GT. 0.0) THEN
         do i = 1, num_windows !loop over all windows/folders
-          CALL num_to_string(1,i,id)
+          CALL num_to_string(2,i,id)
           write_dir = './data_'//id//'/'
           !--- Mean -------------------------------------------------------------------------------------------------------------------------------------------------------
           !--- data_X

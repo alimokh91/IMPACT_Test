@@ -80,6 +80,7 @@ MODULE usr_vars
 #endif
 
   INTEGER :: n_data,n_data_tot,data_shift
+	REAL, ALLOCATABLE :: write_mean_gbl(:,:,:,:)
 
   TYPE stats_t
      INTEGER :: i_data,m

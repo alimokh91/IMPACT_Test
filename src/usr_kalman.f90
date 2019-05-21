@@ -28,12 +28,16 @@
   TYPE(kalman_t), pointer :: klmn
   INTEGER :: i,j,k,ii,jj,kk
   INTEGER :: m,n,l
-  INTEGER :: n_procs,strd
+  INTEGER :: n_procs,strd,pw
   INTEGER, ALLOCATABLE :: n_data_count(:)
   INTEGER, ALLOCATABLE :: i_data(:,:,:)
   REAL :: d_vol
 
-  strd = 2
+  ALLOCATE(write_mean_gbl(b1L:(N1+b1U),b2L:(N2+b2U),b3L:(N3+b3U),1:3)); write_mean_gbl = 0
+
+  pw = 1
+  strd = 2**pw
+
   n_data = 0
   ALLOCATE(i_data(S1p:N1p,S2p:N2p,S3p:N3p)); i_data = 0
   DO k = S3p, N3p, strd
@@ -141,6 +145,8 @@
 
   TYPE(kalman_t), pointer :: klmn
 
+  DEALLOCATE(write_mean_gbl)
+
   if (associated(kalman_first)) then 
      klmn => kalman_first
      CALL destroy_kalman(klmn)
@@ -198,9 +204,10 @@
   INTEGER :: j, jj
   INTEGER :: k, kk
   INTEGER :: INFO
-  REAL    :: mean_xz_km_write(1:M2), mean_xz_km(S2p:N2p), mean_xz_km_global(S2p:N2p)
+  REAL    :: TKE(1:2), TKE_global(1:2), mean_xz_km_write(1:M2), mean_xz_km(S2p:N2p), mean_xz_km_global(S2p:N2p)
   REAL    :: m_stats(1:n_data,3),c_stats(1:n_data,6)
   REAL    :: write_mean(b1L:(N1+b1U),b2L:(N2+b2U),b3L:(N3+b3U),1:3)
+  REAL    :: write_fluct(b1L:(N1+b1U),b2L:(N2+b2U),b3L:(N3+b3U),1:3)
   REAL    :: write_covar(b1L:(N1+b1U),b2L:(N2+b2U),b3L:(N3+b3U),1:6)
   REAL    :: write_gain(b1L:(N1+b1U),b2L:(N2+b2U),b3L:(N3+b3U),1:6)
   CHARACTER(LEN=8) :: count_char
@@ -232,147 +239,175 @@
   !CALL read_stats_hdf_2D(trim(read_dir)//'R_t.'//count_char,'R_t',n_data_tot,6,1,1,n_data,6,data_shift,0,c_stats)
   !===========================================================================================================
 
-  !===========================================================================================================
-  !=== turbulence statistics =================================================================================
-  !===========================================================================================================
-  klmn => kalman_first
-  do while(associated(klmn))
-  !--------------------------------------------------------------------------------------------------------
-  !--- <u_i>(t) -------------------------------------------------------------------------------------------
-  !--------------------------------------------------------------------------------------------------------
-     if(write_kalm_count.gt.0) klmn%mean(:,:) = klmn%mean(:,:)*(time-dtime_out_kalm-time_start)
-     do i = 1, klmn%m
-        klmn%mean(i,1) = klmn%mean(i,1) + work1(klmn%x(i),klmn%y(i),klmn%z(i))*dtime_out_kalm
-        klmn%mean(i,2) = klmn%mean(i,2) + work2(klmn%x(i),klmn%y(i),klmn%z(i))*dtime_out_kalm
-        klmn%mean(i,3) = klmn%mean(i,3) + work3(klmn%x(i),klmn%y(i),klmn%z(i))*dtime_out_kalm
-     end do
-     klmn%mean(:,:) = klmn%mean(:,:)/(time-time_start)
-  !--------------------------------------------------------------------------------------------------------
-  !--- <u_i u_j>(t) ---------------------------------------------------------------------------------------
-  !--------------------------------------------------------------------------------------------------------
-     if(write_kalm_count.gt.0) klmn%covar(:,:) = klmn%covar(:,:)*(time-dtime_out_kalm-time_start)
-     do i = 1, klmn%m
-        klmn%covar(i,1) = klmn%covar(i,1) + dtime_out_kalm* &
-                          (work1(klmn%x(i),klmn%y(i),klmn%z(i))*work1(klmn%x(i),klmn%y(i),klmn%z(i))) 
-        klmn%covar(i,2) = klmn%covar(i,2) + dtime_out_kalm* &
-                          (work2(klmn%x(i),klmn%y(i),klmn%z(i))*work2(klmn%x(i),klmn%y(i),klmn%z(i)))
-        klmn%covar(i,3) = klmn%covar(i,3) + dtime_out_kalm* &
-                          (work3(klmn%x(i),klmn%y(i),klmn%z(i))*work3(klmn%x(i),klmn%y(i),klmn%z(i)))
-        klmn%covar(i,4) = klmn%covar(i,4) + dtime_out_kalm* &
-                          (work1(klmn%x(i),klmn%y(i),klmn%z(i))*work2(klmn%x(i),klmn%y(i),klmn%z(i)))
-        klmn%covar(i,5) = klmn%covar(i,5) + dtime_out_kalm* &
-                          (work1(klmn%x(i),klmn%y(i),klmn%z(i))*work3(klmn%x(i),klmn%y(i),klmn%z(i)))
-        klmn%covar(i,6) = klmn%covar(i,6) + dtime_out_kalm* &
-                          (work2(klmn%x(i),klmn%y(i),klmn%z(i))*work3(klmn%x(i),klmn%y(i),klmn%z(i)))
-     end do
-     klmn%covar(:,:) = klmn%covar(:,:)/(time-time_start)
-  !--------------------------------------------------------------------------------------------------------
-     klmn => klmn%next
-  end do
-  !===========================================================================================================
 
   if (timestep.ne.timestep_old ) then
+    !===========================================================================================================
+    !=== turbulence statistics =================================================================================
+    !===========================================================================================================
+    klmn => kalman_first
+    do while(associated(klmn))
+    !--------------------------------------------------------------------------------------------------------
+    !--- <u_i>(t) -------------------------------------------------------------------------------------------
+    !--------------------------------------------------------------------------------------------------------
+       if(write_kalm_count.gt.1) klmn%mean(:,:) = klmn%mean(:,:)*(time-dtime_out_kalm-time_start)
+       do i = 1, klmn%m
+          klmn%mean(i,1) = klmn%mean(i,1) + work1(klmn%x(i),klmn%y(i),klmn%z(i))*dtime_out_kalm
+          klmn%mean(i,2) = klmn%mean(i,2) + work2(klmn%x(i),klmn%y(i),klmn%z(i))*dtime_out_kalm
+          klmn%mean(i,3) = klmn%mean(i,3) + work3(klmn%x(i),klmn%y(i),klmn%z(i))*dtime_out_kalm
+       end do
+       if(write_kalm_count.gt.0) klmn%mean(:,:) = klmn%mean(:,:)/(time-time_start)
+    !--------------------------------------------------------------------------------------------------------
+    !--- <u_i u_j>(t) ---------------------------------------------------------------------------------------
+    !--------------------------------------------------------------------------------------------------------
+       if(write_kalm_count.gt.1) klmn%covar(:,:) = klmn%covar(:,:)*(time-dtime_out_kalm-time_start)
+       do i = 1, klmn%m
+          klmn%covar(i,1) = klmn%covar(i,1) + dtime_out_kalm* &
+                            (work1(klmn%x(i),klmn%y(i),klmn%z(i))*work1(klmn%x(i),klmn%y(i),klmn%z(i))) 
+          klmn%covar(i,2) = klmn%covar(i,2) + dtime_out_kalm* &
+                            (work2(klmn%x(i),klmn%y(i),klmn%z(i))*work2(klmn%x(i),klmn%y(i),klmn%z(i)))
+          klmn%covar(i,3) = klmn%covar(i,3) + dtime_out_kalm* &
+                            (work3(klmn%x(i),klmn%y(i),klmn%z(i))*work3(klmn%x(i),klmn%y(i),klmn%z(i)))
+          klmn%covar(i,4) = klmn%covar(i,4) + dtime_out_kalm* &
+                            (work1(klmn%x(i),klmn%y(i),klmn%z(i))*work2(klmn%x(i),klmn%y(i),klmn%z(i)))
+          klmn%covar(i,5) = klmn%covar(i,5) + dtime_out_kalm* &
+                            (work1(klmn%x(i),klmn%y(i),klmn%z(i))*work3(klmn%x(i),klmn%y(i),klmn%z(i)))
+          klmn%covar(i,6) = klmn%covar(i,6) + dtime_out_kalm* &
+                            (work2(klmn%x(i),klmn%y(i),klmn%z(i))*work3(klmn%x(i),klmn%y(i),klmn%z(i)))
+       end do
+       if(write_kalm_count.gt.0) klmn%covar(:,:) = klmn%covar(:,:)/(time-time_start)
+    !--------------------------------------------------------------------------------------------------------
+       klmn => klmn%next
+    end do
+    !===========================================================================================================
 
-  !===========================================================================================================
-  !=== Fill the matrices and the vectors involved in the kalman filter algorithm =============================
-  !=== apply kalman filtering ================================================================================
-  !===========================================================================================================
-  klmn => kalman_first
-  do while(associated(klmn))
-     do i = 1, klmn%m
-  !--------------------------------------------------------------------------------------------------------
-  !--- u(x,t) -------------------------------------------------------------------------------------------
-  !--------------------------------------------------------------------------------------------------------
-        klmn%muf(3*(i-1)+1) = work1(klmn%x(i),klmn%y(i),klmn%z(i))
-        klmn%muf(3*(i-1)+2) = work2(klmn%x(i),klmn%y(i),klmn%z(i))
-        klmn%muf(3*(i-1)+3) = work3(klmn%x(i),klmn%y(i),klmn%z(i))
-  !--------------------------------------------------------------------------------------------------------
-  !--- fill the state vector muf and the covariance matrix pf ---------------------------------------------
-  !--- <u'_i u'_j>(t) = <u_i u_j>(t) - <u_i>(t) <u_j>(t) --------------------------------------------------
-  !--------------------------------------------------------------------------------------------------------
-        klmn%pf(3*(i-1)+1,3*(i-1)+1) = klmn%covar(i,1) - klmn%mean(i,1)*klmn%mean(i,1)
-        klmn%pf(3*(i-1)+2,3*(i-1)+2) = klmn%covar(i,2) - klmn%mean(i,2)*klmn%mean(i,2)
-        klmn%pf(3*(i-1)+3,3*(i-1)+3) = klmn%covar(i,3) - klmn%mean(i,3)*klmn%mean(i,3)
-        klmn%pf(3*(i-1)+1,3*(i-1)+2) = klmn%covar(i,4) - klmn%mean(i,1)*klmn%mean(i,2)
-        klmn%pf(3*(i-1)+1,3*(i-1)+3) = klmn%covar(i,5) - klmn%mean(i,1)*klmn%mean(i,3)
-        klmn%pf(3*(i-1)+2,3*(i-1)+3) = klmn%covar(i,6) - klmn%mean(i,2)*klmn%mean(i,3)
-        klmn%pf(3*(i-1)+2,3*(i-1)+1) = klmn%pf(3*(i-1)+1,3*(i-1)+2)
-        klmn%pf(3*(i-1)+3,3*(i-1)+1) = klmn%pf(3*(i-1)+1,3*(i-1)+3)
-        klmn%pf(3*(i-1)+3,3*(i-1)+2) = klmn%pf(3*(i-1)+2,3*(i-1)+3)
-     end do
-  !--------------------------------------------------------------------------------------------------------
-  !--- d_k and R_k ----------------------------------------------------------------------------------------
-  !--------------------------------------------------------------------------------------------------------
-     klmn%obs_data(1) = m_stats(klmn%i_data,1)
-     klmn%obs_data(2) = m_stats(klmn%i_data,2)
-     klmn%obs_data(3) = m_stats(klmn%i_data,3)
-     klmn%obs_covar(1,1) = c_stats(klmn%i_data,1)
-     klmn%obs_covar(2,2) = c_stats(klmn%i_data,2)
-     klmn%obs_covar(3,3) = c_stats(klmn%i_data,3)
-     klmn%obs_covar(1,2) = c_stats(klmn%i_data,4)
-     klmn%obs_covar(1,3) = c_stats(klmn%i_data,5)
-     klmn%obs_covar(2,3) = c_stats(klmn%i_data,6)
-     klmn%obs_covar(2,1) = klmn%obs_covar(1,2)
-     klmn%obs_covar(3,1) = klmn%obs_covar(1,3)
-     klmn%obs_covar(3,2) = klmn%obs_covar(2,3)
-  !--------------------------------------------------------------------------------------------------------
-  !----apply kalman filtering- ----------------------------------------------------------------------------
-  !--------------------------------------------------------------------------------------------------------
-     CALL kalman_filter(klmn%muf,klmn%pf,klmn%obs_oper,klmn%obs_data,klmn%obs_covar, &
-                        klmn%K,size(klmn%muf),size(klmn%obs_data),INFO)
-  !--------------------------------------------------------------------------------------------------------
-  !--- then update u_i(:,:,:) -----------------------------------------------------------------------------
-  !--------------------------------------------------------------------------------------------------------
-     do i = 1, klmn%m
-        work1(klmn%x(i),klmn%y(i),klmn%z(i)) = klmn%muf(3*(i-1)+1)
-        work2(klmn%x(i),klmn%y(i),klmn%z(i)) = klmn%muf(3*(i-1)+2)
-        work3(klmn%x(i),klmn%y(i),klmn%z(i)) = klmn%muf(3*(i-1)+3)
-     end do
-     klmn => klmn%next
-  end do
-  !===========================================================================================================
 
-  !===========================================================================================================
-  ! === worki(:,:,:) --> vel(:,:,:,i) ========================================================================
-  !===========================================================================================================
-  CALL interpolate2_pre_vel(.TRUE.,1,work1,vel(b1L:(N1+b1U),b2L:(N2+b2U),b3L:(N3+b3U),1))
-  CALL interpolate2_pre_vel(.TRUE.,2,work2,vel(b1L:(N1+b1U),b2L:(N2+b2U),b3L:(N3+b3U),2))
-  CALL interpolate2_pre_vel(.TRUE.,3,work3,vel(b1L:(N1+b1U),b2L:(N2+b2U),b3L:(N3+b3U),3))
-  ! exchange across boundaries on vel grid
-  CALL exchange_all_all(.TRUE.,vel)
-  !===========================================================================================================
+    !===========================================================================================================
+    !=== Fill the matrices and the vectors involved in the kalman filter algorithm =============================
+    !=== apply kalman filtering ================================================================================
+    !===========================================================================================================
+    klmn => kalman_first
+    do while(associated(klmn))
+       do i = 1, klmn%m
+    !--------------------------------------------------------------------------------------------------------
+    !--- u(x,t) -------------------------------------------------------------------------------------------
+    !--------------------------------------------------------------------------------------------------------
+          klmn%muf(3*(i-1)+1) = work1(klmn%x(i),klmn%y(i),klmn%z(i))
+          klmn%muf(3*(i-1)+2) = work2(klmn%x(i),klmn%y(i),klmn%z(i))
+          klmn%muf(3*(i-1)+3) = work3(klmn%x(i),klmn%y(i),klmn%z(i))
+    !--------------------------------------------------------------------------------------------------------
+    !--- fill the state vector muf and the covariance matrix pf ---------------------------------------------
+    !--- <u'_i u'_j>(t) = <u_i u_j>(t) - <u_i>(t) <u_j>(t) --------------------------------------------------
+    !--------------------------------------------------------------------------------------------------------
+          klmn%pf(3*(i-1)+1,3*(i-1)+1) = klmn%covar(i,1) - klmn%mean(i,1)*klmn%mean(i,1)
+          klmn%pf(3*(i-1)+2,3*(i-1)+2) = klmn%covar(i,2) - klmn%mean(i,2)*klmn%mean(i,2)
+          klmn%pf(3*(i-1)+3,3*(i-1)+3) = klmn%covar(i,3) - klmn%mean(i,3)*klmn%mean(i,3)
+          klmn%pf(3*(i-1)+1,3*(i-1)+2) = klmn%covar(i,4) - klmn%mean(i,1)*klmn%mean(i,2)
+          klmn%pf(3*(i-1)+1,3*(i-1)+3) = klmn%covar(i,5) - klmn%mean(i,1)*klmn%mean(i,3)
+          klmn%pf(3*(i-1)+2,3*(i-1)+3) = klmn%covar(i,6) - klmn%mean(i,2)*klmn%mean(i,3)
+          klmn%pf(3*(i-1)+2,3*(i-1)+1) = klmn%pf(3*(i-1)+1,3*(i-1)+2)
+          klmn%pf(3*(i-1)+3,3*(i-1)+1) = klmn%pf(3*(i-1)+1,3*(i-1)+3)
+          klmn%pf(3*(i-1)+3,3*(i-1)+2) = klmn%pf(3*(i-1)+2,3*(i-1)+3)
+       end do
+    !--------------------------------------------------------------------------------------------------------
+    !--- d_k and R_k ----------------------------------------------------------------------------------------
+    !--------------------------------------------------------------------------------------------------------
+       klmn%obs_data(1) = m_stats(klmn%i_data,1)
+       klmn%obs_data(2) = m_stats(klmn%i_data,2)
+       klmn%obs_data(3) = m_stats(klmn%i_data,3)
+       klmn%obs_covar(1,1) = c_stats(klmn%i_data,1)
+       klmn%obs_covar(2,2) = c_stats(klmn%i_data,2)
+       klmn%obs_covar(3,3) = c_stats(klmn%i_data,3)
+       klmn%obs_covar(1,2) = c_stats(klmn%i_data,4)
+       klmn%obs_covar(1,3) = c_stats(klmn%i_data,5)
+       klmn%obs_covar(2,3) = c_stats(klmn%i_data,6)
+       klmn%obs_covar(2,1) = klmn%obs_covar(1,2)
+       klmn%obs_covar(3,1) = klmn%obs_covar(1,3)
+       klmn%obs_covar(3,2) = klmn%obs_covar(2,3)
+    !--------------------------------------------------------------------------------------------------------
+    !----apply kalman filtering- ----------------------------------------------------------------------------
+    !--------------------------------------------------------------------------------------------------------
+       CALL kalman_filter(klmn%muf,klmn%pf,klmn%obs_oper,klmn%obs_data,klmn%obs_covar, &
+                          klmn%K,size(klmn%muf),size(klmn%obs_data),INFO)
+    !--------------------------------------------------------------------------------------------------------
+    !--- then update u_i(:,:,:) -----------------------------------------------------------------------------
+    !--------------------------------------------------------------------------------------------------------
+       do i = 1, klmn%m
+          work1(klmn%x(i),klmn%y(i),klmn%z(i)) = klmn%muf(3*(i-1)+1)
+          work2(klmn%x(i),klmn%y(i),klmn%z(i)) = klmn%muf(3*(i-1)+2)
+          work3(klmn%x(i),klmn%y(i),klmn%z(i)) = klmn%muf(3*(i-1)+3)
+       end do
+       klmn => klmn%next
+    end do
+    !===========================================================================================================
+
+    !===========================================================================================================
+    ! === worki(:,:,:) --> vel(:,:,:,i) ========================================================================
+    !===========================================================================================================
+    CALL interpolate2_pre_vel(.TRUE.,1,work1,vel(b1L:(N1+b1U),b2L:(N2+b2U),b3L:(N3+b3U),1))
+    CALL interpolate2_pre_vel(.TRUE.,2,work2,vel(b1L:(N1+b1U),b2L:(N2+b2U),b3L:(N3+b3U),2))
+    CALL interpolate2_pre_vel(.TRUE.,3,work3,vel(b1L:(N1+b1U),b2L:(N2+b2U),b3L:(N3+b3U),3))
+    ! exchange across boundaries on vel grid
+    CALL exchange_all_all(.TRUE.,vel)
+    !===========================================================================================================
 
   end if
 
   !===========================================================================================================
   !=== write means_ and covariances_fields for visualization =================================================
   !===========================================================================================================
-  IF (write_out_vect) THEN
-     write_gain = 0.
-     write_mean = 0.
-     write_covar = 0.
-     klmn => kalman_first
-     do while(associated(klmn))
-        do i = 1, klmn%m
-           write_mean (klmn%x(i),klmn%y(i),klmn%z(i),1) = klmn%mean(i,1)
-           write_mean (klmn%x(i),klmn%y(i),klmn%z(i),2) = klmn%mean(i,2)
-           write_mean (klmn%x(i),klmn%y(i),klmn%z(i),3) = klmn%mean(i,3)
-           write_covar(klmn%x(i),klmn%y(i),klmn%z(i),1) = klmn%covar(i,1)
-           write_covar(klmn%x(i),klmn%y(i),klmn%z(i),2) = klmn%covar(i,2)
-           write_covar(klmn%x(i),klmn%y(i),klmn%z(i),3) = klmn%covar(i,3)
-           write_covar(klmn%x(i),klmn%y(i),klmn%z(i),4) = klmn%covar(i,4)
-           write_covar(klmn%x(i),klmn%y(i),klmn%z(i),5) = klmn%covar(i,5)
-           write_covar(klmn%x(i),klmn%y(i),klmn%z(i),6) = klmn%covar(i,6)
-           write_gain (klmn%x(i),klmn%y(i),klmn%z(i),1) = klmn%K(3*(i-1)+1,1)
-           write_gain (klmn%x(i),klmn%y(i),klmn%z(i),2) = klmn%K(3*(i-1)+2,2)
-           write_gain (klmn%x(i),klmn%y(i),klmn%z(i),3) = klmn%K(3*(i-1)+3,3)
-           write_gain (klmn%x(i),klmn%y(i),klmn%z(i),4) = klmn%K(3*(i-1)+1,2)
-           write_gain (klmn%x(i),klmn%y(i),klmn%z(i),5) = klmn%K(3*(i-1)+1,3)
-           write_gain (klmn%x(i),klmn%y(i),klmn%z(i),6) = klmn%K(3*(i-1)+2,3)
-        end do
-        klmn => klmn%next
+  write_gain = 0.
+  write_mean = 0.
+  write_fluct = 0.
+  write_covar = 0.
+  klmn => kalman_first
+  do while(associated(klmn))
+     do i = 1, klmn%m
+        write_mean (klmn%x(i),klmn%y(i),klmn%z(i),1) = klmn%mean(i,1)
+        write_mean (klmn%x(i),klmn%y(i),klmn%z(i),2) = klmn%mean(i,2)
+        write_mean (klmn%x(i),klmn%y(i),klmn%z(i),3) = klmn%mean(i,3)
+        write_fluct(klmn%x(i),klmn%y(i),klmn%z(i),1) = work1(klmn%x(i),klmn%y(i),klmn%z(i)) - klmn%mean(i,1)
+        write_fluct(klmn%x(i),klmn%y(i),klmn%z(i),2) = work2(klmn%x(i),klmn%y(i),klmn%z(i)) - klmn%mean(i,2)
+        write_fluct(klmn%x(i),klmn%y(i),klmn%z(i),3) = work3(klmn%x(i),klmn%y(i),klmn%z(i)) - klmn%mean(i,3)
+        write_covar(klmn%x(i),klmn%y(i),klmn%z(i),1) = klmn%covar(i,1)
+        write_covar(klmn%x(i),klmn%y(i),klmn%z(i),2) = klmn%covar(i,2)
+        write_covar(klmn%x(i),klmn%y(i),klmn%z(i),3) = klmn%covar(i,3)
+        write_covar(klmn%x(i),klmn%y(i),klmn%z(i),4) = klmn%covar(i,4)
+        write_covar(klmn%x(i),klmn%y(i),klmn%z(i),5) = klmn%covar(i,5)
+        write_covar(klmn%x(i),klmn%y(i),klmn%z(i),6) = klmn%covar(i,6)
+        write_gain (klmn%x(i),klmn%y(i),klmn%z(i),1) = klmn%K(3*(i-1)+1,1)
+        write_gain (klmn%x(i),klmn%y(i),klmn%z(i),2) = klmn%K(3*(i-1)+2,2)
+        write_gain (klmn%x(i),klmn%y(i),klmn%z(i),3) = klmn%K(3*(i-1)+3,3)
+        write_gain (klmn%x(i),klmn%y(i),klmn%z(i),4) = klmn%K(3*(i-1)+1,2)
+        write_gain (klmn%x(i),klmn%y(i),klmn%z(i),5) = klmn%K(3*(i-1)+1,3)
+        write_gain (klmn%x(i),klmn%y(i),klmn%z(i),6) = klmn%K(3*(i-1)+2,3)
      end do
+     klmn => klmn%next
+  end do
 
+  !===========================================================================================================
+  !=== integral energy for the Kalman window =================================================================
+  !===========================================================================================================
+  TKE = 0.
+  DO k = S3p, N3p
+     DO j = S2p, N2p
+        DO i = S1p, N1p
+           TKE(1) = TKE(1) + dx1p(i)*dx2p(j)*dx3p(k)*(write_mean(i,j,k,1)**2+write_mean(i,j,k,2)**2+&
+                                                      write_mean(i,j,k,3)**2)
+           TKE(2) = TKE(2) + dx1p(i)*dx2p(j)*dx3p(k)*(write_fluct(i,j,k,1)**2+write_fluct(i,j,k,2)**2+&
+                                                      write_fluct(i,j,k,3)**2)
+        END DO
+     END DO
+  END DO
+  CALL MPI_ALLREDUCE(TKE,TKE_global,2,MPI_REAL8,MPI_SUM,COMM_CART,merror)
+  !--- Absolute kinetic energy ---
+  TKE_global = TKE_global / 2.
+  !--- Output ---
+  IF (rank == 0) THEN
+    WRITE(33,'(3E25.17)') time, TKE_global(1:2)
+    CALL flush(33)
+  END IF
+
+  IF (write_out_vect) THEN
      CALL num_to_string(8,write_count,count_char)
      write_dir = './kf_result/'
 
@@ -393,6 +428,53 @@
      !CALL write_hdf(trim(write_dir)//'kalman_gain_YZ_'//count_char,'gainYZ',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_gain(b1L,b2L,b3L,6))
   END IF
   !===========================================================================================================
+
+
+
+  !--------------------------------------------------------------------------------------------------------
+  !--- <u_i>(t) -------------------------------------------------------------------------------------------
+  !--------------------------------------------------------------------------------------------------------
+  if(write_kalm_count.gt.0) write_mean_gbl(:,:,:,1:3) = write_mean_gbl(:,:,:,1:3)*(time-dtime_out_kalm-time_start)
+	DO k = S3p, N3p
+	   DO j = S2p, N2p
+	      DO i = S1p, N1p
+           write_mean_gbl(i,j,k,1) = write_mean_gbl(i,j,k,1) + work1(i,j,k)*dtime_out_kalm
+           write_mean_gbl(i,j,k,2) = write_mean_gbl(i,j,k,2) + work2(i,j,k)*dtime_out_kalm
+           write_mean_gbl(i,j,k,3) = write_mean_gbl(i,j,k,3) + work3(i,j,k)*dtime_out_kalm
+	      END DO
+	   END DO
+	END DO
+  if(write_kalm_count.gt.0) write_mean_gbl(:,:,:,1:3) = write_mean_gbl(:,:,:,1:3)/(time-time_start)
+  !--------------------------------------------------------------------------------------------------------
+  !--- <u'_i>(t) ------------------------------------------------------------------------------------------
+  !--------------------------------------------------------------------------------------------------------
+  write_fluct(:,:,:,1) = work1(:,:,:) - write_mean_gbl(:,:,:,1)
+  write_fluct(:,:,:,2) = work2(:,:,:) - write_mean_gbl(:,:,:,2)
+  write_fluct(:,:,:,3) = work3(:,:,:) - write_mean_gbl(:,:,:,3)
+  
+  !===========================================================================================================
+	!=== integral energy for the whole domain  =================================================================
+	!===========================================================================================================
+	TKE = 0.
+	DO k = S3p, N3p
+	   DO j = S2p, N2p
+	      DO i = S1p, N1p
+	         TKE(1) = TKE(1) + dx1p(i)*dx2p(j)*dx3p(k)*(write_mean_gbl(i,j,k,1)**2+write_mean_gbl(i,j,k,2)**2+&
+	                                                    write_mean_gbl(i,j,k,3)**2)
+	         TKE(2) = TKE(2) + dx1p(i)*dx2p(j)*dx3p(k)*(write_fluct(i,j,k,1)**2+write_fluct(i,j,k,2)**2+&
+	                                                    write_fluct(i,j,k,3)**2)
+	      END DO
+	   END DO
+	END DO
+	CALL MPI_ALLREDUCE(TKE,TKE_global,2,MPI_REAL8,MPI_SUM,COMM_CART,merror)
+	!--- Absolute kinetic energy ---
+	TKE_global = TKE_global / 2.
+	!--- Output ---
+	IF (rank == 0) THEN
+	  WRITE(33,'(3E25.17)') time, TKE_global(1:2)
+	  CALL flush(33)
+	END IF
+  
 
   !===========================================================================================================
   !=== reynolds_tau ==========================================================================================
