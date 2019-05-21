@@ -34,12 +34,6 @@ INTEGER, ALLOCATABLE :: n_data_count(:)
 INTEGER, ALLOCATABLE :: i_data(:,:,:)
 REAL :: d_vol
 
-!added for writing turb_statxz_ with M1 M2 M3===============================================================
-CHARACTER(LEN=3) ::  M1_char
-CHARACTER(LEN=3) ::  M2_char
-CHARACTER(LEN=3) ::  M3_char
-!===========================================================================================================
-
 ALLOCATE(write_mean_gbl(b1L:(N1+b1U),b2L:(N2+b2U),b3L:(N3+b3U),1:3)); write_mean_gbl = 0 
 
 NULLIFY(stats_group_first)
@@ -245,8 +239,13 @@ CALL num_to_string(3,M3,M3_char)
 !============================================================================================================
 
 IF (rank == 0 .AND. dtime_out_scal /= 0.) THEN
-  OPEN(33,FILE='tke_'//restart_char//'.txt',STATUS='UNKNOWN')
-  OPEN(23,FILE='turb_statxz_'//restart_char//'_'//M1_char//'x'//M2_char//'x'//M3_char//'.txt',STATUS='UNKNOWN') !added M1 M2 M3 info
+	DO i = 1,num_windows
+		CALL num_to_string(2,i,id_char)
+    write_dir = './data_'//id_char//'/'
+
+  	OPEN(33,FILE='tke_'//restart_char//'.txt',STATUS='UNKNOWN')
+  	OPEN(23,FILE='turb_statxz_'//restart_char//'_'//M1_char//'x'//M2_char//'x'//M3_char//'.txt',STATUS='UNKNOWN') !added M1 M2 M3 info
+	END DO
 END IF
 
 END SUBROUTINE open_stats
@@ -359,8 +358,6 @@ REAL    :: write_fluct(b1L:(N1+b1U),b2L:(N2+b2U),b3L:(N3+b3U),1:3)
 REAL    :: write_covar(b1L:(N1+b1U),b2L:(N2+b2U),b3L:(N3+b3U),1:6)
 REAL, ALLOCATABLE :: d_k(:,:), R_k(:,:), R_t(:,:)
 CHARACTER(LEN=8) :: count_char
-CHARACTER(LEN=2) :: id
-CHARACTER(LEN=50) :: write_dir
 
 write_out_scal = .FALSE.
 time_out_scal = time_out_scal + dtime_out_scal
@@ -490,8 +487,8 @@ do while(associated(stats_group))
   CALL num_to_string(8,write_stats_count,count_char)
   IF (rank == 0) WRITE(*,'(a,i8,a)') 'writing data stats',write_stats_count,' ...'
 
-  CALL num_to_string(2,stats_group%group_id,id)
-  write_dir = './data_'//id//'/'
+  CALL num_to_string(2,stats_group%group_id,id_char)
+  write_dir = './data_'//id_char//'/'
   
   CALL write_stats_hdf_2D(trim(write_dir)//'d_k.'//count_char,'d_k', &
                         stats_group%n_data_tot,3,1,1,stats_group%n_data,3,stats_group%data_shift,0,d_k) 
@@ -560,8 +557,8 @@ do while(associated(stats_group))
      CALL num_to_string(8,write_count,count_char)
      IF (rank == 0) WRITE(*,'(a,i8,a)') 'writing data fields',write_count,' ...'
 
-     CALL num_to_string(2,stats_group%group_id,id)
-     write_dir = './data_'//id//'/'
+     CALL num_to_string(2,stats_group%group_id,id_char)
+     write_dir = './data_'//id_char//'/'
      !    write_hdf(filename,dsetname,
                    !SS1,SS2,SS3,NN1,NN2,NN3,vel_dir,stride,phi)
 
@@ -659,7 +656,6 @@ IMPLICIT NONE
 ! this is just an example/template
 
 CHARACTER(LEN=3) :: next_restart_char
-CHARACTER(LEN=2) :: id
 TYPE(stats_group_t), pointer :: stats_group
 TYPE(stats_t), pointer :: stats
 INTEGER :: i
@@ -695,14 +691,14 @@ IF (write_restart_yes) THEN
      CALL num_to_string(3,restart,next_restart_char)
      !========================================================================================================
 
-     CALL num_to_string(2,stats_group%group_id,id)
+     CALL num_to_string(2,stats_group%group_id,id_char)
 
      !========================================================================================================
      !=== Schreiben ==========================================================================================
      !========================================================================================================
-     CALL write_stats_hdf_2D('mean_stats'//id//'_restart.'//next_restart_char, 'mean_stats' ,&
+     CALL write_stats_hdf_2D('mean_stats'//id_char//'_restart.'//next_restart_char, 'mean_stats' ,&
                              stats_group%n_data_tot,3,1,1,stats_group%n_data,3,stats_group%data_shift,0,mean_xyzt)
-     CALL write_stats_hdf_2D('covar_stats'//id//'_restart.'//next_restart_char,'covar_stats',&
+     CALL write_stats_hdf_2D('covar_stats'//id_char//'_restart.'//next_restart_char,'covar_stats',&
                              stats_group%n_data_tot,6,1,1,stats_group%n_data,6,stats_group%data_shift,0,covar_xyzt)
   
      DEALLOCATE(mean_xyzt,covar_xyzt)
@@ -732,7 +728,6 @@ USE usr_vars
 
 IMPLICIT NONE
 
-CHARACTER(LEN=2) :: id
 TYPE(stats_group_t), pointer :: stats_group
 TYPE(stats_t), pointer :: stats
 INTEGER :: i,ios
@@ -752,11 +747,11 @@ do while(associated(stats_group))
   ALLOCATE(mean_xyzt(1:stats_group%n_data,1:3))
   ALLOCATE(covar_xyzt(1:stats_group%n_data,1:6))
 
-  CALL num_to_string(2,stats_group%group_id,id)
+  CALL num_to_string(2,stats_group%group_id,id_char)
   !read the observed data 
-  CALL read_stats_hdf_2D('mean_stats'//id//'_restart.'//restart_char, 'mean_stats' , &
+  CALL read_stats_hdf_2D('mean_stats'//id_char//'_restart.'//restart_char, 'mean_stats' , &
                          stats_group%n_data_tot,3,1,1,stats_group%n_data,3,stats_group%data_shift,0,mean_xyzt)
-  CALL read_stats_hdf_2D('covar_stats'//id//'_restart.'//restart_char,'covar_stats', &
+  CALL read_stats_hdf_2D('covar_stats'//id_char//'_restart.'//restart_char,'covar_stats', &
                          stats_group%n_data_tot,6,1,1,stats_group%n_data,6,stats_group%data_shift,0,covar_xyzt)
 
   stats => stats_group%stats_first

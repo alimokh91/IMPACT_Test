@@ -211,7 +211,6 @@
   REAL    :: write_covar(b1L:(N1+b1U),b2L:(N2+b2U),b3L:(N3+b3U),1:6)
   REAL    :: write_gain(b1L:(N1+b1U),b2L:(N2+b2U),b3L:(N3+b3U),1:6)
   CHARACTER(LEN=8) :: count_char
-  CHARACTER(LEN=50) :: read_dir,write_dir
 
   write_out_kalm = .FALSE.
   time_out_kalm = time_out_kalm + dtime_out_kalm

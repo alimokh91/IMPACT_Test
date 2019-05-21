@@ -82,6 +82,17 @@ MODULE usr_vars
   INTEGER :: n_data,n_data_tot,data_shift
 	REAL, ALLOCATABLE :: write_mean_gbl(:,:,:,:)
 
+!added values for usr_stats and usr_kalman ===========================================
+	!character for grid resolution dimensions
+	CHARACTER(LEN=3) :: M1_char
+	CHARACTER(LEN=3) :: M2_char
+	CHARACTER(LEN=3) :: M3_char
+	
+	CHARACTER(LEN=2) :: id_char !added for writing into directories data_//id_char
+	CHARACTER(LEN=20) :: write_dir, read_dir !directory to write data into
+
+!====================================================================================
+
   TYPE stats_t
      INTEGER :: i_data,m
      INTEGER, POINTER :: x(:),y(:),z(:)  !i,j,k of the grid node for each m component
