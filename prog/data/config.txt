@@ -9,7 +9,7 @@ task            1
 
 restart_from    0
 
-n_timesteps     10000 #100000 100000000
+n_timesteps     100000 #100000000
 
 M1          65
 M2          65
@@ -19,11 +19,11 @@ NB1         4
 NB2         4
 NB3         1
 
-Re          5000.
+Re          3300.
 
 #--- Extents --------------------------------------------------------------
 time_start      0.
-time_end        400.0 #3000.0
+time_end        100.0 #3000.0
 
 L1          12.57
 L2          2.
@@ -206,7 +206,7 @@ aorta_end     7.
 aorta_radius  0.5
 
 #--- Load velocity initial conditions from hdf5-file -----------------------
-vel_initcond_file_yes   T
+vel_initcond_file_yes   F
 
 #===========================================================================
 END
