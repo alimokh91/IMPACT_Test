@@ -124,8 +124,9 @@
      OPEN(200,FILE='tke_kalm_'//restart_char//'.txt',STATUS='UNKNOWN')
      OPEN(300,FILE='turb_statxz_kalm_'//restart_char//'.txt',STATUS='UNKNOWN')
 		
-     write_dir = './kf_result/'
-     OPEN(201,FILE=write_dir//'tke_kalm_'//restart_char//'.txt',STATUS='UNKNOWN')
+     write_dir = 'kf_result/'
+		 CALL system('mkdir -p '//write_dir)
+     OPEN(201,FILE=trim(write_dir)//'tke_kalm_'//restart_char//'.txt',STATUS='UNKNOWN')
 		 
   END IF
 

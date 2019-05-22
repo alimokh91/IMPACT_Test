@@ -43,7 +43,7 @@ NULLIFY(stats_group_first)
 !==========================================================================================================
 id = 0
 pw = 0
-do while (pw.le.2) 
+do while (pw.le.3) 
 
   strd = 2**pw
 
@@ -244,8 +244,9 @@ IF (rank == 0 .AND. dtime_out_scal /= 0.) THEN
 	
 	DO i = 1,num_windows
 		CALL num_to_string(2,i,id_char)
-    write_dir = './data_'//id_char//'/'
-  	OPEN(i,FILE=write_dir//'tke_'//restart_char//'.txt',STATUS='UNKNOWN')
+    write_dir = 'data_'//id_char//'/'
+  	CALL system('mkdir -p '//write_dir) !create directory if it do not exists
+		OPEN(i,FILE=trim(write_dir)//'tke_'//restart_char//'.txt',STATUS='UNKNOWN')
 	END DO
 END IF
 
