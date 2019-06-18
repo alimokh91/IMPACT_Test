@@ -11,6 +11,16 @@ program mr_io_test_reader
     call mr_io_read_space_time(path, mri_dest)
 
     print *, SpaceTimeMRI_group_name
+
+    print *, mri_dest%x_dim
+    print *, mri_dest%x_coordinates
+
+    print *, mri_dest%y_dim
+    print *, mri_dest%y_coordinates
+
+    print *, mri_dest%z_dim
+    print *, mri_dest%z_coordinates
+
     print *, mri_dest%voxel_feature_dims    
     print *, mri_dest%voxel_feature
 
