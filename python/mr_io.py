@@ -12,12 +12,13 @@ class MRI:
       raise FileExistsError("Tried to open file %s, which exists already" % path)
     
     with h5py.File(path, "w") as f:
-      # here comes the actual serialization code
-      ds = f.create_dataset("voxel_feature", self.voxel_feature.shape, dtype=self.voxel_feature.dtype)
-      ds[:,:] = self.voxel_feature
+      # here comes the actual serialization code (transposition to use Fortran memory layout)
+      voxel_feature_transposed = self.voxel_feature.transpose()
+      ds = f.create_dataset("voxel_feature", voxel_feature_transposed.shape, dtype=voxel_feature_transposed.dtype)
+      ds[:,:] = voxel_feature_transposed
 
 def read_hdf5(path):
   with h5py.File(path, "r") as f:
     # here comes the actual deserialization code
-    return MRI(voxel_feature=f["voxel_feature"][()])
+    return MRI(voxel_feature=f["voxel_feature"][()].transpose())
 
