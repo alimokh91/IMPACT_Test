@@ -5,7 +5,7 @@ use hdf5
 implicit none
 
 ! 
-character(len=3) :: MRI_group_name = "mri"
+character(len=6) :: MRI_group_name = "3d-mri"
 
 type MRI
      ! voxel_feature
