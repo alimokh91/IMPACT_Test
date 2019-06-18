@@ -5,12 +5,12 @@ program mr_io_test_reader
 
     implicit none
 
-    character(len=13) :: path = "mr_io_test.h5 "
-    type(SpatialMRI) :: mri_dest    
+    character(len=24) :: path = "mr_io_test_space_time.h5"
+    type(SpaceTimeMRI) :: mri_dest    
 
-    call mr_io_read_hdf5(path, mri_dest)
+    call mr_io_read_space_time(path, mri_dest)
 
-    print *, SpatialMRI_group_name
+    print *, SpaceTimeMRI_group_name
     print *, mri_dest%voxel_feature_dims    
     print *, mri_dest%voxel_feature
 

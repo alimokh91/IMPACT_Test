@@ -5,10 +5,10 @@ program mr_io_test
   implicit none
 
     character(len=13) :: path = "test_file.h5 "
-    type(mri) :: mri_inst 
+    type(SpatialMRI) :: mri_inst 
     real, dimension(2, 2, 2) :: a
 
-    type(mri) :: mri_dest
+    type(SpatialMRI) :: mri_dest
     real, dimension(2, 2, 2) :: b
     
     a = reshape( (/ &
@@ -26,7 +26,7 @@ program mr_io_test
     /), (/ 2, 2, 2 /) )
 
 
-    mri_inst = mri(a, (/2,2/))
+    mri_inst = SpatialMRI(a, (/2,2,2/))
     
 
     call mr_io_write_hdf5(path, mri_inst)
