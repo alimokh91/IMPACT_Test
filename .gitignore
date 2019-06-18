@@ -5,3 +5,6 @@ fortran/*.mod
 fortran/mr_io_test
 fortran/mr_io_test_reader
 fortran/mr_io_test_reader_space_time
+fortran/mr_io_test_space_time
+fortran/*.h5
+*.h5
