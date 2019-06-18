@@ -2,4 +2,5 @@ python/venv
 python/__pycache__
 fortran/*.o
 fortran/*.mod
-
+fortran/mr_io_test
+fortran/mr_io_test_reader

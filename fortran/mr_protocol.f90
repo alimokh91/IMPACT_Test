@@ -5,6 +5,8 @@ use hdf5
 implicit none
 
 ! 
+character(len=3) :: MRI_group_name = "mri"
+
 type MRI
      ! voxel_feature
      real*8, dimension(:,:), allocatable :: voxel_feature

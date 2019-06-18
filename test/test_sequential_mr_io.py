@@ -21,7 +21,8 @@ class Test2DMatrix(unittest.TestCase):
         # Check for equality. NOTE: Possibly regexpr for parsing would make this more elegant
         fort_stdout = fort.stdout.decode("utf-8")
         
-        fort_dims_str, fort_array_str, _ = fort_stdout.split('\n')
+        fort_group_name, fort_dims_str, fort_array_str, _ = fort_stdout.split('\n')
+        
         fort_dims = np.fromstring(fort_dims_str, dtype=int, sep=' ')
         
         fort_array = np.fromstring(fort_array_str, dtype=float, sep=' ').reshape(np.flip(fort_dims)).transpose()
