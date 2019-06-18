@@ -16,10 +16,10 @@ subroutine mr_io_read_hdf5(path, mri_inst)
   INTEGER(HID_T) :: dset_id       ! Dataset identifier
   INTEGER(HID_T) :: dspace_id     ! Dataspace identifier
 
-  INTEGER(HSIZE_T), DIMENSION(2) :: dims = (/-1, -1/) ! Dataset dimensions
-  INTEGER(HSIZE_T), DIMENSION(2) :: max_dims = (/-1, -1/) ! Dataset dimensions
+  INTEGER(HSIZE_T), DIMENSION(3) :: dims = (/-1, -1, -1/) ! Dataset dimensions
+  INTEGER(HSIZE_T), DIMENSION(3) :: max_dims = (/-1, -1, -1/) ! Dataset dimensions
 
-  INTEGER     ::   rank = 2                         ! Dataset rank
+  INTEGER     ::   rank = 3                         ! Dataset rank
   INTEGER     ::   error ! Error flag
 
   ! Initialize FORTRAN interface.
@@ -40,7 +40,7 @@ subroutine mr_io_read_hdf5(path, mri_inst)
 
   ! Allocate MRI array 
   mri_inst%voxel_feature_dims = dims
-  allocate(mri_inst%voxel_feature(mri_inst%voxel_feature_dims(1),mri_inst%voxel_feature_dims(2)))
+  allocate(mri_inst%voxel_feature(mri_inst%voxel_feature_dims(1), mri_inst%voxel_feature_dims(2), mri_inst%voxel_feature_dims(3)))
 
   ! Read the dataset.
   CALL h5dread_f(dset_id, H5T_NATIVE_DOUBLE, mri_inst%voxel_feature, dims, error)
@@ -72,8 +72,8 @@ subroutine mr_io_write_hdf5(path, mri_inst)
   INTEGER(HID_T) :: dset_id       ! Dataset identifier
   INTEGER(HID_T) :: dspace_id     ! Dataspace identifier
 
-  INTEGER(HSIZE_T), DIMENSION(2) :: dims            ! Dataset dimensions
-  INTEGER     ::   rank = 2                         ! Dataset rank
+  INTEGER(HSIZE_T), DIMENSION(3) :: dims            ! Dataset dimensions
+  INTEGER     ::   rank = 3                         ! Dataset rank
 
   INTEGER     ::   error ! Error flag
 

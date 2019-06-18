@@ -6,20 +6,24 @@ program mr_io_test
 
     character(len=13) :: path = "test_file.h5 "
     type(mri) :: mri_inst 
-    real, dimension(2, 2) :: a
+    real, dimension(2, 2, 2) :: a
 
     type(mri) :: mri_dest
-    real, dimension(2, 2) :: b
+    real, dimension(2, 2, 2) :: b
     
     a = reshape( (/ &
       1, 2,         &
-      3, 4          &
-    /), (/ 2, 2 /) )
+      3, 4,         &
+      5, 6,         &
+      7, 8          &
+    /), (/ 2, 2, 2 /) )
 
     b = reshape( (/ &
-      7, 8,         &
-      9, 10         &
-    /), (/ 2, 2 /) )
+      9, 10,        &
+      11,12,        &
+      13,14,        &
+      15,16         &
+    /), (/ 2, 2, 2 /) )
 
 
     mri_inst = mri(a, (/2,2/))

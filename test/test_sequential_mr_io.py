@@ -8,7 +8,7 @@ class Test2DMatrix(unittest.TestCase):
 
     def setUp(self):
         # Initialize the MRI data
-        voxel_feature = np.random.rand(863,639)
+        voxel_feature = np.random.rand(83,63,93)
         self.mri = MRI(voxel_feature)
     
     def test_communicator(self):

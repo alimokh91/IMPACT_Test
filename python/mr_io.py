@@ -18,11 +18,10 @@ class MRI:
       voxel_feature_transposed = self.voxel_feature.transpose()
       grp = f.create_group(MRI.group_name)
       ds = grp.create_dataset("voxel_feature", voxel_feature_transposed.shape, dtype=voxel_feature_transposed.dtype)
-      ds[:,:] = voxel_feature_transposed
+      ds[:,:,:] = voxel_feature_transposed
 
-
-def read_hdf5(path):
-  with h5py.File(path, "r") as f:
-    # here comes the actual deserialization code
-    return MRI(voxel_feature=f[MRI.group_name]["voxel_feature"][()].transpose())
+  def read_hdf5(path):
+    with h5py.File(path, "r") as f:
+      # here comes the actual deserialization code
+      return MRI(voxel_feature=f[MRI.group_name]["voxel_feature"][()].transpose())
 
