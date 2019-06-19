@@ -19,6 +19,7 @@ subroutine mr_io_handle_hdf5_error(error)
     write(*,*) "HDF5 error ",error,"- printing backtrace and aborting..."
     call h5eprint_f(error)
     call backtrace
+    call abort
   end if
 
 end subroutine mr_io_handle_hdf5_error
