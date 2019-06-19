@@ -1,13 +1,13 @@
 # Fortran-Python MRI data communication layer for HPC-PREDICT
 
-Reference object(s) being communicated is specified in `fortran/mr_protocol.f90`
+Objects being communicated is specified in `fortran/mr_protocol.f90`
 
-An (unfinished) test can be run as follows
+The HDF5 group name is used for the message label, every array is in a separate dataset under this group and the memory layout is according to Fortran (column major).
+That is any necessary conversions (spatial index inversion to have forward spatial indexes in each programming language) are done in Python. For vector-valued fields on a space-time MRI we use the index ordering (x,y,z,t,i) in Python and (i,t,x,y,z) in Fortran (i is the component-index of the pointwise vector).
+
+To run Python-to-Fortran and round trip tests execute
 
 ```
 source python/venv/bin/activate
-python python/mr_io_test_writer.py 
-gdb fortran/mr_io_test_reader
+./test.sh
 ```
-
-Note that it's segfaulting in the Fortran reader code currently and not reconstructing the matrix of doubles correctly.

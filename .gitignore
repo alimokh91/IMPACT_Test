@@ -1,10 +1,13 @@
 python/venv
 python/__pycache__
+python/*.pyc
 fortran/*.o
 fortran/*.mod
-fortran/mr_io_test
+fortran/mr_io_example_spatial
+fortran/mr_io_example_space_time
 fortran/mr_io_test_reader
 fortran/mr_io_test_reader_space_time
-fortran/mr_io_test_space_time
+fortran/mr_io_test_reader_writer
+fortran/mr_io_test_reader_writer_space_time
 fortran/*.h5
 *.h5

@@ -22,7 +22,7 @@ class SpatialMRI:
   def read_hdf5(path):
     with h5py.File(path, "r") as f:
       # here comes the actual deserialization code
-      return SpatialMRI(voxel_feature=f[SpaceTimeMRI.group_name]["voxel_feature"][()].transpose())
+      return SpatialMRI(voxel_feature=f[SpatialMRI.group_name]["voxel_feature"][()].transpose())
 
 
 class SpaceTimeMRI:

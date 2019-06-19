@@ -1,4 +1,4 @@
-program mr_io_test
+program mr_io_example_spatial
   
   use mr_io
 
@@ -35,4 +35,4 @@ program mr_io_test
     print *, mri_dest%voxel_feature_dims    
     print *, mri_dest%voxel_feature
 
-end program mr_io_test
+end program mr_io_example_spatial

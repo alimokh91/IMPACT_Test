@@ -88,8 +88,6 @@ class TestSpaceTimeMRI(unittest.TestCase):
         fort_array = np.fromstring(fort_array_str, dtype=float, sep=' ').reshape(np.flip(fort_dims)).transpose((2,1,0,3,4))
         # self.assertTrue(np.array_equal(fort_dims,self.mri.voxel_feature.shape))
 
-        print("Fortran dims:"); print(fort_dims)
-        print("Python dims: "); print(self.mri.voxel_feature.shape)
         self.assertTrue(np.allclose(fort_array, self.mri.voxel_feature, rtol=1e-14))
 
     def tearDown(self):

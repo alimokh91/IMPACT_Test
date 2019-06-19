@@ -1,4 +1,4 @@
-program mr_io_test_space_time
+program mr_io_example_space_time
   
   use mr_io
 
@@ -68,4 +68,4 @@ program mr_io_test_space_time
     print *, mri_dest%voxel_feature_dims    
     print *, mri_dest%voxel_feature
 
-end program mr_io_test_space_time
+end program mr_io_example_space_time
