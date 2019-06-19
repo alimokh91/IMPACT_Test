@@ -7,6 +7,24 @@ implicit none
 
 contains
 
+#ifdef __GFORTRAN__
+
+#define mr_io_handle_error(err) if(err /= 0) CALL mr_io_handle_hdf5_error(err);
+#define mr_io_sget_simple_extent_dims_handle_error(err) if(err == -1) CALL mr_io_handle_hdf5_error(err);
+
+subroutine mr_io_handle_hdf5_error(error)
+  INTEGER     ::   error          ! Error flag
+
+  if(error /= 0) then
+    write(*,*) "HDF5 error ",error,"- printing backtrace and aborting..."
+    call h5eprint_f(error)
+    call backtrace
+  end if
+
+end subroutine mr_io_handle_hdf5_error
+
+#endif
+
 
 subroutine mr_io_read_spatial_feature(grp_id, feature_name, feature_array)
   INTEGER(HID_T), intent(in) :: grp_id                 ! Group identifier
@@ -24,22 +42,28 @@ subroutine mr_io_read_spatial_feature(grp_id, feature_name, feature_array)
   
   ! Open an existing dataset.
   CALL h5dopen_f(grp_id, feature_name, dset_id, error)
+  mr_io_handle_error(error)
 
   ! Read dims by getting dimension from data space
   CALL h5dget_space_f(dset_id, dspace_id, error)
+  mr_io_handle_error(error)
   CALL h5sget_simple_extent_dims_f(dspace_id, dims, max_dims, error)
+  mr_io_sget_simple_extent_dims_handle_error(error)
 
   ! Allocate MRI array 
   allocate(feature_array(dims(1), dims(2), dims(3)))
 
   ! Read the dataset.
   CALL h5dread_f(dset_id, H5T_NATIVE_DOUBLE, feature_array, dims, error)
+  mr_io_handle_error(error)
 
   ! Close the data space
   CALL h5sclose_f(dspace_id, error)
+  mr_io_handle_error(error)
 
   ! Close the dataset.
   CALL h5dclose_f(dset_id, error)
+  mr_io_handle_error(error)
 
 end subroutine mr_io_read_spatial_feature
 
@@ -62,19 +86,24 @@ subroutine mr_io_write_spatial_feature(grp_id, feature_name, feature_array)
 
   ! Create the dataspace.
   CALL h5screate_simple_f(rank, dims, dspace_id, error)
+  mr_io_handle_error(error)
 
   ! Create the dataset with default properties.
   CALL h5dcreate_f(grp_id, feature_name, H5T_NATIVE_DOUBLE, dspace_id, &
        dset_id, error)
+  mr_io_handle_error(error)
 
   ! Write the dataset.
   CALL h5dwrite_f(dset_id, H5T_NATIVE_DOUBLE, feature_array, dims, error)
+  mr_io_handle_error(error)
 
   ! End access to the dataset and release resources used by it.
   CALL h5dclose_f(dset_id, error)
+  mr_io_handle_error(error)
 
   ! Terminate access to the data space.
   CALL h5sclose_f(dspace_id, error)
+  mr_io_handle_error(error)
 
 end subroutine mr_io_write_spatial_feature
 
@@ -94,22 +123,28 @@ subroutine mr_io_read_spacetime_feature(grp_id, feature_name, feature_array)
 
   ! Open an existing dataset.
   CALL h5dopen_f(grp_id, feature_name, dset_id, error)
+  mr_io_handle_error(error)
 
   ! Read dims by getting dimension from data space
   CALL h5dget_space_f(dset_id, dspace_id, error)
+  mr_io_handle_error(error)
   CALL h5sget_simple_extent_dims_f(dspace_id, dims, max_dims, error)
+  mr_io_sget_simple_extent_dims_handle_error(error)
 
   ! Allocate MRI array 
   allocate(feature_array(dims(1), dims(2), dims(3), dims(4), dims(5)))
 
   ! Read the dataset.
   CALL h5dread_f(dset_id, H5T_NATIVE_DOUBLE, feature_array, dims, error)
+  mr_io_handle_error(error)
 
   ! Close the data space
   CALL h5sclose_f(dspace_id, error)
+  mr_io_handle_error(error)
 
   ! Close the dataset.
   CALL h5dclose_f(dset_id, error)
+  mr_io_handle_error(error)
   
 end subroutine
 
@@ -131,19 +166,24 @@ subroutine mr_io_write_spacetime_feature(grp_id, feature_name, feature_array)
 
   ! Create the dataspace.
   CALL h5screate_simple_f(rank, dims, dspace_id, error)
+  mr_io_handle_error(error)
 
   ! Create the dataset with default properties.
   CALL h5dcreate_f(grp_id, feature_name, H5T_NATIVE_DOUBLE, dspace_id, &
        dset_id, error)
+  mr_io_handle_error(error)
 
   ! Write the dataset.
   CALL h5dwrite_f(dset_id, H5T_NATIVE_DOUBLE, feature_array, dims, error)
+  mr_io_handle_error(error)
 
   ! End access to the dataset and release resources used by it.
   CALL h5dclose_f(dset_id, error)
+  mr_io_handle_error(error)
 
   ! Terminate access to the data space.
   CALL h5sclose_f(dspace_id, error)
+  mr_io_handle_error(error)
 
 end subroutine
 
@@ -162,12 +202,15 @@ subroutine mr_io_read_spatial(path, mri_inst)
 
   ! Initialize FORTRAN interface.
   CALL h5open_f(error)
+  mr_io_handle_error(error)
 
   ! Open an existing file.
   CALL h5fopen_f (trim(path), H5F_ACC_RDWR_F, file_id, error)
+  mr_io_handle_error(error)
 
   ! Open an existing group
   CALL h5gopen_f(file_id, SpatialMRI_group_name, grp_id, error)
+  mr_io_handle_error(error)
 
   ! Read spatial feature
   CALL mr_io_read_spatial_feature(grp_id, "voxel_feature", mri_inst%voxel_feature)
@@ -175,12 +218,15 @@ subroutine mr_io_read_spatial(path, mri_inst)
 
   ! Close the group
   CALL h5gclose_f(grp_id, error)
+  mr_io_handle_error(error)
 
   ! Close the file.
   CALL h5fclose_f(file_id, error)
+  mr_io_handle_error(error)
 
   ! Close FORTRAN interface.
   CALL h5close_f(error)
+  mr_io_handle_error(error)
 
 end subroutine mr_io_read_spatial
 
@@ -196,24 +242,30 @@ subroutine mr_io_write_spatial(path, mri_inst)
 
   ! Initialize FORTRAN interface.
   CALL h5open_f(error)
+  mr_io_handle_error(error)
 
   ! Create a new file using default properties.
   CALL h5fcreate_f(trim(path), H5F_ACC_TRUNC_F, file_id, error)
+  mr_io_handle_error(error)
 
   ! Create a new group
   CALL h5gcreate_f(file_id, SpatialMRI_group_name, grp_id, error)
+  mr_io_handle_error(error)
 
   ! Write spatial feature
   CALL mr_io_write_spatial_feature(grp_id, "voxel_feature", mri_inst%voxel_feature)
 
   ! Close the group
   CALL h5gclose_f(grp_id, error)
+  mr_io_handle_error(error)
 
   ! Close the file.
   CALL h5fclose_f(file_id, error)
+  mr_io_handle_error(error)
 
   ! Close FORTRAN interface.
   CALL h5close_f(error)
+  mr_io_handle_error(error)
 
 end subroutine mr_io_write_spatial
 
@@ -235,22 +287,28 @@ subroutine mr_io_read_coordinates(grp_id, coordinate, coordinate_array)
 
   ! Open an existing dataset
   CALL h5dopen_f(grp_id, coordinate//"_coordinates", dset_id, error)
+  mr_io_handle_error(error)
 
   ! Read dims by getting dimension from data space
   CALL h5dget_space_f(dset_id, dspace_id, error)
+  mr_io_handle_error(error)
   CALL h5sget_simple_extent_dims_f(dspace_id, coord_dim, max_coord_dim, error)
+  mr_io_sget_simple_extent_dims_handle_error(error)
 
   ! Allocate coordinate array
   allocate(coordinate_array(coord_dim(1)))
 
   ! Read the dataset.
   CALL h5dread_f(dset_id, H5T_NATIVE_DOUBLE, coordinate_array, coord_dim, error)
+  mr_io_handle_error(error)
 
   ! Close the data space
   CALL h5sclose_f(dspace_id, error)
+  mr_io_handle_error(error)
 
   ! Close the dataset.
   CALL h5dclose_f(dset_id, error)
+  mr_io_handle_error(error)
 
 end subroutine mr_io_read_coordinates
 
@@ -273,19 +331,24 @@ subroutine mr_io_write_coordinates(grp_id, coordinate, coordinate_array)
 
   ! Create the dataspace.
   CALL h5screate_simple_f(rank, coord_dim, dspace_id, error)
+  mr_io_handle_error(error)
 
   ! Create the dataset with default properties.
   CALL h5dcreate_f(grp_id, coordinate//"_coordinates", H5T_NATIVE_DOUBLE, dspace_id, &
        dset_id, error)
+  mr_io_handle_error(error)
 
   ! Write the dataset.
   CALL h5dwrite_f(dset_id, H5T_NATIVE_DOUBLE, coordinate_array, coord_dim, error)
+  mr_io_handle_error(error)
 
   ! End access to the dataset and release resources used by it.
   CALL h5dclose_f(dset_id, error)
+  mr_io_handle_error(error)
 
   ! Terminate access to the data space.
   CALL h5sclose_f(dspace_id, error)
+  mr_io_handle_error(error)
 
 end subroutine mr_io_write_coordinates
 
@@ -311,12 +374,15 @@ subroutine mr_io_read_spacetime(path, mri_inst)
 
   ! Initialize FORTRAN interface.
   CALL h5open_f(error)
+  mr_io_handle_error(error)
 
   ! Open an existing file.
   CALL h5fopen_f (trim(path), H5F_ACC_RDWR_F, file_id, error)
+  mr_io_handle_error(error)
 
   ! Open an existing group
   CALL h5gopen_f(file_id, SpaceTimeMRI_group_name, grp_id, error)
+  mr_io_handle_error(error)
 
   ! Read geometry data
   CALL mr_io_read_coordinates(grp_id, "x", mri_inst%x_coordinates)
@@ -332,12 +398,15 @@ subroutine mr_io_read_spacetime(path, mri_inst)
 
   ! Close the group
   CALL h5gclose_f(grp_id, error)
+  mr_io_handle_error(error)
 
   ! Close the file.
   CALL h5fclose_f(file_id, error)
+  mr_io_handle_error(error)
 
   ! Close FORTRAN interface.
   CALL h5close_f(error)
+  mr_io_handle_error(error)
 
 end subroutine mr_io_read_spacetime
 
@@ -363,12 +432,15 @@ subroutine mr_io_write_spacetime(path, mri_inst)
 
   ! Initialize FORTRAN interface.
   CALL h5open_f(error)
+  mr_io_handle_error(error)
 
   ! Create a new file using default properties.
   CALL h5fcreate_f(trim(path), H5F_ACC_TRUNC_F, file_id, error)
+  mr_io_handle_error(error)
 
   ! Create a new group
   CALL h5gcreate_f(file_id, SpaceTimeMRI_group_name, grp_id, error)
+  mr_io_handle_error(error)
 
   ! Write geometry data
   CALL mr_io_write_coordinates(grp_id, "x", mri_inst%x_coordinates)
@@ -380,12 +452,15 @@ subroutine mr_io_write_spacetime(path, mri_inst)
 
   ! Close the group
   CALL h5gclose_f(grp_id, error)
+  mr_io_handle_error(error)
 
   ! Close the file.
   CALL h5fclose_f(file_id, error)
+  mr_io_handle_error(error)
 
   ! Close FORTRAN interface.
   CALL h5close_f(error)
+  mr_io_handle_error(error)
 
 end subroutine mr_io_write_spacetime
 
