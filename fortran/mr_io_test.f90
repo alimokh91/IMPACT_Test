@@ -29,8 +29,8 @@ program mr_io_test
     mri_inst = SpatialMRI(a, (/2,2,2/))
     mri_dest = SpatialMRI(b, (/2,2,2/))
 
-    call mr_io_write_hdf5(path, mri_inst)
-    call mr_io_read_hdf5(path, mri_dest)
+    call mr_io_write_spatial(path, mri_inst)
+    call mr_io_read_spatial(path, mri_dest)
 
     print *, mri_dest%voxel_feature_dims    
     print *, mri_dest%voxel_feature
