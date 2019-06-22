@@ -7,6 +7,7 @@ fortran/mr_io_example_spatial
 fortran/mr_io_example_space_time
 fortran/mr_io_test_reader
 fortran/mr_io_test_reader_space_time
+fortran/mr_io_test_parallel_reader
 fortran/mr_io_test_reader_writer
 fortran/mr_io_test_reader_writer_space_time
 fortran/*.h5
