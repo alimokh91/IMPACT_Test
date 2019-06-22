@@ -17,8 +17,9 @@ class TestSpatialMRI(unittest.TestCase):
 
     def setUp(self):
         # Initialize the MRI data
-        voxel_feature = np.random.rand(43,53,29) # splitting on the last dim in Fortran
+        voxel_feature = np.random.rand(5,3,3) # splitting on the last dim in Fortran
         #voxel_feature = np.reshape(np.array((9*[0]) + (9*[1])), (2,3,3))
+        print(voxel_feature)
         self.mri = SpatialMRI(voxel_feature)
     
     def test_communicator(self):
@@ -59,9 +60,9 @@ class TestSpatialMRI(unittest.TestCase):
                 out_lines = out.readlines()
                 fort_dims_str = out_lines[1][:-1]
                 fort_array_str = out_lines[2][:-1]
-                #print(" *** " + filename_out + " *** ")
-                #print(fort_dims_str)
-                #print(fort_array_str)
+                print(" *** " + filename_out + " *** ")
+                print(fort_dims_str)
+                print(fort_array_str)
                 fort_dims = np.fromstring(fort_dims_str, dtype=int, sep=' ')
                 fort_array = np.fromstring(fort_array_str, dtype=float, sep=' ').reshape(np.flip(fort_dims)).transpose()
 

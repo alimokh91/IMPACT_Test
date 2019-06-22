@@ -317,6 +317,9 @@ subroutine mr_io_read_parallel_spatial_feature(mpi_comm, grp_id, feature_name, f
   INTEGER(HSIZE_T), DIMENSION(3) :: offset_file = (/-1, -1, -1/) ! Offset of data subset to read/write
   INTEGER(HSIZE_T), DIMENSION(3) :: dims_mem = (/-1, -1, -1/) ! Shape of data subset to read/write
 
+  INTEGER(HSIZE_T), DIMENSION(3) :: count_blocks = (/-1, -1, -1/) ! number of blocks to read/write
+  INTEGER(HSIZE_T), DIMENSION(3) :: stride = (/-1, -1, -1/) ! stride between adjacent elements/blocks?? (unused when single block is read)
+
   INTEGER     ::   rank = 3       ! Dataset rank
   INTEGER     ::   error          ! Error flag
 
@@ -352,6 +355,8 @@ subroutine mr_io_read_parallel_spatial_feature(mpi_comm, grp_id, feature_name, f
   offset_file(3) = (dims_file(3) + mpi_size - 1)/mpi_size*mpi_rank
   offset_file(1:2) = 0
   
+  count_blocks = (/1,1,1/)
+  stride = (/1,1,1/)
   
   !write (*,*) "offset_file"
   !do i=1,3
@@ -371,7 +376,7 @@ subroutine mr_io_read_parallel_spatial_feature(mpi_comm, grp_id, feature_name, f
   mr_io_handle_error(error)
 
   ! Select hyperslab in the file.
-  CALL h5sselect_hyperslab_f(filespace, H5S_SELECT_SET_F, offset_file, dims_mem, error) ! default values for stride, block
+  CALL h5sselect_hyperslab_f(filespace, H5S_SELECT_SET_F, offset_file, count_blocks, error, stride, dims_mem) ! default values for stride, block
   mr_io_handle_error(error)
 
   ! TODO: Select hyperslab in the memspace if it feature_array doesn't agree with layout to read
