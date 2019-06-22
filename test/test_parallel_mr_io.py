@@ -7,7 +7,7 @@ from mr_io import SpatialMRI, SpaceTimeMRI
 class TestSpatialMRI(unittest.TestCase):
     
     # number of Fortran MPI processes
-    mpi_proc = 2
+    mpi_proc = 2**4
 
     # Filenames
     filename_prefix = "mr_io_test_parallel"
@@ -17,11 +17,28 @@ class TestSpatialMRI(unittest.TestCase):
 
     def setUp(self):
         # Initialize the MRI data
-        voxel_feature = np.random.rand(5,3,3) # splitting on the last dim in Fortran
+        voxel_feature = np.random.rand(91,31,71) # splitting on the last dim in Fortran (must be the largest in size due to grid splitting!)
         #voxel_feature = np.reshape(np.array((9*[0]) + (9*[1])), (2,3,3))
-        print(voxel_feature)
+        #print(voxel_feature)
         self.mri = SpatialMRI(voxel_feature)
-    
+        block_dims, dims_mem, dims_mem_boundary = self.hyperslab_dims()
+        print(block_dims)
+        print(dims_mem)
+        print(dims_mem_boundary)
+        
+    def hyperslab_dims(self): # NOTE: This is not the hyperslab_shape of particular block at (i,j,k), which has to account for boundaries
+        #import pdb; pdb.set_trace()
+        mpi_size = TestSpatialMRI.mpi_proc
+        dims_mem = np.array(self.mri.voxel_feature.shape)
+        block_dims = np.array((1,1,1))
+        while (mpi_size > 1):
+            refinement_axis = np.argmax(dims_mem)
+            block_dims[refinement_axis] *= 2
+            dims_mem[refinement_axis] = (dims_mem[refinement_axis] + 2 - 1)// 2
+            mpi_size //= 2
+        dims_mem_boundary = np.array([ coord_shape % dims_mem[i] if coord_shape % dims_mem[i] != 0 else dims_mem[i] for i,coord_shape in enumerate(self.mri.voxel_feature.shape) ]) 
+        return block_dims, dims_mem, dims_mem_boundary
+
     def test_communicator(self):
 
         # Write HDF5 from Python
@@ -53,23 +70,35 @@ class TestSpatialMRI(unittest.TestCase):
         print(fort_stdout)
         #import pdb; pdb.set_trace()
 
+        block_dims, dims_mem, dims_mem_boundary = self.hyperslab_dims()
+
         for mpi_rank in range(TestSpatialMRI.mpi_proc):
             filename_out = TestSpatialMRI.filename_out_rank % (mpi_rank)
-            
+
             with open(filename_out,'r') as out:
                 out_lines = out.readlines()
-                fort_dims_str = out_lines[1][:-1]
-                fort_array_str = out_lines[2][:-1]
-                print(" *** " + filename_out + " *** ")
-                print(fort_dims_str)
-                print(fort_array_str)
+                fort_full_dims_str = out_lines[1][:-1]
+                fort_offset_str = out_lines[2][:-1] 
+                fort_dims_str = out_lines[3][:-1]
+                fort_array_str = out_lines[4][:-1]
+                #print(" *** " + filename_out + " *** ")
+                #print(fort_dims_str)
+                #print(fort_array_str)
+                fort_full_dims = np.fromstring(fort_full_dims_str, dtype=int, sep=' ')
+                fort_offset = np.fromstring(fort_offset_str, dtype=int, sep=' ')
                 fort_dims = np.fromstring(fort_dims_str, dtype=int, sep=' ')
                 fort_array = np.fromstring(fort_array_str, dtype=float, sep=' ').reshape(np.flip(fort_dims)).transpose()
 
-                mpi_size = TestSpatialMRI.mpi_proc
-                hyperslab_shape = self.mri.voxel_feature.shape[:2] + ( (self.mri.voxel_feature.shape[2]+mpi_size-1)//mpi_size if mpi_rank + 1 != mpi_size else (self.mri.voxel_feature.shape[2] % mpi_size if self.mri.voxel_feature.shape[2] % mpi_size !=0 else self.mri.voxel_feature.shape[2] / mpi_size ),)
-                hyperslab_offset = (0,0) + (mpi_rank*((self.mri.voxel_feature.shape[2]+mpi_size-1)//mpi_size),)
-                self.assertTrue(np.array_equal(fort_dims, hyperslab_shape))            
+                #import pdb; pdb.set_trace()
+                block_id = (mpi_rank % block_dims[0], (mpi_rank // block_dims[0]) % block_dims[1], mpi_rank // (block_dims[0]* block_dims[1]) )
+                hyperslab_offset = np.array([dims_mem[i]*block_id[i] for i in range(3)])
+                hyperslab_shape = np.array([dims_mem[i] if block_id[i] + 1 < block_dims[i] else dims_mem_boundary[i] for i in range(3)])
+                #mpi_size = TestSpatialMRI.mpi_proc
+                #hyperslab_shape = self.mri.voxel_feature.shape[:2] + ( (self.mri.voxel_feature.shape[2]+mpi_size-1)//mpi_size if mpi_rank + 1 != mpi_size else (self.mri.voxel_feature.shape[2] % mpi_size if self.mri.voxel_feature.shape[2] % mpi_size !=0 else self.mri.voxel_feature.shape[2] / mpi_size ),)
+                #hyperslab_offset = (0,0) + (mpi_rank*((self.mri.voxel_feature.shape[2]+mpi_size-1)//mpi_size),)
+                self.assertTrue(np.array_equal(fort_full_dims, self.mri.voxel_feature.shape))
+                self.assertTrue(np.array_equal(fort_offset, hyperslab_offset))
+                self.assertTrue(np.array_equal(fort_dims, hyperslab_shape))
                 #import pdb; pdb.set_trace()
                 self.assertTrue(np.allclose(fort_array, 
                                 np.reshape(self.mri.voxel_feature[ \
@@ -79,9 +108,9 @@ class TestSpatialMRI(unittest.TestCase):
         
     def tearDown(self):
         # Clean up file
-        files = [TestSpatialMRI.filename_full] #+ \
-              #  [TestSpatialMRI.filename_out_rank % (mpi_rank) for mpi_rank in range(TestSpatialMRI.mpi_proc)] + \
-              #  [TestSpatialMRI.filename_err_rank % (mpi_rank) for mpi_rank in range(TestSpatialMRI.mpi_proc)]
+        files = [TestSpatialMRI.filename_full] + \
+                [TestSpatialMRI.filename_out_rank % (mpi_rank) for mpi_rank in range(TestSpatialMRI.mpi_proc)] + \
+                [TestSpatialMRI.filename_err_rank % (mpi_rank) for mpi_rank in range(TestSpatialMRI.mpi_proc)]
         for f in files:
             os.remove(f) 
 

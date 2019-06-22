@@ -4,7 +4,7 @@ use hdf5
 
 implicit none
 
-! 
+
 character(len=11) :: SpatialMRI_group_name = "spatial-mri"
 
 type SpatialMRI
@@ -12,6 +12,18 @@ type SpatialMRI
      real*8, dimension(:,:,:), allocatable :: voxel_feature
      integer, dimension(3) :: voxel_feature_dims
 end type
+
+type DistSpatialFeature
+     real*8, dimension(:,:,:), allocatable :: array 
+     integer, dimension(3) :: offset = (/ -1, -1, -1 /) ! file_offset
+     integer, dimension(3) :: dims = (/ -1, -1, -1 /) ! file_dim     
+end type
+
+type DistSpatialMRI
+     ! voxel_feature
+     type(DistSpatialFeature) :: voxel_feature
+end type
+
 
 character(len=14) :: SpaceTimeMRI_group_name = "space-time-mri"
 
