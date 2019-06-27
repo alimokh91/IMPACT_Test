@@ -41,4 +41,27 @@ type SpaceTimeMRI
      integer, dimension(5) :: voxel_feature_dims
 end type
 
+type DistSpacetimeFeature ! (vect-comp, t, x, y, z)
+     real*8, dimension(:,:,:,:,:), allocatable :: array
+     integer :: time_offset = -1
+     integer :: time_dim = -1
+     integer, dimension(3) :: offset = (/ -1, -1, -1 /) ! file_offset
+     integer, dimension(3) :: dims = (/ -1, -1, -1 /) ! file_dim
+end type
+
+type DistSpacetimeMRI
+     ! geometry
+     real*8, dimension(:), allocatable :: x_coordinates
+     integer :: x_dim
+     real*8, dimension(:), allocatable :: y_coordinates
+     integer :: y_dim
+     real*8, dimension(:), allocatable :: z_coordinates
+     integer :: z_dim
+
+     ! voxel_feature
+     type(DistSpacetimeFeature) :: voxel_feature
+end type
+
+
+
 end module mr_protocol

@@ -38,7 +38,7 @@ class TestSpatialMRI(unittest.TestCase):
 
 
 
-class TestSpaceTimeMRI(unittest.TestCase):
+class TestSpaceTimeMRIBidirectional(unittest.TestCase):
 
     def setUp(self):
         # Initialize the MRI data

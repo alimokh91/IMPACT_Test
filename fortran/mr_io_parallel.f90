@@ -6,8 +6,17 @@ use mr_io, only : mr_io_handle_hdf5_error, mr_io_handle_argument_error
 
 include 'mpif.h'
 
-contains
+#ifdef __GFORTRAN__
+! Spatial hyperslab macro enum
+! Compute spatial hyperslab
+#define mr_io_parallel_spatial_hyperslab_enum_compute   ( 0)
+! Read specified hyperslab
+#define mr_io_parallel_spatial_hyperslab_enum_specified ( 1)
+! Inconsistent arguments (shape/offset/feature_array)
+#define mr_io_parallel_spatial_hyperslab_enum_error     (-1)
+#endif
 
+contains
 
 #ifdef __GFORTRAN__
 
@@ -34,18 +43,18 @@ end subroutine mr_io_handle_mpi_error_
 #endif
 
 
-subroutine mr_io_parallel_get_spatial_hyperslap(mpi_comm, dims_file, dims_mem, offset_file)
+subroutine mr_io_parallel_spatial_hyperslap_compute(mpi_comm, dims_file, offset_file, dims_mem)
 
   implicit none
 
   INTEGER, intent(in) :: mpi_comm
 
-  INTEGER(HSIZE_T), DIMENSION(3), intent(in)  :: dims_file ! Shape of full HDF5 dataset
-  INTEGER(HSIZE_T), DIMENSION(3), intent(out) :: offset_file  ! Offset of data subset to read/write in HDF5 dataset
+  INTEGER, DIMENSION(3), intent(in)  :: dims_file ! Shape of full HDF5 dataset
+  INTEGER, DIMENSION(3), intent(out) :: offset_file  ! Offset of data subset to read/write in HDF5 dataset
   INTEGER(HSIZE_T), DIMENSION(3), intent(out) :: dims_mem  ! Shape of data subset to read/write in feature_array
 
-  INTEGER(HSIZE_T), DIMENSION(3) :: dims_blocks = (/-1, -1, -1/) ! Number of blocks along each dimension
-  INTEGER(HSIZE_T), DIMENSION(3) :: block_id = (/-1, -1, -1/) ! block index of this MPI process
+  INTEGER, DIMENSION(3) :: dims_blocks = (/-1, -1, -1/) ! Number of blocks along each dimension
+  INTEGER, DIMENSION(3) :: block_id = (/-1, -1, -1/) ! block index of this MPI process
 
   INTEGER     ::   refinement_axis = -1
   INTEGER     ::   mpi_size_factor = -1
@@ -105,7 +114,42 @@ subroutine mr_io_parallel_get_spatial_hyperslap(mpi_comm, dims_file, dims_mem, o
         dims_mem(i) =  modulo(dims_file(i), dims_mem(i))
     endif
   end do
-end subroutine mr_io_parallel_get_spatial_hyperslap
+end subroutine mr_io_parallel_spatial_hyperslap_compute
+
+
+INTEGER function mr_io_parallel_spatial_hyperslab_get_type(feature_shape, feature_offset, feature_array_shape)
+
+  implicit none
+
+  !real*8, dimension(:,:,:), allocatable, intent(in) :: feature_array
+  INTEGER, DIMENSION(3), OPTIONAL, intent(in) :: feature_array_shape  ! Shape of data subset to read/write in feature_array
+  INTEGER, DIMENSION(3), OPTIONAL, intent(in) :: feature_shape  ! Shape of data subset to read/write in feature_array
+  !INTEGER, DIMENSION(3), OPTIONAL, intent(in)    :: feature_halo_shape ! Shape of halo around data to read/write in feature_array
+  INTEGER, DIMENSION(3), OPTIONAL, intent(in) :: feature_offset ! Offset of data subset to read/write in feature_array
+
+  if ( all(feature_shape <= (/0, 0, 0/)) .and. all(feature_offset < (/0, 0, 0/)) &
+       .and. all(feature_array_shape <= (/0,0,0/)) ) then
+    !write(*,*) "Computing hyperslab and allocating it"
+    mr_io_parallel_spatial_hyperslab_get_type = mr_io_parallel_spatial_hyperslab_enum_compute
+
+  else if ( all(feature_shape > (/0, 0, 0/)) .and. all(feature_offset >= (/0, 0, 0/)) &
+           .and. .not. any(feature_array_shape <= (/0,0,0/)) ) then
+    !write(*,*) "Reading specified hyperslab"
+    if (all(feature_offset + feature_array_shape <= feature_shape)) then
+      mr_io_parallel_spatial_hyperslab_get_type = mr_io_parallel_spatial_hyperslab_enum_specified
+    else
+      mr_io_handle_arg_error(-1)
+      mr_io_parallel_spatial_hyperslab_get_type = mr_io_parallel_spatial_hyperslab_enum_error
+    end if
+
+  else
+    write(*,*) "Inconsistent arguments feature array, (global) shape and (global) file offset."
+    mr_io_handle_arg_error(-1)
+    mr_io_parallel_spatial_hyperslab_get_type = mr_io_parallel_spatial_hyperslab_enum_error
+
+  endif
+
+end function mr_io_parallel_spatial_hyperslab_get_type
 
 
 subroutine mr_io_read_parallel_spatial_feature(mpi_comm, grp_id, feature_name, &
@@ -117,7 +161,7 @@ subroutine mr_io_read_parallel_spatial_feature(mpi_comm, grp_id, feature_name, &
   INTEGER(HID_T), intent(in) :: grp_id                 ! Group identifier
   character(len=*), intent(in) :: feature_name
   
-  real*8, dimension(:,:,:), allocatable, intent(out) :: feature_array
+  real*8, dimension(:,:,:), allocatable, intent(inout) :: feature_array
   INTEGER, DIMENSION(3), OPTIONAL, intent(inout) :: feature_shape  ! Shape of data subset to read/write in feature_array
   !INTEGER, DIMENSION(3), OPTIONAL, intent(in)    :: feature_halo_shape ! Shape of halo around data to read/write in feature_array
   INTEGER, DIMENSION(3), OPTIONAL, intent(inout) :: feature_offset ! Offset of data subset to read/write in feature_array
@@ -144,20 +188,9 @@ subroutine mr_io_read_parallel_spatial_feature(mpi_comm, grp_id, feature_name, &
   INTEGER     ::   error          ! Error flag
   
   INTEGER     ::   i
-  
-  ! Check arguments
-!   if ( any(feature_shape <= (/0, 0, 0/)) .neqv. any(feature_offset < (/0, 0, 0/)) ) then
-!     write(*,*) "Either both of feature shape and (global) file offset must be provided or none of them."
-!     mr_io_handle_arg_error(-1)
-!   endif
-  if ( all(feature_shape <= (/0, 0, 0/)) .and. all(feature_offset < (/0, 0, 0/)) .and. .not. allocated(feature_array) ) then
-    !write(*,*) "Computing hyperslab and allocating it"
-  else if ( all(feature_shape > (/0, 0, 0/)) .and. all(feature_offset >= (/0, 0, 0/)) .and. allocated(feature_array) ) then
-    !write(*,*) "Reading specified hyperslab"
-  else
-    write(*,*) "Inconsistent arguments feature array, (global) shape and (global) file offset."
-    mr_io_handle_arg_error(-1)
-  endif  
+
+  !INTEGER     ::   spatial_hyperslab_type = mr_io_parallel_spatial_hyperslab_enum_error
+  INTEGER, DIMENSION(3) :: feature_array_shape
   
   ! Open an existing dataset.
   CALL h5dopen_f(grp_id, feature_name, dset_id, error)
@@ -169,27 +202,37 @@ subroutine mr_io_read_parallel_spatial_feature(mpi_comm, grp_id, feature_name, &
   CALL h5sget_simple_extent_dims_f(filespace, dims_file, max_dims_file, error)
   mr_io_sget_simple_extent_dims_handle_error(error)
 
-  if ( all(feature_shape >= (/0, 0, 0/)) .and. all(feature_offset >= (/0, 0, 0/)) ) then
+
+  if ( allocated(feature_array) ) then
+    feature_array_shape = shape(feature_array)
+  else ! feature_array not allocated - compute domain decomposition
+    feature_array_shape = (/-1,-1,-1/)
+  end if
+
+  ! Includes argument check
+  select case ( mr_io_parallel_spatial_hyperslab_get_type(feature_shape, feature_offset, feature_array_shape) ) !spatial_hyperslab_type )
+
+  case ( mr_io_parallel_spatial_hyperslab_enum_specified )
     dims_mem = shape(feature_array)
     offset_file = feature_offset
+
     if( any(dims_file /= feature_shape) ) then
       write(*,*) "Array dimensions read from file and supplied in feature_shape disagree."
       mr_io_handle_arg_error(-1)
     endif
-    if ( .not. allocated(feature_array) ) then ! Not sure whether this is ever satisfied 
-      write(*,*) "Array not allocated."
-      mr_io_handle_arg_error(-1)    
-    endif    
-  else
-    call mr_io_parallel_get_spatial_hyperslap(mpi_comm, dims_file, dims_mem, offset_file)
+
+  case ( mr_io_parallel_spatial_hyperslab_enum_compute )
     feature_shape = dims_file
-    feature_offset = offset_file
-    if ( .not. allocated(feature_array) ) then ! TODO: handle feature_halo_shape 
-      ! Allocate MRI array
-      allocate(feature_array(dims_mem(1), dims_mem(2), dims_mem(3)))
-    endif
+
+    call mr_io_parallel_spatial_hyperslap_compute(mpi_comm, feature_shape, feature_offset, dims_mem)
+    offset_file = feature_offset
+    ! MRI array - TODO: handle feature_halo_shape
+    allocate(feature_array(dims_mem(1), dims_mem(2), dims_mem(3)))
     
-  endif
+  case default
+    mr_io_handle_arg_error(-1)
+
+  end select
 
   ! TODO: handle feature_halo_shape 
   offset_mem = (/ 0, 0, 0/)
@@ -359,14 +402,15 @@ subroutine mr_io_write_parallel_spatial_feature(mpi_comm, grp_id, feature_name, 
     mr_io_handle_arg_error(-1)
   endif
 
+  ! TODO: handle if( present(feature_halo_shape) )
+  dims_mem = shape(feature_array)
+  offset_mem = (/0,0,0/)
+
+
   ! Compute dimensions  
   dims_file = feature_shape
   offset_file = feature_offset
-  
-  ! TODO: handle if( present(feature_halo_shape) ) 
-  dims_mem = shape(feature_array)
-  offset_mem = (/0,0,0/)
-  
+
   
 !   write (*,*) "dims_file"
 !   do i=1,3
@@ -517,9 +561,6 @@ subroutine mr_io_write_parallel_spatial(mpi_comm, mpi_info, path, mri_inst)
   mr_io_handle_error(error)
 
 end subroutine mr_io_write_parallel_spatial
-
-
-
 
 
 end module mr_io_parallel

@@ -137,6 +137,95 @@ subroutine mr_io_write_spatial_feature(grp_id, feature_name, feature_array)
 end subroutine mr_io_write_spatial_feature
 
 
+! Spatial MRI I/O
+
+subroutine mr_io_read_spatial(path, mri_inst)
+
+  implicit none
+
+  character(len=*), intent(in) :: path
+  type(SpatialMRI), intent(out) :: mri_inst
+
+  INTEGER(HID_T) :: file_id       ! File identifier
+  INTEGER(HID_T) :: grp_id        ! Group identifier
+
+  INTEGER     ::   error ! Error flag
+
+  ! Initialize FORTRAN interface.
+  CALL h5open_f(error)
+  mr_io_handle_error(error)
+
+  ! Open an existing file.
+  CALL h5fopen_f (trim(path), H5F_ACC_RDWR_F, file_id, error)
+  mr_io_handle_error(error)
+
+  ! Open an existing group
+  CALL h5gopen_f(file_id, SpatialMRI_group_name, grp_id, error)
+  mr_io_handle_error(error)
+
+  ! Read spatial feature
+  CALL mr_io_read_spatial_feature(grp_id, "voxel_feature", mri_inst%voxel_feature)
+  mri_inst%voxel_feature_dims = shape(mri_inst%voxel_feature)
+
+  ! Close the group
+  CALL h5gclose_f(grp_id, error)
+  mr_io_handle_error(error)
+
+  ! Close the file.
+  CALL h5fclose_f(file_id, error)
+  mr_io_handle_error(error)
+
+  ! Close FORTRAN interface.
+  CALL h5close_f(error)
+  mr_io_handle_error(error)
+
+end subroutine mr_io_read_spatial
+
+
+subroutine mr_io_write_spatial(path, mri_inst)
+
+  implicit none
+
+  character(len=*), intent(in) :: path
+  type(SpatialMRI), intent(in) :: mri_inst
+
+  INTEGER(HID_T) :: file_id       ! File identifier
+  INTEGER(HID_T) :: grp_id        ! Group identifier
+
+  INTEGER     ::   error ! Error flag
+
+  ! Initialize FORTRAN interface.
+  CALL h5open_f(error)
+  mr_io_handle_error(error)
+
+  ! Create a new file using default properties.
+  CALL h5fcreate_f(trim(path), H5F_ACC_TRUNC_F, file_id, error)
+  mr_io_handle_error(error)
+
+  ! Create a new group
+  CALL h5gcreate_f(file_id, SpatialMRI_group_name, grp_id, error)
+  mr_io_handle_error(error)
+
+  ! Write spatial feature
+  CALL mr_io_write_spatial_feature(grp_id, "voxel_feature", mri_inst%voxel_feature)
+
+  ! Close the group
+  CALL h5gclose_f(grp_id, error)
+  mr_io_handle_error(error)
+
+  ! Close the file.
+  CALL h5fclose_f(file_id, error)
+  mr_io_handle_error(error)
+
+  ! Close FORTRAN interface.
+  CALL h5close_f(error)
+  mr_io_handle_error(error)
+
+end subroutine mr_io_write_spatial
+
+
+! Spacetime MRI
+
 subroutine mr_io_read_spacetime_feature(grp_id, feature_name, feature_array)
 
   implicit none
@@ -222,93 +311,7 @@ subroutine mr_io_write_spacetime_feature(grp_id, feature_name, feature_array)
 
 end subroutine
 
-! TODO: Parallel version
 
-! Spatial MRI I/O
-
-subroutine mr_io_read_spatial(path, mri_inst)     
-
-  implicit none
-
-  character(len=*), intent(in) :: path
-  type(SpatialMRI), intent(out) :: mri_inst
-
-  INTEGER(HID_T) :: file_id       ! File identifier
-  INTEGER(HID_T) :: grp_id        ! Group identifier
-
-  INTEGER     ::   error ! Error flag
-
-  ! Initialize FORTRAN interface.
-  CALL h5open_f(error)
-  mr_io_handle_error(error)
-
-  ! Open an existing file.
-  CALL h5fopen_f (trim(path), H5F_ACC_RDWR_F, file_id, error)
-  mr_io_handle_error(error)
-
-  ! Open an existing group
-  CALL h5gopen_f(file_id, SpatialMRI_group_name, grp_id, error)
-  mr_io_handle_error(error)
-
-  ! Read spatial feature
-  CALL mr_io_read_spatial_feature(grp_id, "voxel_feature", mri_inst%voxel_feature)
-  mri_inst%voxel_feature_dims = shape(mri_inst%voxel_feature)
-
-  ! Close the group
-  CALL h5gclose_f(grp_id, error)
-  mr_io_handle_error(error)
-
-  ! Close the file.
-  CALL h5fclose_f(file_id, error)
-  mr_io_handle_error(error)
-
-  ! Close FORTRAN interface.
-  CALL h5close_f(error)
-  mr_io_handle_error(error)
-
-end subroutine mr_io_read_spatial
-
-
-subroutine mr_io_write_spatial(path, mri_inst)
-
-  implicit none
-
-  character(len=*), intent(in) :: path
-  type(SpatialMRI), intent(in) :: mri_inst
-  
-  INTEGER(HID_T) :: file_id       ! File identifier
-  INTEGER(HID_T) :: grp_id        ! Group identifier
-
-  INTEGER     ::   error ! Error flag
-
-  ! Initialize FORTRAN interface.
-  CALL h5open_f(error)
-  mr_io_handle_error(error)
-
-  ! Create a new file using default properties.
-  CALL h5fcreate_f(trim(path), H5F_ACC_TRUNC_F, file_id, error)
-  mr_io_handle_error(error)
-
-  ! Create a new group
-  CALL h5gcreate_f(file_id, SpatialMRI_group_name, grp_id, error)
-  mr_io_handle_error(error)
-
-  ! Write spatial feature
-  CALL mr_io_write_spatial_feature(grp_id, "voxel_feature", mri_inst%voxel_feature)
-
-  ! Close the group
-  CALL h5gclose_f(grp_id, error)
-  mr_io_handle_error(error)
-
-  ! Close the file.
-  CALL h5fclose_f(file_id, error)
-  mr_io_handle_error(error)
-
-  ! Close FORTRAN interface.
-  CALL h5close_f(error)
-  mr_io_handle_error(error)
-
-end subroutine mr_io_write_spatial
 
 
 ! Coordinate I/O
