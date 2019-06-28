@@ -28,6 +28,10 @@ end type
 character(len=14) :: SpaceTimeMRI_group_name = "space-time-mri"
 
 type SpaceTimeMRI
+     ! time
+     real*8, dimension(:), allocatable :: t_coordinates
+     integer :: t_dim
+
      ! geometry
      real*8, dimension(:), allocatable :: x_coordinates
      integer :: x_dim
@@ -50,6 +54,10 @@ type DistSpacetimeFeature ! (vect-comp, t, x, y, z)
 end type
 
 type DistSpacetimeMRI
+     ! time
+     real*8, dimension(:), allocatable :: t_coordinates
+     integer :: t_dim
+
      ! geometry
      real*8, dimension(:), allocatable :: x_coordinates
      integer :: x_dim

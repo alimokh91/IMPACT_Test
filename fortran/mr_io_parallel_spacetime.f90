@@ -304,6 +304,10 @@ subroutine mr_io_read_parallel_spacetime(mpi_comm, mpi_info, path, mri_inst)
   CALL h5gopen_f(file_id, SpaceTimeMRI_group_name, grp_id, error)
   mr_io_handle_error(error)
 
+  ! Read time coordinates
+  CALL mr_io_read_parallel_coordinates(mpi_comm, grp_id, "t", &
+                                       mri_inst%t_coordinates)
+
   ! Read coordinates
   CALL mr_io_read_parallel_coordinates(mpi_comm, grp_id, "x", &
                                        mri_inst%x_coordinates)
@@ -682,6 +686,8 @@ subroutine mr_io_write_parallel_spacetime(mpi_comm, mpi_info, path, mri_inst)
 !   print *, mri_inst%voxel_feature%dims
 !   print *, mri_inst%voxel_feature%offset
 !   print *, shape(mri_inst%voxel_feature%array)
+  CALL mr_io_write_parallel_coordinates(mpi_comm, grp_id, "t", &
+                                        mri_inst%t_coordinates)
   CALL mr_io_write_parallel_coordinates(mpi_comm, grp_id, "x", &
                                         mri_inst%x_coordinates)
   CALL mr_io_write_parallel_coordinates(mpi_comm, grp_id, "y", &

@@ -21,6 +21,9 @@ program mr_io_test_reader
     print *, mri_dest%z_dim
     print *, mri_dest%z_coordinates
 
+    print *, mri_dest%t_dim
+    print *, mri_dest%t_coordinates
+
     print *, mri_dest%voxel_feature_dims    
     print *, mri_dest%voxel_feature
 

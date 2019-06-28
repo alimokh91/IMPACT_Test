@@ -118,7 +118,7 @@ class TestSpatialMRI(unittest.TestCase):
 
 
 
-class TestSpaceTimeMRIBidirectional(unittest.TestCase): # FIXME: coordinates test...
+class TestSpaceTimeMRI(unittest.TestCase): # FIXME: coordinates test...
     
     # number of Fortran MPI processes
     mpi_proc = 2**7
@@ -132,10 +132,11 @@ class TestSpaceTimeMRIBidirectional(unittest.TestCase): # FIXME: coordinates tes
     def setUp(self):
         # Initialize the MRI data
         #geometry = [np.random.rand(4), np.random.rand(2), np.random.rand(7)] 
+        time = np.random.rand(11)
         geometry = [np.random.rand(67), np.random.rand(43), np.random.rand(29)]
         voxel_feature = np.random.rand(67,43,29,11,3)
-        self.mri = SpaceTimeMRI(geometry, voxel_feature)
-        block_dims, dims_mem, dims_mem_boundary = spatial_hyperslab_dims(TestSpaceTimeMRIBidirectional, self.mri.voxel_feature)
+        self.mri = SpaceTimeMRI(geometry, time, voxel_feature)
+        block_dims, dims_mem, dims_mem_boundary = spatial_hyperslab_dims(TestSpaceTimeMRI, self.mri.voxel_feature)
         print(block_dims)
         print(dims_mem)
         print(dims_mem_boundary)
@@ -143,24 +144,24 @@ class TestSpaceTimeMRIBidirectional(unittest.TestCase): # FIXME: coordinates tes
     def test_communicator(self):
 
         # Write HDF5 from Python
-        self.mri.write_hdf5(TestSpaceTimeMRIBidirectional.filename_full)
+        self.mri.write_hdf5(TestSpaceTimeMRI.filename_full)
 
         ## Read HDF5 from Fortran
         fort_command = "fortran/mr_io_test_parallel_reader_space_time %s  1> %s 2> %s" % \
-                               (TestSpaceTimeMRIBidirectional.filename_full,
-                                TestSpaceTimeMRIBidirectional.filename_out_rank % ("${PMI_RANK}"),
-                                TestSpaceTimeMRIBidirectional.filename_err_rank % ("${PMI_RANK}"))
+                               (TestSpaceTimeMRI.filename_full,
+                                TestSpaceTimeMRI.filename_out_rank % ("${PMI_RANK}"),
+                                TestSpaceTimeMRI.filename_err_rank % ("${PMI_RANK}"))
         print(fort_command)
-        fort = sp.run(["mpiexec","-np", "%d" % (TestSpaceTimeMRIBidirectional.mpi_proc), \
+        fort = sp.run(["mpiexec","-np", "%d" % (TestSpaceTimeMRI.mpi_proc), \
                        "bash","-c",fort_command],
                                 stdout=sp.PIPE, stderr=sp.PIPE, check=True)
 
         # Read HDF5 from Fortran
-        #fort = sp.run(["mpiexec","-np", "%d" % (TestSpaceTimeMRIBidirectional.mpi_proc), \
+        #fort = sp.run(["mpiexec","-np", "%d" % (TestSpaceTimeMRI.mpi_proc), \
         #               "bash","-c","echo  \"spatial-mri\n 1 3 3\n %s \n \" 1> %s 2> %s" % \
         #                       (" ".join(9 * ["${PMI_RANK}"]), 
-        #                        TestSpaceTimeMRIBidirectional.filename_out_rank % ("${PMI_RANK}"), 
-        #                        TestSpaceTimeMRIBidirectional.filename_err_rank % ("${PMI_RANK}"))], 
+        #                        TestSpaceTimeMRI.filename_out_rank % ("${PMI_RANK}"), 
+        #                        TestSpaceTimeMRI.filename_err_rank % ("${PMI_RANK}"))], 
         #                        stdout=sp.PIPE, stderr=sp.PIPE, check=True)
 
         
@@ -172,21 +173,22 @@ class TestSpaceTimeMRIBidirectional(unittest.TestCase): # FIXME: coordinates tes
         print(fort_stdout)
         #import pdb; pdb.set_trace()
 
-        block_dims, dims_mem, dims_mem_boundary = spatial_hyperslab_dims(TestSpaceTimeMRIBidirectional, self.mri.voxel_feature)
+        block_dims, dims_mem, dims_mem_boundary = spatial_hyperslab_dims(TestSpaceTimeMRI, self.mri.voxel_feature)
 
-        for mpi_rank in range(TestSpaceTimeMRIBidirectional.mpi_proc):
-            filename_out = TestSpaceTimeMRIBidirectional.filename_out_rank % (mpi_rank)
+        for mpi_rank in range(TestSpaceTimeMRI.mpi_proc):
+            filename_out = TestSpaceTimeMRI.filename_out_rank % (mpi_rank)
 
             with open(filename_out,'r') as out:
                 out_lines = out.readlines()
                 
-                for i in range(3):
+                for i in range(4):
                     fort_coord_dim = np.fromstring(out_lines[2*i+1][:-1], dtype=int, sep=' ')[0]
                     fort_coord_array = np.fromstring(out_lines[2*i+2][:-1], dtype=float, sep=' ')
                     self.assertTrue( (fort_coord_dim,) == fort_coord_array.shape )
-                    self.assertTrue( np.allclose(fort_coord_array, self.mri.geometry[i], rtol=1e-14))
+                    self.assertTrue( np.allclose(fort_coord_array, self.mri.time if i == 0 else \
+                                                                   self.mri.geometry[i-1], rtol=1e-14))
                                 
-                lo = 6                
+                lo = 8                
                 fort_full_dims_str = out_lines[lo+1][:-1]
                 fort_offset_str = out_lines[lo+2][:-1] 
                 fort_dims_str = out_lines[lo+3][:-1]
@@ -213,7 +215,7 @@ class TestSpaceTimeMRIBidirectional(unittest.TestCase): # FIXME: coordinates tes
                 block_id = (mpi_rank % block_dims[0], (mpi_rank // block_dims[0]) % block_dims[1], mpi_rank // (block_dims[0]* block_dims[1]) )
                 hyperslab_offset = np.array([dims_mem[i]*block_id[i] for i in range(3)] + [0, 0])
                 hyperslab_shape  = np.array([dims_mem[i] if block_id[i] + 1 < block_dims[i] else dims_mem_boundary[i] for i in range(3)] + [self.mri.voxel_feature.shape[i] for i in range(3,5)])
-                #mpi_size = TestSpaceTimeMRIBidirectional.mpi_proc
+                #mpi_size = TestSpaceTimeMRI.mpi_proc
                 #hyperslab_shape = self.mri.voxel_feature.shape[:2] + ( (self.mri.voxel_feature.shape[2]+mpi_size-1)//mpi_size if mpi_rank + 1 != mpi_size else (self.mri.voxel_feature.shape[2] % mpi_size if self.mri.voxel_feature.shape[2] % mpi_size !=0 else self.mri.voxel_feature.shape[2] / mpi_size ),)
                 #hyperslab_offset = (0,0) + (mpi_rank*((self.mri.voxel_feature.shape[2]+mpi_size-1)//mpi_size),)
                 self.assertTrue(np.array_equal(fort_full_dims, self.mri.voxel_feature.shape[:3]))
@@ -235,9 +237,9 @@ class TestSpaceTimeMRIBidirectional(unittest.TestCase): # FIXME: coordinates tes
     
     def tearDown(self):
         # Clean up file
-        files = [TestSpaceTimeMRIBidirectional.filename_full] + \
-                [TestSpaceTimeMRIBidirectional.filename_out_rank % (mpi_rank) for mpi_rank in range(TestSpaceTimeMRIBidirectional.mpi_proc)] + \
-                [TestSpaceTimeMRIBidirectional.filename_err_rank % (mpi_rank) for mpi_rank in range(TestSpaceTimeMRIBidirectional.mpi_proc)]
+        files = [TestSpaceTimeMRI.filename_full] + \
+                [TestSpaceTimeMRI.filename_out_rank % (mpi_rank) for mpi_rank in range(TestSpaceTimeMRI.mpi_proc)] + \
+                [TestSpaceTimeMRI.filename_err_rank % (mpi_rank) for mpi_rank in range(TestSpaceTimeMRI.mpi_proc)]
         for f in files:
             os.remove(f) 
             
