@@ -76,9 +76,10 @@ class TestSpaceTimeMRIBidirectional(unittest.TestCase): # FIXME: coordinates tes
     def setUp(self):
         # Initialize the MRI data
         #geometry = [np.random.rand(4), np.random.rand(2), np.random.rand(7)] 
+        time = np.random.rand(11)
         geometry = [np.random.rand(67), np.random.rand(43), np.random.rand(29)]
         voxel_feature = np.random.rand(67,43,29,11,3)
-        self.mri = SpaceTimeMRI(geometry, voxel_feature)
+        self.mri = SpaceTimeMRI(geometry, time, voxel_feature)
 
     def test_communicator(self):
 
@@ -117,7 +118,7 @@ class TestSpaceTimeMRIBidirectional(unittest.TestCase): # FIXME: coordinates tes
 
         for i in range(3):
             self.assertTrue(np.allclose(out_mri.geometry[i], self.mri.geometry[i], rtol=1e-14))
-
+        self.assertTrue(np.allclose(out_mri.time, self.mri.time, rtol=1e-14))
 #        self.assertTrue(np.array_equal(out_mri.voxel_feature.shape, self.mri.voxel_feature.shape))        
         self.assertTrue(np.allclose(out_mri.voxel_feature, self.mri.voxel_feature, rtol=1e-14))
     

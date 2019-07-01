@@ -437,6 +437,10 @@ subroutine mr_io_read_spacetime(path, mri_inst)
   CALL h5gopen_f(file_id, SpaceTimeMRI_group_name, grp_id, error)
   mr_io_handle_error(error)
 
+  ! Read time data
+  CALL mr_io_read_coordinates(grp_id, "t", mri_inst%t_coordinates)
+  mri_inst%t_dim = size(mri_inst%t_coordinates)
+
   ! Read geometry data
   CALL mr_io_read_coordinates(grp_id, "x", mri_inst%x_coordinates)
   mri_inst%x_dim = size(mri_inst%x_coordinates)
@@ -497,6 +501,9 @@ subroutine mr_io_write_spacetime(path, mri_inst)
   ! Create a new group
   CALL h5gcreate_f(file_id, SpaceTimeMRI_group_name, grp_id, error)
   mr_io_handle_error(error)
+
+  ! Write time data
+  CALL mr_io_write_coordinates(grp_id, "t", mri_inst%t_coordinates)
 
   ! Write geometry data
   CALL mr_io_write_coordinates(grp_id, "x", mri_inst%x_coordinates)

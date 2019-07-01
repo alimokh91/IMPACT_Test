@@ -9,12 +9,14 @@ program mr_io_example_space_time
     real, dimension(4) :: xa
     real, dimension(3) :: ya
     real, dimension(2) :: za 
+    real, dimension(1) :: ta
     real, dimension(3, 2, 4, 3, 2) :: a
 
     type(SpaceTimeMRI) :: mri_dest
     real, dimension(4) :: xb
     real, dimension(3) :: yb
     real, dimension(2) :: zb 
+    real, dimension(1) :: tb
     real, dimension(3, 2, 4, 3, 2) :: b
     
     real, dimension(144) :: arr
@@ -22,6 +24,7 @@ program mr_io_example_space_time
     xa = (/ 1, 1, 1, 1/)
     ya = (/ 2, 2, 2/)
     za = (/ 3, 3 /)
+    ta = (/ 1/)
     arr =  (/ 2, 4, 1, 8, 5, 0, 2, 7, 6, 5, 1, 8, 4, 5, 1, 7, 1, 0, 3, 8, &
                     5, 8, 3, 4, 4, 3, 0, 3, 9, 4, 5, 5, 4, 5, 9, 8, 3, &
                     9, 5, 0, 7, 7, 5, 5, 7, 6, 8, 3, 1, 6, 7, 0, 9, 6, &
@@ -38,7 +41,7 @@ program mr_io_example_space_time
     xb = (/ 4, 4, 4, 4 /)
     yb = (/ 5, 5, 5 /)
     zb = (/ 6, 6 /)
-
+    tb = (/ 1/)
     arr = (/ 4, 0, 8, 7, 1, 6, 3, 1, 2, 7, 6, 9, 4, 7, 1, 9, 2, 4, 5, 4, 4, &
                     1, 0, 4, 6, 9, 5, 9, 4, 0, 5, 6, 5, 1, 8, 5, 7, 5, &
                     3, 1, 2, 5, 1, 0, 6, 1, 9, 8, 1, 9, 8, 3, 4, 5, 7, 3, &
@@ -52,12 +55,14 @@ program mr_io_example_space_time
     b = reshape( arr, (/ 3, 2, 4, 3, 2 /) )
 
 
-    mri_inst = SpaceTimeMRI( xa, 4, ya, 3, za, 2, a,  (/ 3, 2, 4, 3, 2 /))
-    mri_dest = SpaceTimeMRI( xb, 4, yb, 3, zb, 2, b,  (/ 3, 2, 4, 3, 2 /))
+    mri_inst = SpaceTimeMRI( ta, 1, xa, 4, ya, 3, za, 2, a,  (/ 3, 2, 4, 3, 2 /))
+    mri_dest = SpaceTimeMRI( tb, 1, xb, 4, yb, 3, zb, 2, b,  (/ 3, 2, 4, 3, 2 /))
 
     call mr_io_write_spacetime(path, mri_inst)
     call mr_io_read_spacetime(path, mri_dest)
 
+    print *, mri_inst%t_coordinates
+    print *, mri_dest%t_coordinates
     print *, mri_inst%x_coordinates
     print *, mri_dest%x_coordinates
     print *, mri_inst%y_coordinates

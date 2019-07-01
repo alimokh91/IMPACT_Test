@@ -34,9 +34,10 @@ class TestSpaceTimeMRIBidirectional(unittest.TestCase):
 
     def setUp(self):
         # Initialize the MRI data
+        time = np.random.rand(13)
         geometry = [np.random.rand(26), np.random.rand(11), np.random.rand(7)]
         voxel_feature = np.random.rand(26,11,7,13,19)
-        self.mri = SpaceTimeMRI(geometry, voxel_feature)
+        self.mri = SpaceTimeMRI(geometry, time, voxel_feature)
 
     def test_communicator(self):
         # Write HDF5 from Python
@@ -50,7 +51,7 @@ class TestSpaceTimeMRIBidirectional(unittest.TestCase):
                 
         for i in range(3):
             self.assertTrue(np.allclose(out_mri.geometry[i], self.mri.geometry[i], rtol=1e-14))
-
+        self.assertTrue(np.allclose(out_mri.time, self.mri.time, rtol=1e-14))
         self.assertTrue(np.allclose(out_mri.voxel_feature, self.mri.voxel_feature, rtol=1e-14))
 
     def tearDown(self):

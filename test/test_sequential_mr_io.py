@@ -38,13 +38,14 @@ class TestSpatialMRI(unittest.TestCase):
 
 
 
-class TestSpaceTimeMRIBidirectional(unittest.TestCase):
+class TestSpaceTimeMRI(unittest.TestCase):
 
     def setUp(self):
         # Initialize the MRI data
+        time = np.random.rand(17)
         geometry = [np.random.rand(23), np.random.rand(13), np.random.rand(19)]
         voxel_feature = np.random.rand(23,13,19,17,21)
-        self.mri = SpaceTimeMRI(geometry, voxel_feature)
+        self.mri = SpaceTimeMRI(geometry, time, voxel_feature)
 
     def test_communicator(self):
         # Write HDF5 from Python
@@ -58,15 +59,17 @@ class TestSpaceTimeMRIBidirectional(unittest.TestCase):
         fort_stderr = fort.stderr.decode("utf-8")   
         print(fort_stderr)
 
-        fort_group_name, fort_x_dim_str, fort_x_coord_str,fort_y_dim_str, fort_y_coord_str, fort_z_dim_str, fort_z_coord_str, fort_dims_str, fort_array_str, _ = fort_stdout.split('\n')
+        fort_group_name, fort_x_dim_str, fort_x_coord_str,fort_y_dim_str, fort_y_coord_str, fort_z_dim_str, fort_z_coord_str, fort_t_dim_str, fort_t_coord_str, fort_dims_str, fort_array_str, _ = fort_stdout.split('\n')
 
         fort_x_dim = np.fromstring(fort_x_dim_str, dtype=int, sep=' ')
         fort_y_dim = np.fromstring(fort_y_dim_str, dtype=int, sep=' ')
         fort_z_dim = np.fromstring(fort_z_dim_str, dtype=int, sep=' ')
+        fort_t_dim = np.fromstring(fort_t_dim_str, dtype=int, sep=' ')
 
         fort_x_coord = np.fromstring(fort_x_coord_str, dtype=float, sep=' ')
         fort_y_coord = np.fromstring(fort_y_coord_str, dtype=float, sep=' ')
         fort_z_coord = np.fromstring(fort_z_coord_str, dtype=float, sep=' ')
+        fort_t_coord = np.fromstring(fort_t_coord_str, dtype=float, sep=' ')
      
         #print("Fortran x-coordinates: "); print(fort_x_coord)        
         #print("Python x-coordinates:  "); print(self.mri.geometry[0])
@@ -78,10 +81,12 @@ class TestSpaceTimeMRIBidirectional(unittest.TestCase):
         self.assertEqual(fort_x_dim, fort_x_coord.shape[0])
         self.assertEqual(fort_y_dim, fort_y_coord.shape[0])
         self.assertEqual(fort_z_dim, fort_z_coord.shape[0])
+        self.assertEqual(fort_t_dim, fort_t_coord.shape[0])
  
         self.assertTrue(np.allclose(fort_x_coord, self.mri.geometry[0], rtol=1e-14))
         self.assertTrue(np.allclose(fort_y_coord, self.mri.geometry[1], rtol=1e-14))
         self.assertTrue(np.allclose(fort_z_coord, self.mri.geometry[2], rtol=1e-14))
+        self.assertTrue(np.allclose(fort_t_coord, self.mri.time, rtol=1e-14))
 
         fort_dims = np.fromstring(fort_dims_str, dtype=int, sep=' ')
 

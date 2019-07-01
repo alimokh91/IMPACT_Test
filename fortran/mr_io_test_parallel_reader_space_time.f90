@@ -18,6 +18,9 @@ program mr_io_test_parallel_reader_space_time
 
     print *, SpatialMRI_group_name
 
+    print *, shape(mri_dest%t_coordinates)
+    print *, mri_dest%t_coordinates
+
     print *, shape(mri_dest%x_coordinates)
     print *, mri_dest%x_coordinates
 

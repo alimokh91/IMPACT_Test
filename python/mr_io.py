@@ -28,12 +28,13 @@ class SpatialMRI:
 class SpaceTimeMRI:
   group_name = "space-time-mri"
 
-  def __init__(self, geometry, voxel_feature):
+  def __init__(self, geometry, time, voxel_feature):
     """Voxel-based parameters must be specified in (x,y,z,t,i)-order, Fortran will treat it in (i,t,x,y,z)-order.
        The index i is used as the component index (i.e. between 0..2 for mean and 0..5 for covariance of velocity field)
     """
     # a numpy array
     self.geometry = geometry
+    self.time = time
     self.voxel_feature = voxel_feature
 
   def write_hdf5(self, path):
@@ -47,6 +48,7 @@ class SpaceTimeMRI:
       grp = f.create_group(SpaceTimeMRI.group_name)
       for i, coord_name in enumerate(["x_coordinates", "y_coordinates", "z_coordinates"]):
           grp.create_dataset(coord_name, self.geometry[i].shape, data=self.geometry[i], dtype=self.geometry[i].dtype)
+      grp.create_dataset("t_coordinates", self.time.shape, data=self.time, dtype=self.time.dtype)
       ds = grp.create_dataset("voxel_feature", voxel_feature_transposed.shape, data=voxel_feature_transposed, dtype=voxel_feature_transposed.dtype)
 
   def read_hdf5(path):
@@ -54,6 +56,7 @@ class SpaceTimeMRI:
       # here comes the actual deserialization code
       return SpaceTimeMRI(geometry=[f[SpaceTimeMRI.group_name][coord_name][()] \
                                     for coord_name in ["x_coordinates", "y_coordinates", "z_coordinates"]],
+                          time=f[SpaceTimeMRI.group_name]["t_coordinates"][()],
                           voxel_feature=f[SpaceTimeMRI.group_name]["voxel_feature"][()].transpose((2,1,0,3,4)))
 
 
