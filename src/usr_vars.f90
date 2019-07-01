@@ -80,29 +80,18 @@ MODULE usr_vars
 #endif
 
   INTEGER :: n_data,n_data_tot,data_shift
-	REAL, ALLOCATABLE :: write_mean_gbl(:,:,:,:)
-
-!added values for usr_stats and usr_kalman ===========================================
-	!character for grid resolution dimensions
-	CHARACTER(LEN=3) :: M1_char
-	CHARACTER(LEN=3) :: M2_char
-	CHARACTER(LEN=3) :: M3_char
-	
-	CHARACTER(LEN=2) :: id_char !added for writing into directories data_//id_char
-	CHARACTER(LEN=20) :: write_dir, read_dir !directory to write data into
-
-!====================================================================================
+	REAL, ALLOCATABLE :: mean_gbl(:,:,:,:,:)
 
   TYPE stats_t
      INTEGER :: i_data,m
      INTEGER, POINTER :: x(:),y(:),z(:)  !i,j,k of the grid node for each m component
-     REAL, POINTER :: mean_xyz(:),covar_xyz(:),mean_xyzt(:),covar_xyzt(:) !stats
+     REAL, POINTER :: mean_xyz(:),covar_xyz(:),mean_xyzt(:,:),covar_xyzt(:,:) !stats
      REAL, POINTER :: wgt(:) !stats
      TYPE(stats_t), POINTER :: next
   END TYPE stats_t
 
   TYPE stats_group_t
-     INTEGER :: group_id
+     INTEGER :: group_id,phase
      INTEGER :: n_data,n_data_tot,data_shift
      TYPE(stats_t), pointer :: stats_first
      TYPE(stats_group_t), POINTER :: next
@@ -111,10 +100,10 @@ MODULE usr_vars
   TYPE(stats_group_t), pointer :: stats_group_first
 
   TYPE kalman_t
-     INTEGER :: i_data,m
+     INTEGER :: i_data,flg,m,phase
      INTEGER, POINTER :: x(:),y(:),z(:)  !i,j,k of the grid node for each m component
-     REAL, POINTER :: mean(:,:),covar(:,:) !kalman
-     REAL, POINTER :: muf(:),pf(:,:),obs_data(:),obs_covar(:,:),obs_oper(:,:),K(:,:)
+     REAL, POINTER :: mean(:,:,:),covar(:,:,:) ! phases, m, 3 or 6
+     REAL, POINTER :: muf(:),pf(:,:),obs_data(:),obs_covar(:,:),obs_oper(:,:),K(:,:) !kalman
      TYPE(kalman_t), POINTER :: next
   END TYPE kalman_t
 

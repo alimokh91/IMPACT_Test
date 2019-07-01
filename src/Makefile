@@ -47,7 +47,7 @@ machine = $(shell hostname | sed 's/[0-9-]*//g')
 PRE	= -DFTOPY -DALLOC
 
 CUSR	= FALSE
-DST	= ../prog/data
+DST	= ../prog
 SRC     = .
 COMP    = mpifort
 

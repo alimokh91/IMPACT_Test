@@ -33,21 +33,34 @@ INTEGER :: n_procs,strd,pw
 INTEGER, ALLOCATABLE :: n_data_count(:)
 INTEGER, ALLOCATABLE :: i_data(:,:,:)
 REAL :: d_vol
+CHARACTER(LEN=50) :: write_dir
 
-ALLOCATE(write_mean_gbl(b1L:(N1+b1U),b2L:(N2+b2U),b3L:(N3+b3U),1:3)); write_mean_gbl = 0 
+!added for writing TKE_ with M1 M2 M3 ========================================================================
+CHARACTER(LEN=2) ::  id_char
+!added for writing turb_statxz_ with M1 M2 M3 ================================================================
+CHARACTER(LEN=3) ::  M1_char
+CHARACTER(LEN=3) ::  M2_char
+CHARACTER(LEN=3) ::  M3_char
+!=============================================================================================================
+
+ALLOCATE(i_data(S1p:N1p,S2p:N2p,S3p:N3p)); i_data = 0
+ALLOCATE(mean_gbl(1:intervals,b1L:(N1+b1U),b2L:(N2+b2U),b3L:(N3+b3U),1:3)); mean_gbl = 0.
 
 NULLIFY(stats_group_first)
 
-!==========================================================================================================
-!=== define windows box for each stats_group ==============================================================
-!==========================================================================================================
+!=============================================================================================================
+!=== define windows box for each stats_group =================================================================
+!=============================================================================================================
 id = 0
 pw = 0
-do while (pw.le.3) 
+do while (pw.le.2)
 
   strd = 2**pw
 
   id = id + 1
+  !===========================================================================================================
+  !=== evaluate n_data for this stats_group ==================================================================
+  !===========================================================================================================
   if (.not.associated(stats_group_first)) then
      allocate(stats_group_first)
      stats_group => stats_group_first
@@ -58,15 +71,12 @@ do while (pw.le.3)
   stats_group%group_id = id
   NULLIFY(stats_group%next)
 
-  !===========================================================================================================
-  !=== evaluate n_data for this stats_group ==================================================================
-  !===========================================================================================================
   stats_group%n_data = 0
-  ALLOCATE(i_data(S1p:N1p,S2p:N2p,S3p:N3p)); i_data = 0
+  i_data = 0
   DO k = S3p, N3p, strd
      DO j = S2p, N2p, strd
         DO i = S1p, N1p, strd
-           if (x1p(i).gt.1.0.and.x1p(i).le.2.0) then
+           if (x1p(i).ge. 2.0.and.x1p(i).le.3.57 .and. x2p(j).ge.0.5.and.x2p(j).le.1.5 ) then
            stats_group%n_data = stats_group%n_data + 1
            DO ii = i, i+strd-1
               DO jj = j, j+strd-1
@@ -85,61 +95,14 @@ do while (pw.le.3)
   stats_group%data_shift = sum(n_data_count(1:rank+1)) - n_data_count(rank+1)
   stats_group%n_data_tot = sum(n_data_count(1:n_procs))
   DEALLOCATE(n_data_count)
+  call allocate_stats(stats_group,i_data)
   !===========================================================================================================
   
-  !===========================================================================================================
-  !=== construct matrices d_k, H, R ==========================================================================
-  !===========================================================================================================
-  NULLIFY(stats_group%stats_first)
-  DO n = 1,stats_group%n_data
-     if (.NOT.associated(stats_group%stats_first)) then
-        allocate(stats_group%stats_first)
-        stats => stats_group%stats_first
-     else
-        allocate(stats%next)
-        stats => stats%next
-     end if
-     stats%i_data = n
-     stats%m = count(i_data(S1p:N1p,S2p:N2p,S3p:N3p).eq.n)
-     NULLIFY(stats%mean_xyz);   ALLOCATE(stats%mean_xyz(1:3)); stats%mean_xyz = 0.
-     NULLIFY(stats%covar_xyz);  ALLOCATE(stats%covar_xyz(1:6)); stats%covar_xyz = 0.
-     NULLIFY(stats%mean_xyzt);  ALLOCATE(stats%mean_xyzt(1:3)); stats%mean_xyzt = 0.
-     NULLIFY(stats%covar_xyzt); ALLOCATE(stats%covar_xyzt(1:6)); stats%covar_xyzt = 0.
-     NULLIFY(stats%x);          ALLOCATE(stats%x(1:stats%m))
-     NULLIFY(stats%y);          ALLOCATE(stats%y(1:stats%m))
-     NULLIFY(stats%z);          ALLOCATE(stats%z(1:stats%m))
-     NULLIFY(stats%wgt);        ALLOCATE(stats%wgt(1:stats%m))
-     l = 0
-     DO k = S3p, N3p
-        DO j = S2p, N2p
-           DO i = S1p, N1p
-              if (stats%i_data.eq.i_data(i,j,k)) then
-                 l = l + 1
-                 stats%x(l) = i
-                 stats%y(l) = j
-                 stats%z(l) = k
-              end if
-           END DO
-        END DO
-     END DO
-     d_vol = 0.
-     DO l = 1,stats%m    
-        stats%wgt(l) = dx1p(stats%x(l))*dx2p(stats%y(l))*dx3p(stats%z(l))
-        d_vol = d_vol + stats%wgt(l)
-     END DO
-     stats%wgt(1:stats%m) = stats%wgt(1:stats%m)/d_vol
-     NULLIFY(stats%next)
-  END DO
-  DEALLOCATE(i_data)
-  !===========================================================================================================
-
-
-
-
-
-
 
   id = id + 1
+  !===========================================================================================================
+  !=== evaluate n_data for this stats_group ==================================================================
+  !===========================================================================================================
   if (.not.associated(stats_group_first)) then
      allocate(stats_group_first)
      stats_group => stats_group_first
@@ -150,15 +113,12 @@ do while (pw.le.3)
   stats_group%group_id = id
   NULLIFY(stats_group%next)
 
-  !===========================================================================================================
-  !=== evaluate n_data for this stats_group ==================================================================
-  !===========================================================================================================
   stats_group%n_data = 0
-  ALLOCATE(i_data(S1p:N1p,S2p:N2p,S3p:N3p)); i_data = 0
+  i_data = 0
   DO k = S3p, N3p, strd
      DO j = S2p, N2p, strd
-        if (x2p(j).gt.0.4.and.x2p(j).le.1.6) then
         DO i = S1p, N1p, strd
+           if (x1p(i).ge. 2.0.and.x1p(i).le.5.14 .and. x2p(j).ge.0.5.and.x2p(j).le.1.5 ) then
            stats_group%n_data = stats_group%n_data + 1
            DO ii = i, i+strd-1
               DO jj = j, j+strd-1
@@ -167,8 +127,8 @@ do while (pw.le.3)
                  END DO
               END DO
            END DO
+           end if
         END DO
-        end if
      END DO
   END DO
   n_procs = NB1*NB2*NB3
@@ -177,56 +137,181 @@ do while (pw.le.3)
   stats_group%data_shift = sum(n_data_count(1:rank+1)) - n_data_count(rank+1)
   stats_group%n_data_tot = sum(n_data_count(1:n_procs))
   DEALLOCATE(n_data_count)
+  call allocate_stats(stats_group,i_data)
   !===========================================================================================================
   
-  !===========================================================================================================
-  !=== construct matrices d_k, H, R ==========================================================================
-  !===========================================================================================================
-  NULLIFY(stats_group%stats_first)
-  DO n = 1,stats_group%n_data
-     if (.NOT.associated(stats_group%stats_first)) then
-        allocate(stats_group%stats_first)
-        stats => stats_group%stats_first
-     else
-        allocate(stats%next)
-        stats => stats%next
-     end if
-     stats%i_data = n
-     stats%m = count(i_data(S1p:N1p,S2p:N2p,S3p:N3p).eq.n)
-     NULLIFY(stats%mean_xyz);   ALLOCATE(stats%mean_xyz(1:3)); stats%mean_xyz = 0.
-     NULLIFY(stats%covar_xyz);  ALLOCATE(stats%covar_xyz(1:6)); stats%covar_xyz = 0.
-     NULLIFY(stats%mean_xyzt);  ALLOCATE(stats%mean_xyzt(1:3)); stats%mean_xyzt = 0.
-     NULLIFY(stats%covar_xyzt); ALLOCATE(stats%covar_xyzt(1:6)); stats%covar_xyzt = 0.
-     NULLIFY(stats%x);          ALLOCATE(stats%x(1:stats%m))
-     NULLIFY(stats%y);          ALLOCATE(stats%y(1:stats%m))
-     NULLIFY(stats%z);          ALLOCATE(stats%z(1:stats%m))
-     NULLIFY(stats%wgt);        ALLOCATE(stats%wgt(1:stats%m))
-     l = 0
-     DO k = S3p, N3p
-        DO j = S2p, N2p
-           DO i = S1p, N1p
-              if (stats%i_data.eq.i_data(i,j,k)) then
-                 l = l + 1
-                 stats%x(l) = i
-                 stats%y(l) = j
-                 stats%z(l) = k
-              end if
-           END DO
-        END DO
-     END DO
-     d_vol = 0.
-     DO l = 1,stats%m    
-        stats%wgt(l) = dx1p(stats%x(l))*dx2p(stats%y(l))*dx3p(stats%z(l))
-        d_vol = d_vol + stats%wgt(l)
-     END DO
-     stats%wgt(1:stats%m) = stats%wgt(1:stats%m)/d_vol
-     NULLIFY(stats%next)
-  END DO
-  DEALLOCATE(i_data)
-  !===========================================================================================================
 
+  ! id = id + 1
+  ! !===========================================================================================================
+  ! !=== evaluate n_data for this stats_group ==================================================================
+  ! !===========================================================================================================
+  ! if (.not.associated(stats_group_first)) then
+  !    allocate(stats_group_first)
+  !    stats_group => stats_group_first
+  ! else
+  !    allocate(stats_group%next)
+  !    stats_group => stats_group%next
+  ! end if
+  ! stats_group%group_id = id
+  ! NULLIFY(stats_group%next)
+
+  ! stats_group%n_data = 0
+  ! i_data = 0
+  ! DO k = S3p, N3p, strd
+  !    DO j = S2p, N2p, strd
+  !       DO i = S1p, N1p, strd
+  !          if (x1p(i).ge. 2.0.and.x1p(i).le.3.57 ) then
+  !          stats_group%n_data = stats_group%n_data + 1
+  !          DO ii = i, i+strd-1
+  !             DO jj = j, j+strd-1
+  !                DO kk = k, k+strd-1
+  !                   IF (ii.le.N1p .and. jj.le.N2p .and. kk.le.N3p) i_data(ii,jj,kk) = stats_group%n_data
+  !                END DO
+  !             END DO
+  !          END DO
+  !          end if
+  !       END DO
+  !    END DO
+  ! END DO
+  ! n_procs = NB1*NB2*NB3
+  ! ALLOCATE(n_data_count(1:n_procs))
+  ! call MPI_ALLGATHER(stats_group%n_data,1,MPI_INTEGER,n_data_count,1,MPI_INTEGER,COMM_CART,merror)
+  ! stats_group%data_shift = sum(n_data_count(1:rank+1)) - n_data_count(rank+1)
+  ! stats_group%n_data_tot = sum(n_data_count(1:n_procs))
+  ! DEALLOCATE(n_data_count)
+  ! call allocate_stats(stats_group,i_data)
+  ! !===========================================================================================================
+
+
+  ! id = id + 1
+  ! !===========================================================================================================
+  ! !=== evaluate n_data for this stats_group ==================================================================
+  ! !===========================================================================================================
+  ! if (.not.associated(stats_group_first)) then
+  !    allocate(stats_group_first)
+  !    stats_group => stats_group_first
+  ! else
+  !    allocate(stats_group%next)
+  !    stats_group => stats_group%next
+  ! end if
+  ! stats_group%group_id = id
+  ! NULLIFY(stats_group%next)
+
+  ! stats_group%n_data = 0
+  ! i_data = 0
+  ! DO k = S3p, N3p, strd
+  !    DO j = S2p, N2p, strd
+  !       DO i = S1p, N1p, strd
+  !          if (x1p(i).ge. 2.0.and.x1p(i).le.5.14 ) then
+  !          stats_group%n_data = stats_group%n_data + 1
+  !          DO ii = i, i+strd-1
+  !             DO jj = j, j+strd-1
+  !                DO kk = k, k+strd-1
+  !                   IF (ii.le.N1p .and. jj.le.N2p .and. kk.le.N3p) i_data(ii,jj,kk) = stats_group%n_data
+  !                END DO
+  !             END DO
+  !          END DO
+  !          end if
+  !       END DO
+  !    END DO
+  ! END DO
+  ! n_procs = NB1*NB2*NB3
+  ! ALLOCATE(n_data_count(1:n_procs))
+  ! call MPI_ALLGATHER(stats_group%n_data,1,MPI_INTEGER,n_data_count,1,MPI_INTEGER,COMM_CART,merror)
+  ! stats_group%data_shift = sum(n_data_count(1:rank+1)) - n_data_count(rank+1)
+  ! stats_group%n_data_tot = sum(n_data_count(1:n_procs))
+  ! DEALLOCATE(n_data_count)
+  ! call allocate_stats(stats_group,i_data)
+  ! !===========================================================================================================
+  
+
+  ! id = id + 1
+  ! !===========================================================================================================
+  ! !=== evaluate n_data for this stats_group ==================================================================
+  ! !===========================================================================================================
+  ! if (.not.associated(stats_group_first)) then
+  !    allocate(stats_group_first)
+  !    stats_group => stats_group_first
+  ! else
+  !    allocate(stats_group%next)
+  !    stats_group => stats_group%next
+  ! end if
+  ! stats_group%group_id = id
+  ! NULLIFY(stats_group%next)
+
+  ! stats_group%n_data = 0
+  ! i_data = 0
+  ! DO k = S3p, N3p, strd
+  !    DO j = S2p, N2p, strd
+  !       DO i = S1p, N1p, strd
+  !          if (x2p(j).ge.0.5.and.x2p(j).le.1.5 ) then
+  !          stats_group%n_data = stats_group%n_data + 1
+  !          DO ii = i, i+strd-1
+  !             DO jj = j, j+strd-1
+  !                DO kk = k, k+strd-1
+  !                   IF (ii.le.N1p .and. jj.le.N2p .and. kk.le.N3p) i_data(ii,jj,kk) = stats_group%n_data
+  !                END DO
+  !             END DO
+  !          END DO
+  !          end if
+  !       END DO
+  !    END DO
+  ! END DO
+  ! n_procs = NB1*NB2*NB3
+  ! ALLOCATE(n_data_count(1:n_procs))
+  ! call MPI_ALLGATHER(stats_group%n_data,1,MPI_INTEGER,n_data_count,1,MPI_INTEGER,COMM_CART,merror)
+  ! stats_group%data_shift = sum(n_data_count(1:rank+1)) - n_data_count(rank+1)
+  ! stats_group%n_data_tot = sum(n_data_count(1:n_procs))
+  ! DEALLOCATE(n_data_count)
+  ! call allocate_stats(stats_group,i_data)
+  ! !===========================================================================================================
+  
+
+  ! id = id + 1
+  ! !===========================================================================================================
+  ! !=== evaluate n_data for this stats_group ==================================================================
+  ! !===========================================================================================================
+  ! if (.not.associated(stats_group_first)) then
+  !    allocate(stats_group_first)
+  !    stats_group => stats_group_first
+  ! else
+  !    allocate(stats_group%next)
+  !    stats_group => stats_group%next
+  ! end if
+  ! stats_group%group_id = id
+  ! NULLIFY(stats_group%next)
+
+  ! stats_group%n_data = 0
+  ! i_data = 0
+  ! DO k = S3p, N3p, strd
+  !    DO j = S2p, N2p, strd
+  !       DO i = S1p, N1p, strd
+  !          if (x2p(j).ge.0.0 .and.x2p(j).le.1.0 ) then
+  !          stats_group%n_data = stats_group%n_data + 1
+  !          DO ii = i, i+strd-1
+  !             DO jj = j, j+strd-1
+  !                DO kk = k, k+strd-1
+  !                   IF (ii.le.N1p .and. jj.le.N2p .and. kk.le.N3p) i_data(ii,jj,kk) = stats_group%n_data
+  !                END DO
+  !             END DO
+  !          END DO
+  !          end if
+  !       END DO
+  !    END DO
+  ! END DO
+  ! n_procs = NB1*NB2*NB3
+  ! ALLOCATE(n_data_count(1:n_procs))
+  ! call MPI_ALLGATHER(stats_group%n_data,1,MPI_INTEGER,n_data_count,1,MPI_INTEGER,COMM_CART,merror)
+  ! stats_group%data_shift = sum(n_data_count(1:rank+1)) - n_data_count(rank+1)
+  ! stats_group%n_data_tot = sum(n_data_count(1:n_procs))
+  ! DEALLOCATE(n_data_count)
+  ! call allocate_stats(stats_group,i_data)
+  ! !===========================================================================================================
+  
   pw = pw + 1
 end do
+
+DEALLOCATE(i_data)
 
 num_windows = id !define num_windows in mod_vars for write covariance in xdmf
 !===========================================================================================================
@@ -236,19 +321,79 @@ write_stats_count = 0
 CALL num_to_string(3,M1,M1_char)
 CALL num_to_string(3,M2,M2_char)
 CALL num_to_string(3,M3,M3_char)
+CALL num_to_string(3,restart,restart_char)
 !============================================================================================================
 
 IF (rank == 0 .AND. dtime_out_scal /= 0.) THEN
-  OPEN(0,FILE='tke_'//restart_char//'.txt',STATUS='UNKNOWN')
-  OPEN(100,FILE='turb_statxz_'//restart_char//'_'//M1_char//'x'//M2_char//'x'//M3_char//'.txt',STATUS='UNKNOWN') !added M1 M2 M3 info
-	
-	DO i = 1,num_windows
-		CALL num_to_string(2,i,id_char)
-    write_dir = 'data_'//id_char//'/'
-  	CALL system('mkdir -p '//write_dir) !create directory if it do not exists
-		OPEN(i,FILE=trim(write_dir)//'tke_'//restart_char//'.txt',STATUS='UNKNOWN')
-	END DO
+  OPEN(23,FILE='turb_statxz_'//restart_char//'_'//M1_char//'x'//M2_char//'x'//M3_char//'.txt',STATUS='UNKNOWN') !added M1 M2 M3 info
+  OPEN(33,FILE='tke_domain_'//restart_char//'.txt',STATUS='UNKNOWN')
+  DO id = 1, num_windows
+     CALL num_to_string(2,id,id_char)
+     write_dir = './data_'//id_char//'/'
+     CALL system('mkdir -p '//write_dir) !create directory if it do not exists
+     OPEN(33+id,FILE=trim(write_dir)//'tke_window_'//id_char//'_'//restart_char//'.txt',STATUS='UNKNOWN')
+  END DO
 END IF
+
+contains 
+
+SUBROUTINE allocate_stats(stats_group,i_data)
+
+IMPLICIT NONE
+
+TYPE(stats_group_t), pointer :: stats_group
+TYPE(stats_t), pointer :: stats
+INTEGER :: i_data(S1p:N1p,S2p:N2p,S3p:N3p)
+INTEGER :: l,n,i,j,k
+REAL :: d_vol
+
+!===========================================================================================================
+!=== construct matrices d_k, H, R ==========================================================================
+!===========================================================================================================
+NULLIFY(stats_group%stats_first)
+DO n = 1,stats_group%n_data
+   if (.NOT.associated(stats_group%stats_first)) then
+      allocate(stats_group%stats_first)
+      stats => stats_group%stats_first
+   else
+      allocate(stats%next)
+      stats => stats%next
+   end if
+   stats%i_data = n
+   stats%m = count(i_data(S1p:N1p,S2p:N2p,S3p:N3p).eq.n)
+   NULLIFY(stats%mean_xyz);   ALLOCATE(stats%mean_xyz(1:3));   stats%mean_xyz = 0.
+   NULLIFY(stats%covar_xyz);  ALLOCATE(stats%covar_xyz(1:6));  stats%covar_xyz = 0.
+   NULLIFY(stats%mean_xyzt);  ALLOCATE(stats%mean_xyzt(1:intervals,1:3));  stats%mean_xyzt = 0.
+   NULLIFY(stats%covar_xyzt); ALLOCATE(stats%covar_xyzt(1:intervals,1:6)); stats%covar_xyzt = 0.
+   NULLIFY(stats%x);          ALLOCATE(stats%x(1:stats%m))
+   NULLIFY(stats%y);          ALLOCATE(stats%y(1:stats%m))
+   NULLIFY(stats%z);          ALLOCATE(stats%z(1:stats%m))
+   NULLIFY(stats%wgt);        ALLOCATE(stats%wgt(1:stats%m))
+   l = 0
+   DO k = S3p, N3p
+      DO j = S2p, N2p
+         DO i = S1p, N1p
+            if (stats%i_data.eq.i_data(i,j,k)) then
+               l = l + 1
+               stats%x(l) = i
+               stats%y(l) = j
+               stats%z(l) = k
+            end if
+         END DO
+      END DO
+   END DO
+   d_vol = 0.
+   DO l = 1,stats%m    
+      stats%wgt(l) = dx1p(stats%x(l))*dx2p(stats%y(l))*dx3p(stats%z(l))
+      d_vol = d_vol + stats%wgt(l)
+   END DO
+   stats%wgt(1:stats%m) = stats%wgt(1:stats%m)/d_vol
+   NULLIFY(stats%next)
+END DO
+!===========================================================================================================
+
+END SUBROUTINE allocate_stats
+
 
 END SUBROUTINE open_stats
 
@@ -266,15 +411,14 @@ INCLUDE 'mpif.h'
 
 TYPE(stats_group_t), pointer :: stats_group
 TYPE(stats_t), pointer :: stats
-INTEGER :: i
+INTEGER :: id
 
 IF (rank == 0 .AND. dtime_out_scal /= 0.) THEN
-	CLOSE(0)
-	CLOSE(100)
-	
-	DO i = 1,num_windows
-  	CLOSE(i)
- 	END DO
+  CLOSE(23)
+  CLOSE(33)
+  DO id = 1, num_windows
+     CLOSE(33+id)
+  END DO 
 END IF
 
 if(associated(stats_group_first)) then
@@ -283,12 +427,7 @@ if(associated(stats_group_first)) then
   DEALLOCATE(stats_group_first)
 end if
 
-IF (rank == 0 .AND. dtime_out_kalm /= 0.) THEN
-  CLOSE(43)
-  CLOSE(53)
-END IF
-
-DEALLOCATE(write_mean_gbl)
+DEALLOCATE(mean_gbl)
 
 contains
 
@@ -356,26 +495,28 @@ INCLUDE 'mpif.h'
 
 TYPE(stats_group_t), pointer :: stats_group
 TYPE(stats_t), pointer :: stats
-INTEGER :: i, ii
-INTEGER :: j, jj
-INTEGER :: k, kk
+INTEGER :: i,j,k,phase,repetition
 REAL    :: TKE(1:2), TKE_global(1:2), mean_xz_write(1:M2), mean_xz(S2p:N2p), mean_xz_global(S2p:N2p)
 REAL    :: write_mean(b1L:(N1+b1U),b2L:(N2+b2U),b3L:(N3+b3U),1:3)
 REAL    :: write_fluct(b1L:(N1+b1U),b2L:(N2+b2U),b3L:(N3+b3U),1:3)
 REAL    :: write_covar(b1L:(N1+b1U),b2L:(N2+b2U),b3L:(N3+b3U),1:6)
 REAL, ALLOCATABLE :: d_k(:,:), R_k(:,:), R_t(:,:)
 CHARACTER(LEN=8) :: count_char
+CHARACTER(LEN=2) :: id
+CHARACTER(LEN=50) :: write_dir
+
+!if ( time.lt. t0) return    use it if you want to save only data from fully developed turbulent flow
 
 write_out_scal = .FALSE.
 time_out_scal = time_out_scal + dtime_out_scal
 
+IF (rank == 0) WRITE(*,'(a,i8,a)') 'writing data stats',write_stats_count,' ...'
 !===========================================================================================================
 !=== interpolation of velocity to pressure grid points =====================================================
 !===========================================================================================================
 ! vel(:,:,:,i) --> worki(:,:,:)
 IF (task == 1) CALL interpolate_vel(.TRUE.)
 !===========================================================================================================
-
 !-----------------------------------------------------------------------------------------------------------
 !--- <u>_xz(y) ---------------------------------------------------------------------------------------------
 !-----------------------------------------------------------------------------------------------------------
@@ -393,242 +534,45 @@ IF (wallnorm_dir == 1) THEN
   CALL MPI_ALLGATHERv(mean_xz,(N2p-S2p+1),MPI_REAL8,mean_xz_write,bar2_size,bar2_offset,MPI_REAL8,COMM_BAR2,merror)
   IF (rank == 0) THEN
      ! write into file 'turb_statxz_'//restart_char//'.txt'
-     WRITE(100,'(7E25.17)') time,y2p(2),      mean_xz_write(2),   sqrt(abs(mean_xz_write(2)/(y2p(2)-y2p(1)))/Re)*Re,& ! Re_tau = Re * <u_tau(y=0)>_xz
-                                y2p(M2-1),   mean_xz_write(M2-1),sqrt(abs(mean_xz_write(M2-1)/(y2p(M2-1)-y2p(M2)))/Re)*Re !Re_tau = Re * <u_tau(y=M2)>_xz
-     CALL flush(100)
+     WRITE(23,'(7E25.17)') time,y2p(2),   mean_xz_write(2),   sqrt(abs(mean_xz_write(2)/(y2p(2)-y2p(1)))/Re)*Re,& ! Re_tau = Re * <u_tau(y=0)>_xz
+                                y2p(M2-1),mean_xz_write(M2-1),sqrt(abs(mean_xz_write(M2-1)/(y2p(M2-1)-y2p(M2)))/Re)*Re !Re_tau = Re * <u_tau(y=M2)>_xz
+     CALL flush(23)
   END IF
 END IF
 !===========================================================================================================
 
-stats_group => stats_group_first
-do while(associated(stats_group))
-
-  !===========================================================================================================
-  !=== turbulence statistics (space averaging) ===============================================================
-  !===========================================================================================================
-  stats => stats_group%stats_first
-  do while(associated(stats))
-  !-----------------------------------------------------------------------------------------------------------
-  !--- <u_i>_xyz(voxel) --------------------------------------------------------------------------------------
-  !-----------------------------------------------------------------------------------------------------------
-     stats%mean_xyz = 0.
-     do i = 1, stats%m
-        stats%mean_xyz(1) = stats%mean_xyz(1) + work1(stats%x(i),stats%y(i),stats%z(i))*stats%wgt(i)
-        stats%mean_xyz(2) = stats%mean_xyz(2) + work2(stats%x(i),stats%y(i),stats%z(i))*stats%wgt(i)
-        stats%mean_xyz(3) = stats%mean_xyz(3) + work3(stats%x(i),stats%y(i),stats%z(i))*stats%wgt(i)
-     end do
-  !-----------------------------------------------------------------------------------------------------------
-  !--- <u_i u_j>_xyz -----------------------------------------------------------------------------------------
-  !-----------------------------------------------------------------------------------------------------------
-     stats%covar_xyz = 0.
-     do i = 1, stats%m
-        stats%covar_xyz(1) = stats%covar_xyz(1) + stats%wgt(i)* &
-                             (work1(stats%x(i),stats%y(i),stats%z(i))*work1(stats%x(i),stats%y(i),stats%z(i)))
-        stats%covar_xyz(2) = stats%covar_xyz(2) + stats%wgt(i)* &
-                             (work2(stats%x(i),stats%y(i),stats%z(i))*work2(stats%x(i),stats%y(i),stats%z(i)))
-        stats%covar_xyz(3) = stats%covar_xyz(3) + stats%wgt(i)* &
-                             (work3(stats%x(i),stats%y(i),stats%z(i))*work3(stats%x(i),stats%y(i),stats%z(i)))
-        stats%covar_xyz(4) = stats%covar_xyz(4) + stats%wgt(i)* &
-                             (work1(stats%x(i),stats%y(i),stats%z(i))*work2(stats%x(i),stats%y(i),stats%z(i)))
-        stats%covar_xyz(5) = stats%covar_xyz(5) + stats%wgt(i)* &
-                             (work1(stats%x(i),stats%y(i),stats%z(i))*work3(stats%x(i),stats%y(i),stats%z(i)))
-        stats%covar_xyz(6) = stats%covar_xyz(6) + stats%wgt(i)* &
-                             (work2(stats%x(i),stats%y(i),stats%z(i))*work3(stats%x(i),stats%y(i),stats%z(i)))
-     end do
-     stats => stats%next
-  end do
-  !===========================================================================================================
-
-  if (timestep.ne.timestep_old) then
-     !===========================================================================================================
-     !=== turbulence statistics (space+time averaging) ==========================================================
-     !===========================================================================================================
-     stats => stats_group%stats_first
-     do while(associated(stats))
-     !-----------------------------------------------------------------------------------------------------------
-     !--- <u_i>_xyzt --------------------------------------------------------------------------------------------
-     !-----------------------------------------------------------------------------------------------------------
-        stats%mean_xyzt(1:3) = stats%mean_xyzt(1:3)*(time-dtime_out_scal-time_start)
-        stats%mean_xyzt(1:3) = stats%mean_xyzt(1:3) + stats%mean_xyz(1:3)*dtime_out_scal
-        stats%mean_xyzt(1:3) = stats%mean_xyzt(1:3)/(time-time_start)
-     !-----------------------------------------------------------------------------------------------------------
-     !--- <u_i u_j>_xyzt ----------------------------------------------------------------------------------------
-     !-----------------------------------------------------------------------------------------------------------
-        stats%covar_xyzt(1:6) = stats%covar_xyzt(1:6)*(time-dtime_out_scal-time_start)
-        stats%covar_xyzt(1:6) = stats%covar_xyzt(1:6) + stats%covar_xyz(1:6)*dtime_out_scal
-        stats%covar_xyzt(1:6) = stats%covar_xyzt(1:6)/(time-time_start)
-        stats => stats%next
-     end do
-     !===========================================================================================================
-  end if
-
-  !===========================================================================================================
-  !=== write d_k, R_k and R(t) at the current time t=k =======================================================
-  !===========================================================================================================
-  allocate(d_k(1:stats_group%n_data,1:3)); d_k = 0.
-  allocate(R_k(1:stats_group%n_data,1:6)); R_k = 0.
-  allocate(R_t(1:stats_group%n_data,1:6)); R_t = 0.
-  stats => stats_group%stats_first
-  do while(associated(stats))
-  !--- <u_i>_xyz ---------------------------------------------------------------------------------------------
-     d_k(stats%i_data,1) = stats%mean_xyz(1)
-     d_k(stats%i_data,2) = stats%mean_xyz(2)
-     d_k(stats%i_data,3) = stats%mean_xyz(3)
-  !--- <u'_i u'_j>_xyz ---------------------------------------------------------------------------------------
-     R_k(stats%i_data,1) = stats%covar_xyz(1) - stats%mean_xyz(1)*stats%mean_xyz(1) 
-     R_k(stats%i_data,2) = stats%covar_xyz(2) - stats%mean_xyz(2)*stats%mean_xyz(2) 
-     R_k(stats%i_data,3) = stats%covar_xyz(3) - stats%mean_xyz(3)*stats%mean_xyz(3) 
-     R_k(stats%i_data,4) = stats%covar_xyz(4) - stats%mean_xyz(1)*stats%mean_xyz(2) 
-     R_k(stats%i_data,5) = stats%covar_xyz(5) - stats%mean_xyz(1)*stats%mean_xyz(3) 
-     R_k(stats%i_data,6) = stats%covar_xyz(6) - stats%mean_xyz(2)*stats%mean_xyz(3) 
-  !--- <u'_i u'_j>_xyzt --------------------------------------------------------------------------------------
-     R_t(stats%i_data,1) = stats%covar_xyzt(1) - stats%mean_xyzt(1)*stats%mean_xyzt(1) 
-     R_t(stats%i_data,2) = stats%covar_xyzt(2) - stats%mean_xyzt(2)*stats%mean_xyzt(2) 
-     R_t(stats%i_data,3) = stats%covar_xyzt(3) - stats%mean_xyzt(3)*stats%mean_xyzt(3) 
-     R_t(stats%i_data,4) = stats%covar_xyzt(4) - stats%mean_xyzt(1)*stats%mean_xyzt(2) 
-     R_t(stats%i_data,5) = stats%covar_xyzt(5) - stats%mean_xyzt(1)*stats%mean_xyzt(3) 
-     R_t(stats%i_data,6) = stats%covar_xyzt(6) - stats%mean_xyzt(2)*stats%mean_xyzt(3) 
-     stats => stats%next
-  end do
-  
-  CALL num_to_string(8,write_stats_count,count_char)
-  IF (rank == 0) WRITE(*,'(a,i8,a)') 'writing data stats',write_stats_count,' ...'
-
-  CALL num_to_string(2,stats_group%group_id,id_char)
-  write_dir = './data_'//id_char//'/'
-  
-  CALL write_stats_hdf_2D(trim(write_dir)//'d_k.'//count_char,'d_k', &
-                        stats_group%n_data_tot,3,1,1,stats_group%n_data,3,stats_group%data_shift,0,d_k) 
-  CALL write_stats_hdf_2D(trim(write_dir)//'R_k.'//count_char,'R_k', &
-                         stats_group%n_data_tot,6,1,1,stats_group%n_data,6,stats_group%data_shift,0,R_k)
-  !CALL write_stats_hdf_2D(trim(write_dir)//'R_t.'//count_char,'R_t', &
-  !                        stats_group%n_data_tot,6,1,1,stats_group%n_data,6,stats_group%data_shift,0,R_t)
-  !===========================================================================================================
-    
-  !===========================================================================================================
-  !write fluctuations_fields for visualization
-  !===========================================================================================================
-  write_mean = 0.
-  write_fluct = 0.
-  write_covar = 0.
-  stats => stats_group%stats_first
-  do while(associated(stats))
-     do i = 1,stats%m
-        write_mean(stats%x(i),stats%y(i),stats%z(i),1)  = d_k(stats%i_data,1)
-        write_mean(stats%x(i),stats%y(i),stats%z(i),2)  = d_k(stats%i_data,2)
-        write_mean(stats%x(i),stats%y(i),stats%z(i),3)  = d_k(stats%i_data,3)
-        write_fluct(stats%x(i),stats%y(i),stats%z(i),1) = stats%mean_xyzt(1)
-        write_fluct(stats%x(i),stats%y(i),stats%z(i),2) = stats%mean_xyzt(2)
-        write_fluct(stats%x(i),stats%y(i),stats%z(i),3) = stats%mean_xyzt(3)
-        write_fluct(stats%x(i),stats%y(i),stats%z(i),1) = work1(stats%x(i),stats%y(i),stats%z(i)) - &
-                                                          write_fluct(stats%x(i),stats%y(i),stats%z(i),1) 
-        write_fluct(stats%x(i),stats%y(i),stats%z(i),2) = work2(stats%x(i),stats%y(i),stats%z(i)) - &
-                                                          write_fluct(stats%x(i),stats%y(i),stats%z(i),2)
-        write_fluct(stats%x(i),stats%y(i),stats%z(i),3) = work3(stats%x(i),stats%y(i),stats%z(i)) - &
-                                                          write_fluct(stats%x(i),stats%y(i),stats%z(i),3)
-        write_covar(stats%x(i),stats%y(i),stats%z(i),1) = R_k(stats%i_data,1)
-        write_covar(stats%x(i),stats%y(i),stats%z(i),2) = R_k(stats%i_data,2)
-        write_covar(stats%x(i),stats%y(i),stats%z(i),3) = R_k(stats%i_data,3)
-        write_covar(stats%x(i),stats%y(i),stats%z(i),4) = R_k(stats%i_data,4)
-        write_covar(stats%x(i),stats%y(i),stats%z(i),5) = R_k(stats%i_data,5)
-        write_covar(stats%x(i),stats%y(i),stats%z(i),6) = R_k(stats%i_data,6)
-     end do 
-     stats => stats%next
-  end do
-
-  !===========================================================================================================
-  !=== integral energy for the window box ====================================================================
-  !===========================================================================================================
-  TKE = 0.
-  DO k = S3p, N3p
-     DO j = S2p, N2p
-        DO i = S1p, N1p
-           TKE(1) = TKE(1) + dx1p(i)*dx2p(j)*dx3p(k)*(write_mean(i,j,k,1)**2 + write_mean(i,j,k,2)**2 + write_mean(i,j,k,3)**2)
-           TKE(2) = TKE(2) + dx1p(i)*dx2p(j)*dx3p(k)*(write_fluct(i,j,k,1)**2+write_fluct(i,j,k,2)**2+&
-                                                      write_fluct(i,j,k,3)**2)
-        END DO
-     END DO
-  END DO
-  CALL MPI_ALLREDUCE(TKE,TKE_global,2,MPI_REAL8,MPI_SUM,COMM_CART,merror)
-  !--- Absolute kinetic energy ---
-  TKE_global = TKE_global / 2.
-  !--- Output ---
-  IF (rank == 0) THEN
-    WRITE(stats_group%group_id,'(3E25.17)') time, TKE_global(1:2)
-    CALL flush(stats_group%group_id)
-  END IF
-  !===========================================================================================================
-
-
-  IF (write_out_vect) THEN
-     CALL num_to_string(8,write_count,count_char)
-     IF (rank == 0) WRITE(*,'(a,i8,a)') 'writing data fields',write_count,' ...'
-
-     CALL num_to_string(2,stats_group%group_id,id_char)
-     write_dir = './data_'//id_char//'/'
-     !    write_hdf(filename,dsetname,
-                   !SS1,SS2,SS3,NN1,NN2,NN3,vel_dir,stride,phi)
-
-     CALL write_hdf(trim(write_dir)//'dataX_'//count_char,'meanX', &
-                    S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_mean(b1L,b2L,b3L,1))
-     CALL write_hdf(trim(write_dir)//'dataY_'//count_char,'meanY', &
-                    S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_mean(b1L,b2L,b3L,2))
-     CALL write_hdf(trim(write_dir)//'dataZ_'//count_char,'meanZ', &
-                    S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_mean(b1L,b2L,b3L,3))
-     CALL write_hdf(trim(write_dir)//'dataXX_'//count_char,'covarXX', &
-                    S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_covar(b1L,b2L,b3L,1))
-     CALL write_hdf(trim(write_dir)//'dataYY_'//count_char,'covarYY', &
-                    S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_covar(b1L,b2L,b3L,2))
-     CALL write_hdf(trim(write_dir)//'dataZZ_'//count_char,'covarZZ', &
-                    S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_covar(b1L,b2L,b3L,3))
-
-     CALL write_hdf(trim(write_dir)//'dataXY_'//count_char,'covarXY', &
-                   S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_covar(b1L,b2L,b3L,4))
-     CALL write_hdf(trim(write_dir)//'dataXZ_'//count_char,'covarXZ', &
-                   S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_covar(b1L,b2L,b3L,5))
-     CALL write_hdf(trim(write_dir)//'dataYZ_'//count_char,'covarYZ', &
-                   S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_covar(b1L,b2L,b3L,6))
-  END IF
-
-  deallocate(d_k,R_k,R_t)
-
-  stats_group => stats_group%next
-end do
-
-
-
+phase = mod(write_stats_count,intervals) + 1
+repetition = write_stats_count/intervals + 1
 
 !--------------------------------------------------------------------------------------------------------
-!--- <u_i>(t) -------------------------------------------------------------------------------------------
+!--- <u_i>(t_k) -------------------------------------------------------------------------------------------
 !--------------------------------------------------------------------------------------------------------
-if(write_count.gt.0) write_mean_gbl(:,:,:,1:3) = write_mean_gbl(:,:,:,1:3)*(time-dtime_out_scal-time_start)
+mean_gbl(phase,:,:,:,1:3) = mean_gbl(phase,:,:,:,1:3)*(repetition-1)
 DO k = S3p, N3p
   DO j = S2p, N2p
      DO i = S1p, N1p
-        write_mean_gbl(i,j,k,1) = write_mean_gbl(i,j,k,1) + work1(i,j,k)*dtime_out_scal
-        write_mean_gbl(i,j,k,2) = write_mean_gbl(i,j,k,2) + work2(i,j,k)*dtime_out_scal
-        write_mean_gbl(i,j,k,3) = write_mean_gbl(i,j,k,3) + work3(i,j,k)*dtime_out_scal
+        mean_gbl(phase,i,j,k,1) = mean_gbl(phase,i,j,k,1) + work1(i,j,k)
+        mean_gbl(phase,i,j,k,2) = mean_gbl(phase,i,j,k,2) + work2(i,j,k)
+        mean_gbl(phase,i,j,k,3) = mean_gbl(phase,i,j,k,3) + work3(i,j,k)
      END DO
   END DO
 END DO
-if(write_count.gt.0) write_mean_gbl(:,:,:,1:3) = write_mean_gbl(:,:,:,1:3)/(time-time_start)
-
+mean_gbl(phase,:,:,:,1:3) = mean_gbl(phase,:,:,:,1:3)/repetition
 !--------------------------------------------------------------------------------------------------------
-!--- <u'_i>(t) ------------------------------------------------------------------------------------------
+!--- <u'_i>(t_k) ------------------------------------------------------------------------------------------
 !--------------------------------------------------------------------------------------------------------
-write_fluct(:,:,:,1) = work1(:,:,:) - write_mean_gbl(:,:,:,1)
-write_fluct(:,:,:,2) = work2(:,:,:) - write_mean_gbl(:,:,:,2)
-write_fluct(:,:,:,3) = work3(:,:,:) - write_mean_gbl(:,:,:,3)
-
-!=============================================================================================================
+write_fluct(:,:,:,1) = work1(:,:,:) - mean_gbl(phase,:,:,:,1)
+write_fluct(:,:,:,2) = work2(:,:,:) - mean_gbl(phase,:,:,:,2)
+write_fluct(:,:,:,3) = work3(:,:,:) - mean_gbl(phase,:,:,:,3)
+!===========================================================================================================
 !=== integral energy for the whole domain  =================================================================
 !===========================================================================================================
 TKE = 0.
 DO k = S3p, N3p
   DO j = S2p, N2p
      DO i = S1p, N1p
-        TKE(1) = TKE(1) + dx1p(i)*dx2p(j)*dx3p(k)*(write_mean_gbl(i,j,k,1)**2+write_mean_gbl(i,j,k,2)**2+&
-                                                   write_mean_gbl(i,j,k,3)**2)
+        TKE(1) = TKE(1) + dx1p(i)*dx2p(j)*dx3p(k)*(mean_gbl(phase,i,j,k,1)**2+mean_gbl(phase,i,j,k,2)**2+&
+                                                   mean_gbl(phase,i,j,k,3)**2)
         TKE(2) = TKE(2) + dx1p(i)*dx2p(j)*dx3p(k)*(write_fluct(i,j,k,1)**2+write_fluct(i,j,k,2)**2+&
                                                    write_fluct(i,j,k,3)**2)
      END DO
@@ -639,9 +583,200 @@ CALL MPI_ALLREDUCE(TKE,TKE_global,2,MPI_REAL8,MPI_SUM,COMM_CART,merror)
 TKE_global = TKE_global / 2.
 !--- Output ---
 IF (rank == 0) THEN
- WRITE(0,'(3E25.17)') time, TKE_global(1:2)
- CALL flush(0)
+ WRITE(33,'(3E25.17)') time, TKE_global(1:2)
+ CALL flush(33)
 END IF
+
+stats_group => stats_group_first
+do while(associated(stats_group))
+
+!===========================================================================================================
+!=== turbulence statistics (space averaging) ===============================================================
+!===========================================================================================================
+   stats => stats_group%stats_first
+   do while(associated(stats))
+!-----------------------------------------------------------------------------------------------------------
+!--- <u_i>_xyz(voxel) --------------------------------------------------------------------------------------
+!-----------------------------------------------------------------------------------------------------------
+      stats%mean_xyz = 0.
+      do i = 1, stats%m
+         stats%mean_xyz(1) = stats%mean_xyz(1) + work1(stats%x(i),stats%y(i),stats%z(i))*stats%wgt(i)
+         stats%mean_xyz(2) = stats%mean_xyz(2) + work2(stats%x(i),stats%y(i),stats%z(i))*stats%wgt(i)
+         stats%mean_xyz(3) = stats%mean_xyz(3) + work3(stats%x(i),stats%y(i),stats%z(i))*stats%wgt(i)
+      end do
+!-----------------------------------------------------------------------------------------------------------
+!--- <u_i u_j>_xyz -----------------------------------------------------------------------------------------
+!-----------------------------------------------------------------------------------------------------------
+      stats%covar_xyz = 0.
+      do i = 1, stats%m
+         stats%covar_xyz(1) = stats%covar_xyz(1) + stats%wgt(i)* &
+                              (work1(stats%x(i),stats%y(i),stats%z(i))*work1(stats%x(i),stats%y(i),stats%z(i)))
+         stats%covar_xyz(2) = stats%covar_xyz(2) + stats%wgt(i)* &
+                              (work2(stats%x(i),stats%y(i),stats%z(i))*work2(stats%x(i),stats%y(i),stats%z(i)))
+         stats%covar_xyz(3) = stats%covar_xyz(3) + stats%wgt(i)* &
+                              (work3(stats%x(i),stats%y(i),stats%z(i))*work3(stats%x(i),stats%y(i),stats%z(i)))
+         stats%covar_xyz(4) = stats%covar_xyz(4) + stats%wgt(i)* &
+                              (work1(stats%x(i),stats%y(i),stats%z(i))*work2(stats%x(i),stats%y(i),stats%z(i)))
+         stats%covar_xyz(5) = stats%covar_xyz(5) + stats%wgt(i)* &
+                              (work1(stats%x(i),stats%y(i),stats%z(i))*work3(stats%x(i),stats%y(i),stats%z(i)))
+         stats%covar_xyz(6) = stats%covar_xyz(6) + stats%wgt(i)* &
+                              (work2(stats%x(i),stats%y(i),stats%z(i))*work3(stats%x(i),stats%y(i),stats%z(i)))
+      end do
+      stats => stats%next
+   end do
+!===========================================================================================================
+
+!===========================================================================================================
+!=== turbulence statistics (space+time averaging) ==========================================================
+!===========================================================================================================
+   stats => stats_group%stats_first
+   do while(associated(stats))
+   !-----------------------------------------------------------------------------------------------------------
+   !--- <u_i>_xyzt --------------------------------------------------------------------------------------------
+   !-----------------------------------------------------------------------------------------------------------
+      stats%mean_xyzt(phase,1:3) = stats%mean_xyzt(phase,1:3)*(repetition-1)
+      stats%mean_xyzt(phase,1:3) = stats%mean_xyzt(phase,1:3) + stats%mean_xyz(1:3)
+      stats%mean_xyzt(phase,1:3) = stats%mean_xyzt(phase,1:3)/repetition
+   !-----------------------------------------------------------------------------------------------------------
+   !--- <u_i u_j>_xyzt ----------------------------------------------------------------------------------------
+   !-----------------------------------------------------------------------------------------------------------
+      stats%covar_xyzt(phase,1:6) = stats%covar_xyzt(phase,1:6)*repetition
+      stats%covar_xyzt(phase,1:6) = stats%covar_xyzt(phase,1:6) + stats%covar_xyz(1:6)
+      stats%covar_xyzt(phase,1:6) = stats%covar_xyzt(phase,1:6)/(repetition+1)
+      stats => stats%next
+   end do
+!===========================================================================================================
+
+!===========================================================================================================
+!=== write d_k, R_k and R(t) at the current time t=k =======================================================
+!===========================================================================================================
+   allocate(d_k(1:stats_group%n_data,1:3)); d_k = 0.
+   allocate(R_k(1:stats_group%n_data,1:6)); R_k = 0.
+   allocate(R_t(1:stats_group%n_data,1:6)); R_t = 0.
+   stats => stats_group%stats_first
+   do while(associated(stats))
+   !--- <u_i>_xyz ---------------------------------------------------------------------------------------------
+      d_k(stats%i_data,1) = stats%mean_xyz(1)
+      d_k(stats%i_data,2) = stats%mean_xyz(2)
+      d_k(stats%i_data,3) = stats%mean_xyz(3)
+   !--- <u'_i u'_j>_xyz ---------------------------------------------------------------------------------------
+      R_k(stats%i_data,1) = stats%covar_xyz(1) - stats%mean_xyz(1)*stats%mean_xyz(1)
+      R_k(stats%i_data,2) = stats%covar_xyz(2) - stats%mean_xyz(2)*stats%mean_xyz(2)
+      R_k(stats%i_data,3) = stats%covar_xyz(3) - stats%mean_xyz(3)*stats%mean_xyz(3)
+      R_k(stats%i_data,4) = stats%covar_xyz(4) - stats%mean_xyz(1)*stats%mean_xyz(2)
+      R_k(stats%i_data,5) = stats%covar_xyz(5) - stats%mean_xyz(1)*stats%mean_xyz(3)
+      R_k(stats%i_data,6) = stats%covar_xyz(6) - stats%mean_xyz(2)*stats%mean_xyz(3)
+   !--- <u'_i u'_j>_xyzt --------------------------------------------------------------------------------------
+      R_t(stats%i_data,1) = stats%covar_xyzt(phase,1) - stats%mean_xyzt(phase,1)*stats%mean_xyzt(phase,1) 
+      R_t(stats%i_data,2) = stats%covar_xyzt(phase,2) - stats%mean_xyzt(phase,2)*stats%mean_xyzt(phase,2) 
+      R_t(stats%i_data,3) = stats%covar_xyzt(phase,3) - stats%mean_xyzt(phase,3)*stats%mean_xyzt(phase,3) 
+      R_t(stats%i_data,4) = stats%covar_xyzt(phase,4) - stats%mean_xyzt(phase,1)*stats%mean_xyzt(phase,2) 
+      R_t(stats%i_data,5) = stats%covar_xyzt(phase,5) - stats%mean_xyzt(phase,1)*stats%mean_xyzt(phase,3) 
+      R_t(stats%i_data,6) = stats%covar_xyzt(phase,6) - stats%mean_xyzt(phase,2)*stats%mean_xyzt(phase,3) 
+      stats => stats%next
+   end do
+   
+   CALL num_to_string(8,write_stats_count,count_char)
+
+   CALL num_to_string(2,stats_group%group_id,id)
+   write_dir = './data_'//id//'/'
+   
+   CALL write_stats_hdf_2D(trim(write_dir)//'d_k.'//count_char,'d_k', &
+                         stats_group%n_data_tot,3,1,1,stats_group%n_data,3,stats_group%data_shift,0,d_k) 
+   CALL write_stats_hdf_2D(trim(write_dir)//'R_k.'//count_char,'R_k', &
+                          stats_group%n_data_tot,6,1,1,stats_group%n_data,6,stats_group%data_shift,0,R_k)
+   CALL write_stats_hdf_2D(trim(write_dir)//'R_t.'//count_char,'R_t', &
+                           stats_group%n_data_tot,6,1,1,stats_group%n_data,6,stats_group%data_shift,0,R_t)
+!===========================================================================================================
+
+!===========================================================================================================
+!=== integral energy for the window box ====================================================================
+!===========================================================================================================
+   write_mean = 0.
+   write_fluct = 0.
+   write_covar = 0.
+   stats => stats_group%stats_first
+   do while(associated(stats))
+      do i = 1,stats%m
+         write_mean(stats%x(i),stats%y(i),stats%z(i),1)  = stats%mean_xyzt(phase,1)
+         write_mean(stats%x(i),stats%y(i),stats%z(i),2)  = stats%mean_xyzt(phase,2)
+         write_mean(stats%x(i),stats%y(i),stats%z(i),3)  = stats%mean_xyzt(phase,3)
+         write_fluct(stats%x(i),stats%y(i),stats%z(i),1) = work1(stats%x(i),stats%y(i),stats%z(i)) - &
+                                                           write_mean(stats%x(i),stats%y(i),stats%z(i),1)
+         write_fluct(stats%x(i),stats%y(i),stats%z(i),2) = work2(stats%x(i),stats%y(i),stats%z(i)) - &
+                                                           write_mean(stats%x(i),stats%y(i),stats%z(i),2)
+         write_fluct(stats%x(i),stats%y(i),stats%z(i),3) = work3(stats%x(i),stats%y(i),stats%z(i)) - &
+                                                           write_mean(stats%x(i),stats%y(i),stats%z(i),3)
+         write_covar(stats%x(i),stats%y(i),stats%z(i),1) = R_t(stats%i_data,1)
+         write_covar(stats%x(i),stats%y(i),stats%z(i),2) = R_t(stats%i_data,2)
+         write_covar(stats%x(i),stats%y(i),stats%z(i),3) = R_t(stats%i_data,3)
+         write_covar(stats%x(i),stats%y(i),stats%z(i),4) = R_t(stats%i_data,4)
+         write_covar(stats%x(i),stats%y(i),stats%z(i),5) = R_t(stats%i_data,5)
+         write_covar(stats%x(i),stats%y(i),stats%z(i),6) = R_t(stats%i_data,6)
+      end do
+      stats => stats%next
+   end do
+
+   TKE = 0.
+   DO k = S3p, N3p
+      DO j = S2p, N2p
+         DO i = S1p, N1p
+            TKE(1) = TKE(1)+dx1p(i)*dx2p(j)*dx3p(k)*(write_mean(i,j,k,1)**2+write_mean(i,j,k,2)**2+write_mean(i,j,k,3)**2)
+            TKE(2) = TKE(2)+dx1p(i)*dx2p(j)*dx3p(k)*(write_fluct(i,j,k,1)**2+write_fluct(i,j,k,2)**2+&
+                                                     write_fluct(i,j,k,3)**2)
+         END DO
+      END DO
+   END DO
+   CALL MPI_ALLREDUCE(TKE,TKE_global,2,MPI_REAL8,MPI_SUM,COMM_CART,merror)
+   !--- Absolute kinetic energy ---
+   TKE_global = TKE_global / 2.
+   !--- Output ---
+   IF (rank == 0) THEN
+     WRITE(33+stats_group%group_id,'(3E25.17)') time, TKE_global(1:2)
+     CALL flush(33+stats_group%group_id)
+   END IF
+
+
+   !===========================================================================================================
+   !write fluctuations_fields for visualization
+   !===========================================================================================================
+   IF (write_out_vect) THEN
+
+      CALL num_to_string(8,write_count,count_char)
+      IF (rank == 0) WRITE(*,'(a,i8,a)') 'writing data fields',write_count,' ...'
+
+      CALL num_to_string(2,stats_group%group_id,id)
+      write_dir = './data_'//id//'/'
+      !    write_hdf(filename,dsetname,
+                    !SS1,SS2,SS3,NN1,NN2,NN3,vel_dir,stride,phi)
+
+      CALL write_hdf(trim(write_dir)//'dataX_'//count_char,'meanX', &
+                     S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_mean(b1L,b2L,b3L,1))
+      CALL write_hdf(trim(write_dir)//'dataY_'//count_char,'meanY', &
+                     S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_mean(b1L,b2L,b3L,2))
+      CALL write_hdf(trim(write_dir)//'dataZ_'//count_char,'meanZ', &
+                     S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_mean(b1L,b2L,b3L,3))
+      CALL write_hdf(trim(write_dir)//'dataXX_'//count_char,'covarXX', &
+                     S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_covar(b1L,b2L,b3L,1))
+      CALL write_hdf(trim(write_dir)//'dataYY_'//count_char,'covarYY', &
+                     S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_covar(b1L,b2L,b3L,2))
+      CALL write_hdf(trim(write_dir)//'dataZZ_'//count_char,'covarZZ', &
+                     S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_covar(b1L,b2L,b3L,3))
+
+      !CALL write_hdf(trim(write_dir)//'dataXY_'//count_char,'covarXY', &
+      !              S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_covar(b1L,b2L,b3L,4))
+      !CALL write_hdf(trim(write_dir)//'dataXZ_'//count_char,'covarXZ', &
+      !              S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_covar(b1L,b2L,b3L,5))
+      !CALL write_hdf(trim(write_dir)//'dataYZ_'//count_char,'covarYZ', &
+      !              S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_covar(b1L,b2L,b3L,6))
+   END IF
+
+   deallocate(d_k,R_k,R_t)
+
+  !===========================================================================================================
+
+   stats_group => stats_group%next
+end do
 
 write_stats_count = write_stats_count + 1
 
@@ -668,55 +803,68 @@ IMPLICIT NONE
 ! this is just an example/template
 
 CHARACTER(LEN=3) :: next_restart_char
+CHARACTER(LEN=2) :: id,phase_char
 TYPE(stats_group_t), pointer :: stats_group
 TYPE(stats_t), pointer :: stats
 INTEGER :: i
 REAL, ALLOCATABLE :: mean_xyzt (:,:), covar_xyzt(:,:)
+REAL :: write_mean_gbl(b1L:(N1+b1U),b2L:(N2+b2U),b3L:(N3+b3U),1:3)
 
 IF (rank == 0) WRITE(*,'(a,i3,a)') 'writing stats data for restart',restart,' ...'
 
+!========================================================================================================
+!=== neue Restart-Nr. als String fuer File-Namen ========================================================
+!========================================================================================================
+CALL num_to_string(3,restart,next_restart_char)
+!========================================================================================================
+
 IF (write_restart_yes) THEN
 
-  stats_group => stats_group_first
-  do while(associated(stats_group))
+   stats_group => stats_group_first
+   do while(associated(stats_group))
 
-     ALLOCATE(mean_xyzt(1:stats_group%n_data,1:3)); mean_xyzt = 0.
-     ALLOCATE(covar_xyzt(1:stats_group%n_data,1:6)); covar_xyzt = 0.
+      do i = 1,intervals
 
-     stats => stats_group%stats_first
-     do while(associated(stats))
-        mean_xyzt(stats%i_data,1) = stats%mean_xyzt(1)
-        mean_xyzt(stats%i_data,2) = stats%mean_xyzt(2)
-        mean_xyzt(stats%i_data,3) = stats%mean_xyzt(3)
-        covar_xyzt(stats%i_data,1) = stats%covar_xyzt(1)
-        covar_xyzt(stats%i_data,2) = stats%covar_xyzt(2)
-        covar_xyzt(stats%i_data,3) = stats%covar_xyzt(3)
-        covar_xyzt(stats%i_data,4) = stats%covar_xyzt(4)
-        covar_xyzt(stats%i_data,5) = stats%covar_xyzt(5)
-        covar_xyzt(stats%i_data,6) = stats%covar_xyzt(6)
-        stats => stats%next
+         CALL num_to_string(2,stats_group%group_id,id)
+         CALL num_to_string(2,i,phase_char)
+
+         write_mean_gbl(b1L:(N1+b1U),b2L:(N2+b2U),b3L:(N3+b3U),1:3) = mean_gbl(i,b1L:(N1+b1U),b2L:(N2+b2U),b3L:(N3+b3U),1:3)
+
+         CALL write_hdf('mean_globalX_phase_'//phase_char//'restart.'//next_restart_char,'meanX',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_mean_gbl(b1L,b2L,b3L,1))
+         CALL write_hdf('mean_globalY_phase_'//phase_char//'restart.'//next_restart_char,'meanY',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_mean_gbl(b1L,b2L,b3L,2))
+         CALL write_hdf('mean_globalZ_phase_'//phase_char//'restart.'//next_restart_char,'meanZ',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_mean_gbl(b1L,b2L,b3L,3))
+
+         ALLOCATE(mean_xyzt(1:stats_group%n_data,1:3)); mean_xyzt = 0.
+         ALLOCATE(covar_xyzt(1:stats_group%n_data,1:6)); covar_xyzt = 0.
+
+         stats => stats_group%stats_first
+         do while(associated(stats))
+            mean_xyzt(stats%i_data,1) = stats%mean_xyzt(i,1)
+            mean_xyzt(stats%i_data,2) = stats%mean_xyzt(i,2)
+            mean_xyzt(stats%i_data,3) = stats%mean_xyzt(i,3)
+            covar_xyzt(stats%i_data,1) = stats%covar_xyzt(i,1)
+            covar_xyzt(stats%i_data,2) = stats%covar_xyzt(i,2)
+            covar_xyzt(stats%i_data,3) = stats%covar_xyzt(i,3)
+            covar_xyzt(stats%i_data,4) = stats%covar_xyzt(i,4)
+            covar_xyzt(stats%i_data,5) = stats%covar_xyzt(i,5)
+            covar_xyzt(stats%i_data,6) = stats%covar_xyzt(i,6)
+            stats => stats%next
+         end do
+
+         !========================================================================================================
+         !=== Schreiben ==========================================================================================
+         !========================================================================================================
+         CALL write_stats_hdf_2D('mean_stats_'//id//'_'//phase_char//'_restart.'//next_restart_char, 'mean_stats' ,&
+                                 stats_group%n_data_tot,3,1,1,stats_group%n_data,3,stats_group%data_shift,0,mean_xyzt)
+         CALL write_stats_hdf_2D('covar_stats_'//id//'_'//phase_char//'_restart.'//next_restart_char,'covar_stats',&
+                                 stats_group%n_data_tot,6,1,1,stats_group%n_data,6,stats_group%data_shift,0,covar_xyzt)
+      
+        DEALLOCATE(mean_xyzt,covar_xyzt)
+
+        end do
+
+        stats_group => stats_group%next
      end do
-
-     !========================================================================================================
-     !=== neue Restart-Nr. als String fuer File-Namen ========================================================
-     !========================================================================================================
-     CALL num_to_string(3,restart,next_restart_char)
-     !========================================================================================================
-
-     CALL num_to_string(2,stats_group%group_id,id_char)
-
-     !========================================================================================================
-     !=== Schreiben ==========================================================================================
-     !========================================================================================================
-     CALL write_stats_hdf_2D('mean_stats'//id_char//'_restart.'//next_restart_char, 'mean_stats' ,&
-                             stats_group%n_data_tot,3,1,1,stats_group%n_data,3,stats_group%data_shift,0,mean_xyzt)
-     CALL write_stats_hdf_2D('covar_stats'//id_char//'_restart.'//next_restart_char,'covar_stats',&
-                             stats_group%n_data_tot,6,1,1,stats_group%n_data,6,stats_group%data_shift,0,covar_xyzt)
-  
-     DEALLOCATE(mean_xyzt,covar_xyzt)
-
-     stats_group => stats_group%next
-  end do
 
 END IF
 
@@ -740,10 +888,12 @@ USE usr_vars
 
 IMPLICIT NONE
 
+CHARACTER(LEN=2) :: id,phase_char
 TYPE(stats_group_t), pointer :: stats_group
 TYPE(stats_t), pointer :: stats
 INTEGER :: i,ios
-REAL, ALLOCATABLE :: mean_xyzt (:,:), covar_xyzt(:,:)
+REAL, ALLOCATABLE :: mean_xyzt (:,:), covar_xyzt(:,:),read_mean_glb
+REAL :: read_mean_gbl(b1L:(N1+b1U),b2L:(N2+b2U),b3L:(N3+b3U),1:3)
 
 IF (rank == 0) WRITE(*,'(a,i3,a)') 'reading stats data for restart',restart,' ...'
 
@@ -756,31 +906,43 @@ CALL num_to_string(3,restart,restart_char)
 stats_group => stats_group_first
 do while(associated(stats_group))
 
-  ALLOCATE(mean_xyzt(1:stats_group%n_data,1:3))
-  ALLOCATE(covar_xyzt(1:stats_group%n_data,1:6))
+  do i = 1,intervals
 
-  CALL num_to_string(2,stats_group%group_id,id_char)
-  !read the observed data 
-  CALL read_stats_hdf_2D('mean_stats'//id_char//'_restart.'//restart_char, 'mean_stats' , &
-                         stats_group%n_data_tot,3,1,1,stats_group%n_data,3,stats_group%data_shift,0,mean_xyzt)
-  CALL read_stats_hdf_2D('covar_stats'//id_char//'_restart.'//restart_char,'covar_stats', &
-                         stats_group%n_data_tot,6,1,1,stats_group%n_data,6,stats_group%data_shift,0,covar_xyzt)
+     CALL num_to_string(2,stats_group%group_id,id)
+     CALL num_to_string(2,i,phase_char)
 
-  stats => stats_group%stats_first
-  do while(associated(stats))
-     stats%mean_xyzt(1) = mean_xyzt(stats%i_data,1)
-     stats%mean_xyzt(2) = mean_xyzt(stats%i_data,2)
-     stats%mean_xyzt(3) = mean_xyzt(stats%i_data,3)
-     stats%covar_xyzt(1) = covar_xyzt(stats%i_data,1)
-     stats%covar_xyzt(2) = covar_xyzt(stats%i_data,2)
-     stats%covar_xyzt(3) = covar_xyzt(stats%i_data,3)
-     stats%covar_xyzt(4) = covar_xyzt(stats%i_data,4)
-     stats%covar_xyzt(5) = covar_xyzt(stats%i_data,5)
-     stats%covar_xyzt(6) = covar_xyzt(stats%i_data,6)
-     stats => stats%next
+     CALL read2_hdf('mean_globalX_phase_'//phase_char//'_restart.'//restart_char,'meanX',S1p,S2p,S3p,N1p,N2p,N3p,0,read_mean_gbl(b1L,b2L,b3L,1))
+     CALL read2_hdf('mean_globalY_phase_'//phase_char//'_restart.'//restart_char,'meanY',S1p,S2p,S3p,N1p,N2p,N3p,0,read_mean_gbl(b1L,b2L,b3L,2))
+     CALL read2_hdf('mean_globalZ_phase_'//phase_char//'_restart.'//restart_char,'meanZ',S1p,S2p,S3p,N1p,N2p,N3p,0,read_mean_gbl(b1L,b2L,b3L,3))
+
+     mean_gbl(i,b1L:(N1+b1U),b2L:(N2+b2U),b3L:(N3+b3U),1:3) = read_mean_gbl(b1L:(N1+b1U),b2L:(N2+b2U),b3L:(N3+b3U),1:3)
+
+     ALLOCATE(mean_xyzt(1:stats_group%n_data,1:3))
+     ALLOCATE(covar_xyzt(1:stats_group%n_data,1:6))
+
+     !read the observed data 
+     CALL read_stats_hdf_2D('mean_stats_'//id//'_'//phase_char//'_restart.'//restart_char, 'mean_stats' , &
+                            stats_group%n_data_tot,3,1,1,stats_group%n_data,3,stats_group%data_shift,0,mean_xyzt)
+     CALL read_stats_hdf_2D('covar_stats_'//id//'_'//phase_char//'_restart.'//restart_char,'covar_stats', &
+                            stats_group%n_data_tot,6,1,1,stats_group%n_data,6,stats_group%data_shift,0,covar_xyzt)
+
+     stats => stats_group%stats_first
+     do while(associated(stats))
+        stats%mean_xyzt(i,1) = mean_xyzt(stats%i_data,1)
+        stats%mean_xyzt(i,2) = mean_xyzt(stats%i_data,2)
+        stats%mean_xyzt(i,3) = mean_xyzt(stats%i_data,3)
+        stats%covar_xyzt(i,1) = covar_xyzt(stats%i_data,1)
+        stats%covar_xyzt(i,2) = covar_xyzt(stats%i_data,2)
+        stats%covar_xyzt(i,3) = covar_xyzt(stats%i_data,3)
+        stats%covar_xyzt(i,4) = covar_xyzt(stats%i_data,4)
+        stats%covar_xyzt(i,5) = covar_xyzt(stats%i_data,5)
+        stats%covar_xyzt(i,6) = covar_xyzt(stats%i_data,6)
+        stats => stats%next
+     end do
+
+     DEALLOCATE(mean_xyzt,covar_xyzt)
+   
   end do
-
-  DEALLOCATE(mean_xyzt,covar_xyzt)
 
   stats_group => stats_group%next
 end do

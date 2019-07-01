@@ -62,19 +62,6 @@
   !
   vel = 0.
  
-  ! pi = 2.*ABS(ACOS(0.))
-  ! DO k = S32B, N32B
-  !     DO j = S22B, N22B
-  !        DO i = S12B, N12B
-  !          !  vel(i,j,k,2) = vel(i,j,k,2) + interface((x1p(i)-0.75*L1)/(0.01*L1))
-  !          !  vel(i,j,k,2) = vel(i,j,k,2) + SIN(2*pi*x1p(i)/L2)
-  !          !  CALL poiseuille_parabola(0.,6.28,x3w(k),parab)
-  !          !  vel(i,j,k,1) = SIN(x1u(i)*2.*pi/L1) !x1u(i)/L1
-  !           vel(i,j,k,2) = SIN(x2v(j)*2.*pi/L2)
-  !        END DO
-  !     END DO
-  !  END DO
-
   !--- Initial Conditions for 2D-Channel flow
   !--- Parabolic velocity profile everywhere
   
@@ -86,18 +73,6 @@
     !    END DO
     ! END DO
   
-  !--- Initial Conditions for manufactured solution
-  ! DO j = S21B, N21B
-  !   DO i = S11B, N11B
-  !      vel(i,j,S31B:N31B,1) = vel_mms_u1(x1u(i),x2p(j),0.)
-  !   END DO
-  ! END DO
-  ! DO j= S22B, N22B
-  !   DO i = S12B, N12B
-  !      vel(i,j,S32B:N32B,2) = vel_mms_u2(x1p(i),x2v(j),0.)
-  !   END DO
-  ! END DO
-
   !--- Load initial conditions from hdf5-File ---
   IF (vel_initcond_file_yes .AND. restart == 0) then
      CALL load_vel_initcond_hdf5

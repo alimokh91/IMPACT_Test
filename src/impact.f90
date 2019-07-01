@@ -98,11 +98,10 @@ PROGRAM impact
   write(*,*) 'ib(1,1) = ', iB(1,1), ' n1 = ', n1 ,';'
   write(*,*) 'ib(2,1) = ', iB(2,1), ' n2 = ', n2 ,';'
   write(*,*) 'ib(3,1) = ', iB(3,1), ' n3 = ', n3 ,';'
-
-
   END IF
+
   !--- reference velocity ------------------------------------------------------------------------------------
-  U_ref = (mu_fluid*Re)/(rho_fluid*L_ref)  
+  Re = rho_fluid*U_ref*L_ref/mu_fluid
   
   !--- Determine differential coefficients -------------------------------------------------------------------
   CALL FD_coeffs

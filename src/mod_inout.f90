@@ -3524,7 +3524,7 @@ MODULE mod_inout
           WRITE(xmf,fmt1) '          </DataItem>'
           !IF (scale_output_yes) WRITE(XMF,fmt1) '          </DataItem>'
           WRITE(xmf,fmt1) '        </Attribute>'
-          !--- Covariance ------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+          !--- Covariance --------------------------------------------------------------------------------------------------------------------------------------------------
           !--- data_XX
           WRITE(xmf,fmt1) '        <Attribute Name="Covar_XX" Center="Node">'
           !IF (scale_output_yes) WRITE(xmf,fmt6) '          <DataItem ItemType="Function" Function="',U_ref,' * $0" Dimensions="',dim3,dim2,dim1,'" NumberType="Float" Precision="8">'
@@ -3549,6 +3549,32 @@ MODULE mod_inout
           WRITE(xmf,fmt1) '          </DataItem>'
           !IF (scale_output_yes) WRITE(XMF,fmt1) '          </DataItem>'
           WRITE(xmf,fmt1) '        </Attribute>'
+          !--- Kalman gain --------------------------------------------------------------------------------------------------------------------------------------------------
+          !--- data_XX
+          WRITE(xmf,fmt1) '        <Attribute Name="Gain_XX" Center="Node">'
+          !IF (scale_output_yes) WRITE(xmf,fmt6) '          <DataItem ItemType="Function" Function="',U_ref,' * $0" Dimensions="',dim3,dim2,dim1,'" NumberType="Float" Precision="8">'
+          WRITE(xmf,fmt3) '          <DataItem Format="HDF" Dimensions="',dim3,dim2,dim1,'" NumberType="Float" Precision="8">'
+          WRITE(xmf,fmt1) '            '//trim(write_dir)//'kalman_gain_XX_'//count_char//'.h5:/gainXX'
+          WRITE(xmf,fmt1) '          </DataItem>'
+          !IF (scale_output_yes) WRITE(XMF,fmt1) '          </DataItem>'
+          WRITE(xmf,fmt1) '        </Attribute>'
+          !--- data_YY
+          WRITE(xmf,fmt1) '        <Attribute Name="Gain_YY" Center="Node">'
+          !IF (scale_output_yes) WRITE(xmf,fmt6) '          <DataItem ItemType="Function" Function="',U_ref,' * $0" Dimensions="',dim3,dim2,dim1,'" NumberType="Float" Precision="8">'
+          WRITE(xmf,fmt3) '          <DataItem Format="HDF" Dimensions="',dim3,dim2,dim1,'" NumberType="Float" Precision="8">'
+          WRITE(xmf,fmt1) '            '//trim(write_dir)//'kalman_gain_YY_'//count_char//'.h5:/gainYY'
+          WRITE(xmf,fmt1) '          </DataItem>'
+          !IF (scale_output_yes) WRITE(XMF,fmt1) '          </DataItem>'
+          WRITE(xmf,fmt1) '        </Attribute>'
+          !--- data_ZZ
+          WRITE(xmf,fmt1) '        <Attribute Name="Gain_ZZ" Center="Node">'
+          !IF (scale_output_yes) WRITE(xmf,fmt6) '          <DataItem ItemType="Function" Function="',U_ref,' * $0" Dimensions="',dim3,dim2,dim1,'" NumberType="Float" Precision="8">'
+          WRITE(xmf,fmt3) '          <DataItem Format="HDF" Dimensions="',dim3,dim2,dim1,'" NumberType="Float" Precision="8">'
+          WRITE(xmf,fmt1) '            '//trim(write_dir)//'kalman_gain_ZZ_'//count_char//'.h5:/gainZZ'
+          WRITE(xmf,fmt1) '          </DataItem>'
+          !IF (scale_output_yes) WRITE(XMF,fmt1) '          </DataItem>'
+          WRITE(xmf,fmt1) '        </Attribute>'
+
       END IF
     END IF
     WRITE(xmf,fmt1) '    </Grid>'

@@ -799,9 +799,11 @@ MODULE mod_vars
   
   INTEGER , TARGET       ::  stride_large(1:3), stride_med(1:3), stride_small(1:3)
   LOGICAL                ::  write_large, write_med, write_small
-  REAL                   ::  time_out_kalm, dtime_out_kalm
+	INTEGER                ::  interval
+	REAL                   ::  time_out_vect, dtime_out_vect
   REAL                   ::  time_out_scal, dtime_out_scal
-  REAL                   ::  time_out_vect, dtime_out_vect
+  REAL                   ::  time_out_kalm, dtime_out_kalm
+	REAL   , ALLOCATABLE   ::  dtime_kalm_phases(:)
   
   LOGICAL                ::  write_out_kalm, write_out_scal, write_out_vect
   LOGICAL                ::  new_dtime, finish_yes
@@ -835,6 +837,7 @@ MODULE mod_vars
   LOGICAL                ::  write_test_yes
   LOGICAL                ::  write_covariance_yes !for writing covariance into xdmf file    defined in config.txt
   INTEGER                ::  num_windows !define in usr_stats and for write covariance into xdmf
+  INTEGER                ::  intervals   !define number of intervals in the output of a periodic flow 
 
   !--- globale Laufindizes -----------------------------------------------------------------------------------
   INTEGER                ::  direction
@@ -1566,9 +1569,11 @@ MODULE mod_vars
   
   INTEGER                ::  stride_large(1:3), stride_med(1:3), stride_small(1:3)
   LOGICAL                ::  write_large, write_med, write_small
-  REAL                   ::  time_out_kalm, dtime_out_kalm
-  REAL                   ::  time_out_scal, dtime_out_scal
+	INTEGER                ::  interval
   REAL                   ::  time_out_vect, dtime_out_vect
+  REAL                   ::  time_out_scal, dtime_out_scal
+  REAL                   ::  time_out_kalm, dtime_out_kalm 
+	REAL   , ALLOCATABLE   ::  dtime_kalm_phases(:)
   
   LOGICAL                ::  write_out_kalm, write_out_scal, write_out_vect
   LOGICAL                ::  new_dtime, finish_yes

@@ -1,4 +1,9 @@
-prog/data/
+prog/*h5
+prog/*xmf
+prog/turb_stats*
+prog/test*
+prog/tke*
+!prog/data/
 !prog/data/config.txt
 !prog/data/move.sh
 **.mod

@@ -481,6 +481,10 @@
   !dtime_out_kalm = 1.
     IF (INDEX(text,'dtime_out_kalm'              ) == 1) READ(UNIT=text,FMT=*) dummy, dtime_out_kalm
   
+  !--- number of intervals for the period (statistics) ---
+  !dtime_out_scal = 1.
+    IF (INDEX(text,'intervals'                      ) == 1) READ(UNIT=text,FMT=*) dummy, intervals
+
   !--- compute and write lambda2 fields from velocity ---
   !write_lambda2_yes = .TRUE.
     IF (INDEX(text,'write_lambda2_yes'           ) == 1) READ(UNIT=text,FMT=*) dummy, write_lambda2_yes
