@@ -2,7 +2,7 @@ import unittest
 import subprocess as sp
 import os
 import numpy as np
-from mr_io import SpatialMRI, SpaceTimeMRI
+from mr_io import SpatialMRI, SpaceTimeMRI, HPCPredictMRI
 
 class TestSpatialMRIBidirectional(unittest.TestCase):
      
@@ -132,6 +132,77 @@ class TestSpaceTimeMRIBidirectional(unittest.TestCase): # FIXME: coordinates tes
             os.remove(f) 
 
 
+class TestHPCPredictMRIBidirectional(unittest.TestCase): # FIXME: coordinates test...
+    
+    # number of Fortran MPI processes
+    mpi_proc = 2**7
+
+    # Filenames
+    filename_prefix = "mr_io_test_parallel_hpc_predict"
+    filename_in = filename_prefix + "_in.h5"
+    filename_out = filename_prefix + "_out.h5"
+    filename_out_rank = filename_prefix + "_%s.out"
+    filename_err_rank = filename_prefix + "_%s.err"
+
+    def setUp(self):
+        # Initialize the MRI data
+        #geometry = [np.random.rand(4), np.random.rand(2), np.random.rand(7)] 
+        time = np.random.rand(11)
+        geometry = [np.random.rand(67), np.random.rand(43), np.random.rand(29)]
+        velocity_mean = np.random.rand(67,43,29,11,3)        
+        velocity_cov = np.random.rand(67,43,29,11,6)        
+        self.mri = HPCPredictMRI(geometry, time, velocity_mean, velocity_cov)
+
+    def test_communicator(self):
+
+        # Write HDF5 from Python
+        self.mri.write_hdf5(TestHPCPredictMRIBidirectional.filename_in)
+
+        ## Read HDF5 from Fortran
+        fort_command = "fortran/mr_io_test_parallel_reader_writer_hpc_predict %s %s 1> %s 2> %s" % \
+                               (TestHPCPredictMRIBidirectional.filename_in,
+                                TestHPCPredictMRIBidirectional.filename_out,
+                                TestHPCPredictMRIBidirectional.filename_out_rank % ("${PMI_RANK}"),
+                                TestHPCPredictMRIBidirectional.filename_err_rank % ("${PMI_RANK}"))
+        print(fort_command)
+        fort = sp.run(["mpiexec","-np", "%d" % (TestHPCPredictMRIBidirectional.mpi_proc), \
+                       "bash","-c",fort_command],
+                                stdout=sp.PIPE, stderr=sp.PIPE, check=True)
+
+        # Read HDF5 from Fortran
+        #fort = sp.run(["mpiexec","-np", "%d" % (TestHPCPredictMRIBidirectionalBidirectional.mpi_proc), \
+        #               "bash","-c","echo  \"spatial-mri\n 1 3 3\n %s \n \" 1> %s 2> %s" % \
+        #                       (" ".join(9 * ["${PMI_RANK}"]), 
+        #                        TestHPCPredictMRIBidirectionalBidirectional.filename_out_rank % ("${PMI_RANK}"), 
+        #                        TestHPCPredictMRIBidirectionalBidirectional.filename_err_rank % ("${PMI_RANK}"))], 
+        #                        stdout=sp.PIPE, stderr=sp.PIPE, check=True)
+
+        
+        
+        # Check for equality. NOTE: Possibly regexpr for parsing would make this more elegant
+        fort_stdout = fort.stdout.decode("utf-8")
+        fort_stderr = fort.stderr.decode("utf-8")        
+        print(fort_stderr)
+        print(fort_stdout)
+        #import pdb; pdb.set_trace()
+
+        out_mri = HPCPredictMRI.read_hdf5(TestHPCPredictMRIBidirectional.filename_out)
+
+        for i in range(3):
+            self.assertTrue(np.allclose(out_mri.geometry[i], self.mri.geometry[i], rtol=1e-14))
+        self.assertTrue(np.allclose(out_mri.time, self.mri.time, rtol=1e-14))
+#        self.assertTrue(np.array_equal(out_mri.voxel_feature.shape, self.mri.voxel_feature.shape))        
+        self.assertTrue(np.allclose(out_mri.velocity_mean, self.mri.velocity_mean, rtol=1e-14))
+        self.assertTrue(np.allclose(out_mri.velocity_cov, self.mri.velocity_cov, rtol=1e-14))
+    
+    def tearDown(self):
+        # Clean up file
+        files = [TestHPCPredictMRIBidirectional.filename_in, \
+                 TestHPCPredictMRIBidirectional.filename_out] + \
+                [TestHPCPredictMRIBidirectional.filename_out_rank % (mpi_rank) for mpi_rank in range(TestHPCPredictMRIBidirectional.mpi_proc)] + \
+                [TestHPCPredictMRIBidirectional.filename_err_rank % (mpi_rank) for mpi_rank in range(TestHPCPredictMRIBidirectional.mpi_proc)]
+        for f in files:
+            os.remove(f) 
 
 
 if __name__ == '__main__':

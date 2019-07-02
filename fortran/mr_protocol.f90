@@ -5,6 +5,8 @@ use hdf5
 implicit none
 
 
+! ************************ SpatialMRI ************************
+
 character(len=11) :: SpatialMRI_group_name = "spatial-mri"
 
 type SpatialMRI
@@ -24,6 +26,8 @@ type DistSpatialMRI
      type(DistSpatialFeature) :: voxel_feature
 end type
 
+
+! ************************ SpaceTimeMRI ************************
 
 character(len=14) :: SpaceTimeMRI_group_name = "space-time-mri"
 
@@ -70,6 +74,48 @@ type DistSpacetimeMRI
      type(DistSpacetimeFeature) :: voxel_feature
 end type
 
+
+! ************************ HPCPredictMRI ************************
+
+character(len=16) :: HPCPredictMRI_group_name = "hpc-predict-mri"
+
+type HPCPredictMRI
+     ! time
+     real*8, dimension(:), allocatable :: t_coordinates
+     integer :: t_dim
+
+     ! geometry
+     real*8, dimension(:), allocatable :: x_coordinates
+     integer :: x_dim
+     real*8, dimension(:), allocatable :: y_coordinates
+     integer :: y_dim
+     real*8, dimension(:), allocatable :: z_coordinates
+     integer :: z_dim
+
+     ! velocity mean and covariance
+     real*8, dimension(:,:,:,:,:), allocatable :: velocity_mean
+     integer, dimension(5) :: velocity_mean_dims
+     real*8, dimension(:,:,:,:,:), allocatable :: velocity_cov
+     integer, dimension(5) :: velocity_cov_dims
+end type
+
+type DistHPCPredictMRI
+     ! time
+     real*8, dimension(:), allocatable :: t_coordinates
+     integer :: t_dim
+
+     ! geometry
+     real*8, dimension(:), allocatable :: x_coordinates
+     integer :: x_dim
+     real*8, dimension(:), allocatable :: y_coordinates
+     integer :: y_dim
+     real*8, dimension(:), allocatable :: z_coordinates
+     integer :: z_dim
+
+     ! velocity mean and covariance
+     type(DistSpacetimeFeature) :: velocity_mean
+     type(DistSpacetimeFeature) :: velocity_cov
+end type
 
 
 end module mr_protocol

@@ -44,6 +44,8 @@ end subroutine mr_io_handle_mpi_error_
 #endif
 
 
+! ************************ DistSpaceTimeMRI ************************
+
 subroutine mr_io_read_parallel_spacetime_feature(mpi_comm, grp_id, feature_name, &
                                                  feature_array, feature_offset, feature_shape, &
                                                  time_offset, time_dim) !, feature_halo_shape)
@@ -717,5 +719,169 @@ subroutine mr_io_write_parallel_spacetime(mpi_comm, mpi_info, path, mri_inst)
 
 end subroutine mr_io_write_parallel_spacetime
 
+
+! ************************ DistHPCPredictMRI ************************
+
+subroutine mr_io_read_parallel_hpcpredict(mpi_comm, mpi_info, path, mri_inst)
+
+  implicit none
+
+  character(len=*), intent(in) :: path
+  INTEGER, intent (in) :: mpi_comm, mpi_info
+  type(DistHPCPredictMRI), intent(out) :: mri_inst
+
+  INTEGER(HID_T) :: file_id       ! File identifier
+  INTEGER(HID_T) :: grp_id        ! Group identifier
+
+  INTEGER(HID_T) :: plist_id      ! Property list identifier
+
+  INTEGER     ::   error ! Error flag
+
+  ! Initialize FORTRAN interface.
+  CALL h5open_f(error)
+  mr_io_handle_error(error)
+
+  ! Setup file access property list with parallel I/O access.
+  CALL h5pcreate_f(H5P_FILE_ACCESS_F, plist_id, error)
+  mr_io_handle_error(error)
+
+  CALL h5pset_fapl_mpio_f(plist_id, mpi_comm, mpi_info, error)
+  mr_io_handle_error(error)
+
+  ! Open existing file collectively
+  CALL h5fopen_f(trim(path), H5F_ACC_RDWR_F, file_id, error, access_prp = plist_id)
+  mr_io_handle_error(error)
+
+  CALL h5pclose_f(plist_id, error)
+  mr_io_handle_error(error)
+
+  ! Open an existing group
+  CALL h5gopen_f(file_id, HPCPredictMRI_group_name, grp_id, error)
+  mr_io_handle_error(error)
+
+  ! Read time coordinates
+  CALL mr_io_read_parallel_coordinates(mpi_comm, grp_id, "t", &
+                                       mri_inst%t_coordinates)
+
+  ! Read coordinates
+  CALL mr_io_read_parallel_coordinates(mpi_comm, grp_id, "x", &
+                                       mri_inst%x_coordinates)
+  CALL mr_io_read_parallel_coordinates(mpi_comm, grp_id, "y", &
+                                       mri_inst%y_coordinates)
+  CALL mr_io_read_parallel_coordinates(mpi_comm, grp_id, "z", &
+                                       mri_inst%z_coordinates)
+
+
+  ! Read spatial feature
+  CALL mr_io_read_parallel_spacetime_feature(mpi_comm, grp_id, "velocity_mean", &
+                                             mri_inst%velocity_mean%array, &
+                                             mri_inst%velocity_mean%offset, &
+                                             mri_inst%velocity_mean%dims, &
+                                             mri_inst%velocity_mean%time_offset, &
+                                             mri_inst%velocity_mean%time_dim)
+  CALL mr_io_read_parallel_spacetime_feature(mpi_comm, grp_id, "velocity_cov", &
+                                             mri_inst%velocity_cov%array, &
+                                             mri_inst%velocity_cov%offset, &
+                                             mri_inst%velocity_cov%dims, &
+                                             mri_inst%velocity_cov%time_offset, &
+                                             mri_inst%velocity_cov%time_dim)
+
+  ! Close the group
+  CALL h5gclose_f(grp_id, error)
+  mr_io_handle_error(error)
+
+  ! Close the file.
+  CALL h5fclose_f(file_id, error)
+  mr_io_handle_error(error)
+
+  ! Close FORTRAN interface.
+  CALL h5close_f(error)
+  mr_io_handle_error(error)
+
+end subroutine mr_io_read_parallel_hpcpredict
+
+
+
+subroutine mr_io_write_parallel_hpcpredict(mpi_comm, mpi_info, path, mri_inst)
+
+  implicit none
+
+  character(len=*), intent(in) :: path
+  INTEGER, intent (in) :: mpi_comm, mpi_info
+  type(DistHPCPredictMRI), intent(in) :: mri_inst
+
+  INTEGER(HID_T) :: file_id       ! File identifier
+  INTEGER(HID_T) :: grp_id        ! Group identifier
+
+  INTEGER(HID_T) :: plist_id      ! Property list identifier
+
+  INTEGER     ::   error ! Error flag
+
+  ! Initialize FORTRAN interface.
+  CALL h5open_f(error)
+  mr_io_handle_error(error)
+
+  ! Create a file collectively
+  CALL h5pcreate_f(H5P_FILE_ACCESS_F, plist_id, error)
+  mr_io_handle_error(error)
+
+  CALL h5pset_fapl_mpio_f(plist_id, mpi_comm, mpi_info, error)
+  mr_io_handle_error(error)
+
+  CALL h5fcreate_f(trim(path), H5F_ACC_TRUNC_F, file_id, error, access_prp = plist_id)
+  mr_io_handle_error(error)
+
+  CALL h5pclose_f(plist_id, error)
+  mr_io_handle_error(error)
+
+  ! Create a new group collectively
+  CALL h5pcreate_f(H5P_GROUP_CREATE_F, plist_id, error) ! FIXME: Not completely sure about flag
+  mr_io_handle_error(error)
+
+  CALL h5gcreate_f(file_id, HPCPredictMRI_group_name, grp_id, error, gcpl_id=plist_id)
+  mr_io_handle_error(error)
+
+  CALL h5pclose_f(plist_id, error)
+  mr_io_handle_error(error)
+
+!   print *, mri_inst%voxel_feature%dims
+!   print *, mri_inst%voxel_feature%offset
+!   print *, shape(mri_inst%voxel_feature%array)
+  CALL mr_io_write_parallel_coordinates(mpi_comm, grp_id, "t", &
+                                        mri_inst%t_coordinates)
+  CALL mr_io_write_parallel_coordinates(mpi_comm, grp_id, "x", &
+                                        mri_inst%x_coordinates)
+  CALL mr_io_write_parallel_coordinates(mpi_comm, grp_id, "y", &
+                                        mri_inst%y_coordinates)
+  CALL mr_io_write_parallel_coordinates(mpi_comm, grp_id, "z", &
+                                        mri_inst%z_coordinates)
+
+  ! Read spatial feature
+  CALL mr_io_write_parallel_spacetime_feature(mpi_comm, grp_id, "velocity_mean", &
+                                           mri_inst%velocity_mean%array, &
+                                           mri_inst%velocity_mean%offset, &
+                                           mri_inst%velocity_mean%dims, &
+                                           mri_inst%velocity_mean%time_offset, &
+                                           mri_inst%velocity_mean%time_dim)
+  CALL mr_io_write_parallel_spacetime_feature(mpi_comm, grp_id, "velocity_cov", &
+                                           mri_inst%velocity_cov%array, &
+                                           mri_inst%velocity_cov%offset, &
+                                           mri_inst%velocity_cov%dims, &
+                                           mri_inst%velocity_cov%time_offset, &
+                                           mri_inst%velocity_cov%time_dim)
+
+  ! Close the group
+  CALL h5gclose_f(grp_id, error)
+  mr_io_handle_error(error)
+
+  ! Close the file.
+  CALL h5fclose_f(file_id, error)
+  mr_io_handle_error(error)
+
+  ! Close FORTRAN interface.
+  CALL h5close_f(error)
+  mr_io_handle_error(error)
+
+end subroutine mr_io_write_parallel_hpcpredict
 
 end module mr_io_parallel_spacetime

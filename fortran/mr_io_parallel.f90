@@ -42,6 +42,7 @@ end subroutine mr_io_handle_mpi_error_
 
 #endif
 
+! ************************ Domain/Hyperslab decomposition ************************
 
 subroutine mr_io_parallel_spatial_hyperslap_compute(mpi_comm, dims_file, offset_file, dims_mem)
 
@@ -151,6 +152,8 @@ INTEGER function mr_io_parallel_spatial_hyperslab_get_type(feature_shape, featur
 
 end function mr_io_parallel_spatial_hyperslab_get_type
 
+
+! ************************ DistSpatialMRI ************************
 
 subroutine mr_io_read_parallel_spatial_feature(mpi_comm, grp_id, feature_name, &
                                                feature_array, feature_offset, feature_shape) !, feature_halo_shape)

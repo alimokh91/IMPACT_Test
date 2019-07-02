@@ -15,12 +15,17 @@ mpifort mr_io_example_space_time.o mr_io.o mr_io_parallel.o  mr_protocol.o -o mr
 
 mpifort mr_io_test_reader.o mr_io.o mr_io_parallel.o  mr_protocol.o -o mr_io_test_reader -L${HDF5_DIR}/lib -Wl,-rpath=${HDF5_DIR}/lib -lhdf5_fortran
 mpifort mr_io_test_reader_space_time.o mr_io.o mr_io_parallel.o  mr_protocol.o -o mr_io_test_reader_space_time -L${HDF5_DIR}/lib -Wl,-rpath=${HDF5_DIR}/lib -lhdf5_fortran
+mpifort mr_io_test_reader_hpc_predict.o mr_io.o mr_io_parallel.o  mr_protocol.o -o mr_io_test_reader_hpc_predict -L${HDF5_DIR}/lib -Wl,-rpath=${HDF5_DIR}/lib -lhdf5_fortran
 
 mpifort mr_io_test_parallel_reader.o mr_io.o mr_io_parallel.o  mr_protocol.o -o mr_io_test_parallel_reader -L${HDF5_DIR}/lib -Wl,-rpath=${HDF5_DIR}/lib -lhdf5_fortran
 mpifort mr_io_test_parallel_reader_space_time.o mr_io.o mr_io_parallel.o mr_io_parallel_spacetime.o  mr_protocol.o -o mr_io_test_parallel_reader_space_time -L${HDF5_DIR}/lib -Wl,-rpath=${HDF5_DIR}/lib -lhdf5_fortran
+mpifort mr_io_test_parallel_reader_hpc_predict.o mr_io.o mr_io_parallel.o mr_io_parallel_spacetime.o  mr_protocol.o -o mr_io_test_parallel_reader_hpc_predict -L${HDF5_DIR}/lib -Wl,-rpath=${HDF5_DIR}/lib -lhdf5_fortran
 
 mpifort mr_io_test_reader_writer.o mr_io.o mr_io_parallel.o  mr_protocol.o -o mr_io_test_reader_writer -L${HDF5_DIR}/lib -Wl,-rpath=${HDF5_DIR}/lib -lhdf5_fortran
 mpifort mr_io_test_reader_writer_space_time.o mr_io.o mr_io_parallel.o  mr_protocol.o -o mr_io_test_reader_writer_space_time -L${HDF5_DIR}/lib -Wl,-rpath=${HDF5_DIR}/lib -lhdf5_fortran
+mpifort mr_io_test_reader_writer_hpc_predict.o mr_io.o mr_io_parallel.o  mr_protocol.o -o mr_io_test_reader_writer_hpc_predict -L${HDF5_DIR}/lib -Wl,-rpath=${HDF5_DIR}/lib -lhdf5_fortran
+
 
 mpifort mr_io_test_parallel_reader_writer.o mr_io.o mr_io_parallel.o  mr_protocol.o -o mr_io_test_parallel_reader_writer -L${HDF5_DIR}/lib -Wl,-rpath=${HDF5_DIR}/lib -lhdf5_fortran
 mpifort mr_io_test_parallel_reader_writer_space_time.o mr_io.o mr_io_parallel.o  mr_io_parallel_spacetime.o  mr_protocol.o -o mr_io_test_parallel_reader_writer_space_time -L${HDF5_DIR}/lib -Wl,-rpath=${HDF5_DIR}/lib -lhdf5_fortran
+mpifort mr_io_test_parallel_reader_writer_hpc_predict.o mr_io.o mr_io_parallel.o  mr_io_parallel_spacetime.o  mr_protocol.o -o mr_io_test_parallel_reader_writer_hpc_predict -L${HDF5_DIR}/lib -Wl,-rpath=${HDF5_DIR}/lib -lhdf5_fortran
