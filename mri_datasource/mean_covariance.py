@@ -1,13 +1,13 @@
 import h5py
 
 import numpy as np
-from numpy import arctan2, sqrt, pi
 
 import glob
 
 
 
 import argparse
+from mr_io import HPCPredictMRI # Requires adding ../python to PYTHONPATH
 
 # Parse data input and output directories
 def parse_args():
@@ -47,12 +47,14 @@ def check_if_coordinates_are_identical(flist):
         assert(all(np.equal(Y_coord, np.array(data[:,1]))))
         assert(all(np.equal(Z_coord, np.array(data[:,2]))))
 
-def get_conversion(X_coord, Y_coord, Z_coord):
+def get_spatial_conversion(X_coord, Y_coord, Z_coord):
     # Compute uniaxial coordinate values
     x, x_ids = np.unique(X_coord, return_inverse=True)
     y, y_ids = np.unique(Y_coord, return_inverse=True)
     z, z_ids = np.unique(Z_coord, return_inverse=True)
-
+    
+    def get_coordinates():
+        return x, y, z
     def convert_scalar(coord):
         return np.flip(coord.reshape(z.size, y.size, x.size), axis=1).transpose(2,1,0)
     def convert_vector(vect):
@@ -90,7 +92,7 @@ def get_conversion(X_coord, Y_coord, Z_coord):
 
     # End of debugging output
 
-    return convert_scalar, convert_vector
+    return convert_scalar, convert_vector, get_coordinates
 
 args = parse_args()
 
@@ -99,19 +101,18 @@ flist = glob.glob(args.input + '/*masked.npy')
 
 check_if_coordinates_are_identical(flist)
 X_coord, Y_coord, Z_coord = read_coordinates(flist[0])
-convert_scalar, convert_vector = get_conversion(X_coord, Y_coord, Z_coord)
+convert_scalar_to_spatial, convert_vector_to_spatial, get_coordinates = get_spatial_conversion(X_coord, Y_coord, Z_coord)
 
 if 1: # Examples of applying convert_scalar/convert_vector to scalar/vectorial quantities based  (can be left out without side-effect)
     # This transformation  has to be applied to every scalar quantity based on the same grid (such as uniaxial coordinate)
-    X_coord_corr = convert_scalar(X_coord)
+    X_coord_corr = convert_scalar_to_spatial(X_coord)
     
     coords = np.stack([X_coord, Y_coord, Z_coord], axis=1)
     velocity = read_velocity(flist[0])
     
     # This transformation  has to be applied to every vectorial quantity based on the same grid (such as velocity field)
-    coords_corr = convert_vector(coords)
-    velocity_corr = convert_vector(velocity)
-
+    coords_corr = convert_vector_to_spatial(coords)
+    velocity_corr = convert_vector_to_spatial(velocity)
 
 
 # calculate mean
@@ -219,3 +220,19 @@ print('X_max: ',np.amax(X_coord))
 print('Y_max: ',np.amax(Y_coord))
 print('Z_max: ',np.amax(Z_coord))
 
+
+geometry = get_coordinates()
+time = np.array([0.])
+velocity_mean = convert_vector_to_spatial(np.stack([FU_mean, FV_mean, FW_mean], axis=1))
+velocity_cov = convert_vector_to_spatial(np.stack([R[:,0],R[:,4],R[:,8],R[:,1],R[:,2],R[:,5]], axis=1))
+ 
+# convert to time slice
+def convert_spatial_to_time_slice(voxel_feature):
+    sh = voxel_feature.shape
+    return voxel_feature.reshape(*sh[:3], 1, sh[3])
+         
+hpc_predict_mri = HPCPredictMRI(geometry=geometry,
+                                time=time,
+                                velocity_mean=convert_spatial_to_time_slice(velocity_mean),
+                                velocity_cov=convert_spatial_to_time_slice(velocity_cov))
+hpc_predict_mri.write_hdf5(args.output + '/bern_experimental_dataset_hpc_predict_mri.h5')
