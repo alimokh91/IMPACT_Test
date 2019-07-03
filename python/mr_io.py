@@ -34,6 +34,9 @@ def write_space_time_voxel_feature(grp, name, voxel_feature):
     voxel_feature_transposed = voxel_feature.transpose((2,1,0,3,4))
     ds = grp.create_dataset(name, voxel_feature_transposed.shape, data=voxel_feature_transposed, dtype=voxel_feature_transposed.dtype)
     
+def write_space_time_voxel_matrix_feature(grp, name, voxel_feature):
+    voxel_feature_transposed = voxel_feature.transpose((2,1,0,3,5,4))
+    ds = grp.create_dataset(name, voxel_feature_transposed.shape, data=voxel_feature_transposed, dtype=voxel_feature_transposed.dtype)
 
 class SpaceTimeMRI:
     group_name = "space-time-mri"
@@ -90,7 +93,7 @@ class HPCPredictMRI:
             grp = f.create_group(HPCPredictMRI.group_name)
             write_space_time_coordinates(grp, self.geometry, self.time)
             write_space_time_voxel_feature(grp, "velocity_mean", self.velocity_mean)
-            write_space_time_voxel_feature(grp, "velocity_cov", self.velocity_cov)
+            write_space_time_voxel_matrix_feature(grp, "velocity_cov", self.velocity_cov)
 
     def read_hdf5(path):
         with h5py.File(path, "r") as f:
@@ -99,4 +102,4 @@ class HPCPredictMRI:
                                           for coord_name in ["x_coordinates", "y_coordinates", "z_coordinates"]],
                                 time=f[HPCPredictMRI.group_name]["t_coordinates"][()],
                                 velocity_mean=f[HPCPredictMRI.group_name]["velocity_mean"][()].transpose((2,1,0,3,4)),
-                                velocity_cov=f[HPCPredictMRI.group_name]["velocity_cov"][()].transpose((2,1,0,3,4)))
+                                velocity_cov=f[HPCPredictMRI.group_name]["velocity_cov"][()].transpose((2,1,0,3,5,4)))

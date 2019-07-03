@@ -67,7 +67,7 @@ class TestHPCPredictMRIBidirectional(unittest.TestCase):
         time = np.random.rand(17)
         geometry = [np.random.rand(23), np.random.rand(13), np.random.rand(19)]
         velocity_mean = np.random.rand(23,13,19,17,3)
-        velocity_cov = np.random.rand(23,13,19,17,6)
+        velocity_cov = np.random.rand(23,13,19,17,3,5)
         self.mri = HPCPredictMRI(geometry, time, velocity_mean, velocity_cov)
 
     def test_communicator(self):
@@ -79,7 +79,7 @@ class TestHPCPredictMRIBidirectional(unittest.TestCase):
         print(fort.stderr.decode("utf-8"))
 
         out_mri = HPCPredictMRI.read_hdf5("mr_io_test_hpc_predict_out.h5")
-                
+            
         for i in range(3):
             self.assertTrue(np.allclose(out_mri.geometry[i], self.mri.geometry[i], rtol=1e-14))
         self.assertTrue(np.allclose(out_mri.time, self.mri.time, rtol=1e-14))

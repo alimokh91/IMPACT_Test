@@ -261,7 +261,7 @@ class TestHPCPredictMRI(unittest.TestCase): # FIXME: coordinates test...
         time = np.random.rand(11)
         geometry = [np.random.rand(67), np.random.rand(43), np.random.rand(29)]
         velocity_mean = np.random.rand(67,43,29,11,3)        
-        velocity_cov = np.random.rand(67,43,29,11,6)        
+        velocity_cov = np.random.rand(67,43,29,11,3,5)        
         self.mri = HPCPredictMRI(geometry, time, velocity_mean, velocity_cov)
         block_dims, dims_mem, dims_mem_boundary = spatial_hyperslab_dims(TestHPCPredictMRI, self.mri.velocity_mean)
         print(block_dims)
@@ -379,32 +379,33 @@ class TestHPCPredictMRI(unittest.TestCase): # FIXME: coordinates test...
                 fort_full_time_dim = np.fromstring(fort_full_time_dim_str, dtype=int, sep=' ')[0]
                 fort_time_offset = np.fromstring(fort_time_offset_str, dtype=int, sep=' ')[0]
                 fort_time_dim = np.fromstring(fort_time_dim_str, dtype=int, sep=' ')[0]                
-                fort_vector_dim = np.fromstring(fort_vector_dim_str, dtype=int, sep=' ')[0]                
+                fort_vector_dim = np.fromstring(fort_vector_dim_str, dtype=int, sep=' ')[:2]                
                 fort_array = np.fromstring(fort_array_str, dtype=float, sep=' ')
 
                 #import pdb; pdb.set_trace()
-                fort_array = fort_array.reshape(np.flip([fort_vector_dim, fort_time_dim-fort_time_offset] + list(fort_dims))).transpose((2,1,0,3,4))
+                fort_array = fort_array.reshape(np.flip([*fort_vector_dim, fort_time_dim-fort_time_offset] + list(fort_dims))).transpose((2,1,0,3,5,4))
                 
                 block_id = (mpi_rank % block_dims[0], (mpi_rank // block_dims[0]) % block_dims[1], mpi_rank // (block_dims[0]* block_dims[1]) )
-                hyperslab_offset = np.array([dims_mem[i]*block_id[i] for i in range(3)] + [0, 0])
-                hyperslab_shape  = np.array([dims_mem[i] if block_id[i] + 1 < block_dims[i] else dims_mem_boundary[i] for i in range(3)] + [self.mri.velocity_cov.shape[i] for i in range(3,5)])
+                hyperslab_offset = np.array([dims_mem[i]*block_id[i] for i in range(3)] + [0, 0, 0])
+                hyperslab_shape  = np.array([dims_mem[i] if block_id[i] + 1 < block_dims[i] else dims_mem_boundary[i] for i in range(3)] + [self.mri.velocity_cov.shape[i] for i in range(3,6)])
                 #mpi_size = TestHPCPredictMRI.mpi_proc
                 #hyperslab_shape = self.mri.velocity_cov.shape[:2] + ( (self.mri.velocity_cov.shape[2]+mpi_size-1)//mpi_size if mpi_rank + 1 != mpi_size else (self.mri.velocity_cov.shape[2] % mpi_size if self.mri.velocity_cov.shape[2] % mpi_size !=0 else self.mri.velocity_cov.shape[2] / mpi_size ),)
                 #hyperslab_offset = (0,0) + (mpi_rank*((self.mri.velocity_cov.shape[2]+mpi_size-1)//mpi_size),)
                 self.assertTrue(np.array_equal(fort_full_dims, self.mri.velocity_cov.shape[:3]))
                 self.assertTrue(fort_full_time_dim == self.mri.velocity_cov.shape[3])
-                self.assertTrue(fort_vector_dim == self.mri.velocity_cov.shape[4])
+                self.assertTrue( np.array_equal(fort_vector_dim, self.mri.velocity_cov.shape[4:6]) )
                 
-                self.assertTrue(np.array_equal(list(fort_offset) + [fort_time_offset, 0], hyperslab_offset))
-                self.assertTrue(np.array_equal(list(fort_dims) + [fort_time_dim-fort_time_offset, fort_vector_dim], hyperslab_shape))
-                #import pdb; pdb.set_trace()
+                self.assertTrue(np.array_equal(list(fort_offset) + [fort_time_offset, 0, 0], hyperslab_offset))
+                self.assertTrue(np.array_equal(list(fort_dims) + [fort_time_dim-fort_time_offset, *fort_vector_dim], hyperslab_shape))
+
                 self.assertTrue(np.allclose(fort_array, 
                                 np.reshape(self.mri.velocity_cov[ \
                                            hyperslab_offset[0]:hyperslab_offset[0]+hyperslab_shape[0],
                                            hyperslab_offset[1]:hyperslab_offset[1]+hyperslab_shape[1],
                                            hyperslab_offset[2]:hyperslab_offset[2]+hyperslab_shape[2],
                                            hyperslab_offset[3]:hyperslab_offset[3]+hyperslab_shape[3],
-                                           hyperslab_offset[4]:hyperslab_offset[4]+hyperslab_shape[4]], hyperslab_shape), rtol=1e-14))
+                                           hyperslab_offset[4]:hyperslab_offset[4]+hyperslab_shape[4],
+                                           hyperslab_offset[5]:hyperslab_offset[5]+hyperslab_shape[5]], hyperslab_shape), rtol=1e-14))
         
 
     

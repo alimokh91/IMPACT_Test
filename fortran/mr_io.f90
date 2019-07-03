@@ -517,6 +517,92 @@ end subroutine mr_io_write_spacetime
 
 ! ************************ HPCPredictMRI ************************
 
+subroutine mr_io_read_spacetime_matrix_feature(grp_id, feature_name, feature_array)
+
+  implicit none
+
+  INTEGER(HID_T), intent(in) :: grp_id                 ! Group identifier
+  character(len=*), intent(in) :: feature_name
+  real*8, dimension(:,:,:,:,:,:), allocatable, intent(out) :: feature_array
+
+  INTEGER(HID_T) :: dset_id       ! Dataset identifier
+  INTEGER(HID_T) :: dspace_id     ! Dataspace identifier
+
+  INTEGER(HSIZE_T), DIMENSION(6) :: dims = (/-1, -1, -1, -1, -1, -1/) ! Dataset dimensions
+  INTEGER(HSIZE_T), DIMENSION(6) :: max_dims = (/-1, -1, -1, -1, -1, -1/) ! Dataset dimensions
+
+  INTEGER     ::   error          ! Error flag
+
+  ! Open an existing dataset.
+  CALL h5dopen_f(grp_id, feature_name, dset_id, error)
+  mr_io_handle_error(error)
+
+  ! Read dims by getting dimension from data space
+  CALL h5dget_space_f(dset_id, dspace_id, error)
+  mr_io_handle_error(error)
+  CALL h5sget_simple_extent_dims_f(dspace_id, dims, max_dims, error)
+  mr_io_sget_simple_extent_dims_handle_error(error)
+
+  ! Allocate MRI array
+  allocate(feature_array(dims(1), dims(2), dims(3), dims(4), dims(5), dims(6)))
+
+  ! Read the dataset.
+  CALL h5dread_f(dset_id, H5T_NATIVE_DOUBLE, feature_array, dims, error)
+  mr_io_handle_error(error)
+
+  ! Close the data space
+  CALL h5sclose_f(dspace_id, error)
+  mr_io_handle_error(error)
+
+  ! Close the dataset.
+  CALL h5dclose_f(dset_id, error)
+  mr_io_handle_error(error)
+
+end subroutine mr_io_read_spacetime_matrix_feature
+
+
+subroutine mr_io_write_spacetime_matrix_feature(grp_id, feature_name, feature_array)
+
+  implicit none
+
+  INTEGER(HID_T), intent(in) :: grp_id                 ! Group identifier
+  character(len=*), intent(in) :: feature_name
+  real*8, dimension(:,:,:,:,:,:), intent(in) :: feature_array
+
+  INTEGER(HID_T) :: dset_id       ! Dataset identifier
+  INTEGER(HID_T) :: dspace_id     ! Dataspace identifier
+
+  INTEGER(HSIZE_T), DIMENSION(6) :: dims = (/-1, -1, -1, -1, -1, -1/) ! Dataset dimensions
+
+  INTEGER     ::   rank = 6       ! Dataset rank
+  INTEGER     ::   error          ! Error flag
+
+  dims = shape(feature_array)
+
+  ! Create the dataspace.
+  CALL h5screate_simple_f(rank, dims, dspace_id, error)
+  mr_io_handle_error(error)
+
+  ! Create the dataset with default properties.
+  CALL h5dcreate_f(grp_id, feature_name, H5T_NATIVE_DOUBLE, dspace_id, &
+       dset_id, error)
+  mr_io_handle_error(error)
+
+  ! Write the dataset.
+  CALL h5dwrite_f(dset_id, H5T_NATIVE_DOUBLE, feature_array, dims, error)
+  mr_io_handle_error(error)
+
+  ! End access to the dataset and release resources used by it.
+  CALL h5dclose_f(dset_id, error)
+  mr_io_handle_error(error)
+
+  ! Terminate access to the data space.
+  CALL h5sclose_f(dspace_id, error)
+  mr_io_handle_error(error)
+
+end subroutine mr_io_write_spacetime_matrix_feature
+
+
 subroutine mr_io_read_hpcpredict(path, mri_inst)
 
   implicit none
@@ -556,7 +642,7 @@ subroutine mr_io_read_hpcpredict(path, mri_inst)
   ! Read voxel_feature data
   CALL mr_io_read_spacetime_feature(grp_id, "velocity_mean", mri_inst%velocity_mean)
   mri_inst%velocity_mean_dims =  shape(mri_inst%velocity_mean)
-  CALL mr_io_read_spacetime_feature(grp_id, "velocity_cov", mri_inst%velocity_cov)
+  CALL mr_io_read_spacetime_matrix_feature(grp_id, "velocity_cov", mri_inst%velocity_cov)
   mri_inst%velocity_cov_dims =  shape(mri_inst%velocity_cov)
 
   ! Close the group
@@ -609,7 +695,7 @@ subroutine mr_io_write_hpcpredict(path, mri_inst)
 
   ! Write voxel_feature data
   CALL mr_io_write_spacetime_feature(grp_id, "velocity_mean", mri_inst%velocity_mean)
-  CALL mr_io_write_spacetime_feature(grp_id, "velocity_cov", mri_inst%velocity_cov)
+  CALL mr_io_write_spacetime_matrix_feature(grp_id, "velocity_cov", mri_inst%velocity_cov)
 
   ! Close the group
   CALL h5gclose_f(grp_id, error)

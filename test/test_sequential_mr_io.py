@@ -107,7 +107,7 @@ class TestHPCPredictMRI(unittest.TestCase):
         time = np.random.rand(17)
         geometry = [np.random.rand(23), np.random.rand(13), np.random.rand(19)]
         velocity_mean = np.random.rand(23,13,19,17,3)
-        velocity_cov = np.random.rand(23,13,19,17,6)
+        velocity_cov = np.random.rand(23,13,19,17,3,5)
         self.mri = HPCPredictMRI(geometry, time, velocity_mean, velocity_cov)
 
     def test_communicator(self):
@@ -156,7 +156,7 @@ class TestHPCPredictMRI(unittest.TestCase):
         self.assertTrue(np.allclose(fort_array, self.mri.velocity_mean, rtol=1e-14))
 
         fort_dims2 = np.fromstring(fort_dims_str2, dtype=int, sep=' ')
-        fort_array2 = np.fromstring(fort_array_str2, dtype=float, sep=' ').reshape(np.flip(fort_dims2)).transpose((2,1,0,3,4))
+        fort_array2 = np.fromstring(fort_array_str2, dtype=float, sep=' ').reshape(np.flip(fort_dims2)).transpose((2,1,0,3,5,4))
         self.assertTrue(np.allclose(fort_array2, self.mri.velocity_cov, rtol=1e-14))
 
     def tearDown(self):

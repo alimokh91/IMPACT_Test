@@ -59,6 +59,9 @@ def get_spatial_conversion(X_coord, Y_coord, Z_coord):
         return np.flip(coord.reshape(z.size, y.size, x.size), axis=1).transpose(2,1,0)
     def convert_vector(vect):
         return np.flip(vect.reshape(z.size, y.size, x.size,-1), axis=1).transpose(2,1,0,3)
+    def convert_matrix(matr):
+        dim = int(np.sqrt(matr.size/(z.size*y.size*x.size)))
+        return np.flip(matr.reshape(z.size, y.size, x.size, dim, dim), axis=1).transpose(2,1,0,3,4)
 
     # The following is for debugging and can left out without side-effects
     if 1:
@@ -92,7 +95,7 @@ def get_spatial_conversion(X_coord, Y_coord, Z_coord):
 
     # End of debugging output
 
-    return convert_scalar, convert_vector, get_coordinates
+    return convert_scalar, convert_vector, convert_matrix, get_coordinates
 
 args = parse_args()
 
@@ -101,7 +104,7 @@ flist = glob.glob(args.input + '/*masked.npy')
 
 check_if_coordinates_are_identical(flist)
 X_coord, Y_coord, Z_coord = read_coordinates(flist[0])
-convert_scalar_to_spatial, convert_vector_to_spatial, get_coordinates = get_spatial_conversion(X_coord, Y_coord, Z_coord)
+convert_scalar_to_spatial, convert_vector_to_spatial, convert_matrix_to_spatial, get_coordinates = get_spatial_conversion(X_coord, Y_coord, Z_coord)
 
 if 1: # Examples of applying convert_scalar/convert_vector to scalar/vectorial quantities based  (can be left out without side-effect)
     # This transformation  has to be applied to every scalar quantity based on the same grid (such as uniaxial coordinate)
@@ -224,12 +227,13 @@ print('Z_max: ',np.amax(Z_coord))
 geometry = get_coordinates()
 time = np.array([0.])
 velocity_mean = convert_vector_to_spatial(np.stack([FU_mean, FV_mean, FW_mean], axis=1))
-velocity_cov = convert_vector_to_spatial(np.stack([R[:,0],R[:,4],R[:,8],R[:,1],R[:,2],R[:,5]], axis=1))
+import pdb; pdb.set_trace()
+velocity_cov = convert_matrix_to_spatial(R)
  
 # convert to time slice
 def convert_spatial_to_time_slice(voxel_feature):
     sh = voxel_feature.shape
-    return voxel_feature.reshape(*sh[:3], 1, sh[3])
+    return voxel_feature.reshape(*sh[:3], 1, *sh[3:])
          
 hpc_predict_mri = HPCPredictMRI(geometry=geometry,
                                 time=time,
