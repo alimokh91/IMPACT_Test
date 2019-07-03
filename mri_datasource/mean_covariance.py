@@ -5,8 +5,114 @@ from numpy import arctan2, sqrt, pi
 
 import glob
 
+
+
+import argparse
+
+# Parse data input and output directories
+def parse_args():
+    #input_path  = "./bern_data_experiments_source/"
+    #output_path = "./bern_data_experiments_hpc_predict/"
+    # Parse arguments
+    parser = argparse.ArgumentParser(description='Generate hpc-predict-io HDF5-message from preprocessed HDF5-files (Bernese experimental dataset).')
+    parser.add_argument('--input', type=str, default="D:/Documents/Bern_Internship/bulk/Cam_Date=180306_Time=163841_ImgPreproc_FastMART_TomoPIV_DirectCorrelation_48x48x48_75ov=unknown/data/",
+                    help='Directory containing experimental data from Bern (numpy files with coordinates/velocity)')
+    parser.add_argument('--output', type=str,  default="D:/HDF5_Results/Cam_Date=180306_Time=163841_ImgPreproc_FastMART_TomoPIV_DirectCorrelation_48x48x48_75ov=unknown/",
+                    help='Output directory for HDF5 files')
+    return parser.parse_args()
+
+
+def read_coordinates(fname):
+    coords = np.load(fname)[:,:3]
+    assert( not np.isnan(coords[:,:3]).any() )
+    return coords[:,0], coords[:,1], coords[:,2]
+
+def read_velocity(fname):
+    velocity = np.load(fname)[:,3:]
+    velocity[np.isnan(velocity)] = 0.
+    return velocity
+
+def check_if_coordinates_are_identical(flist):
+    X_coord, Y_coord, Z_coord = read_coordinates(flist[0])
+    
+    # Check coordinates for equality in all files
+    for fname in flist:
+
+        # load data
+        data = np.load(fname)
+        data[np.isnan(data)] = 0.
+
+        #To get X, Y and Z coordinates
+        assert(all(np.equal(X_coord, np.array(data[:,0]))))
+        assert(all(np.equal(Y_coord, np.array(data[:,1]))))
+        assert(all(np.equal(Z_coord, np.array(data[:,2]))))
+
+def get_conversion(X_coord, Y_coord, Z_coord):
+    # Compute uniaxial coordinate values
+    x, x_ids = np.unique(X_coord, return_inverse=True)
+    y, y_ids = np.unique(Y_coord, return_inverse=True)
+    z, z_ids = np.unique(Z_coord, return_inverse=True)
+
+    def convert_scalar(coord):
+        return np.flip(coord.reshape(z.size, y.size, x.size), axis=1).transpose(2,1,0)
+    def convert_vector(vect):
+        return np.flip(vect.reshape(z.size, y.size, x.size,-1), axis=1).transpose(2,1,0,3)
+
+    # The following is for debugging and can left out without side-effects
+    if 1:
+        # Print coordinate ids to understand layout
+        def print_coordinate_ids(x_id, y_id, z_id):
+            print("  X-indices: ")
+            print(x_id[:4,:,:])
+            print("  ...")
+            print(x_id[-2:,:,:])
+            print("  Y-indices: ")
+            print(y_id[:4,:,:])
+            print("  ...")
+            print(y_id[-2:,:,:])
+            print("  Z-indices: ")
+            print(z_id[:4,:,:])
+            print("  ...")
+            print(z_id[-2:,:,:])
+    
+        # transform coordinate indices
+        x_ids_corr = convert_scalar(x_ids)
+        y_ids_corr = convert_scalar(y_ids)
+        z_ids_corr = convert_scalar(z_ids)
+    
+        print("\n\n********** Coordinate ids in data files **********\n\n")
+        print_coordinate_ids(x_ids.reshape(z.size, y.size, x.size),
+                             y_ids.reshape(z.size, y.size, x.size),
+                             z_ids.reshape(z.size, y.size, x.size))
+    
+        print("\n\n********** Coordinate ids after correction **********\n\n")
+        print_coordinate_ids(x_ids_corr, y_ids_corr, z_ids_corr)
+
+    # End of debugging output
+
+    return convert_scalar, convert_vector
+
+args = parse_args()
+
 # file list is the list of the n files representing the n repetitions of a specific phase. 
-flist = glob.glob('D:/Documents/Bern_Internship/bulk/Cam_Date=180306_Time=163841_ImgPreproc_FastMART_TomoPIV_DirectCorrelation_48x48x48_75ov=unknown/data/*masked.npy')
+flist = glob.glob(args.input + '/*masked.npy')
+
+check_if_coordinates_are_identical(flist)
+X_coord, Y_coord, Z_coord = read_coordinates(flist[0])
+convert_scalar, convert_vector = get_conversion(X_coord, Y_coord, Z_coord)
+
+if 1: # Examples of applying convert_scalar/convert_vector to scalar/vectorial quantities based  (can be left out without side-effect)
+    # This transformation  has to be applied to every scalar quantity based on the same grid (such as uniaxial coordinate)
+    X_coord_corr = convert_scalar(X_coord)
+    
+    coords = np.stack([X_coord, Y_coord, Z_coord], axis=1)
+    velocity = read_velocity(flist[0])
+    
+    # This transformation  has to be applied to every vectorial quantity based on the same grid (such as velocity field)
+    coords_corr = convert_vector(coords)
+    velocity_corr = convert_vector(velocity)
+
+
 
 # calculate mean
 #print('\ncalculate mean velocity field\n')
@@ -94,14 +200,15 @@ for fname in flist:
 
 R = R/k
 
-with h5py.File('D:/HDF5_Results/Cam_Date=180306_Time=163841_ImgPreproc_FastMART_TomoPIV_DirectCorrelation_48x48x48_75ov=unknown/Velocity_Mean.h5','w') as hf1:
+with h5py.File(args.output + '/Velocity_Mean.h5','w') as hf1:
     hf1.create_dataset('Velocity_mean', data=[FU_mean, FV_mean, FW_mean])
 
-with h5py.File('D:/HDF5_Results/Cam_Date=180306_Time=163841_ImgPreproc_FastMART_TomoPIV_DirectCorrelation_48x48x48_75ov=unknown/Covariance.h5','w') as hf2:
+with h5py.File(args.output + '/Covariance.h5','w') as hf2:
     hf2.create_dataset('Covariance', data=[R[:,0],R[:,4],R[:,8],R[:,1],R[:,2],R[:,5]])
 
-with h5py.File('D:/HDF5_Results/Cam_Date=180306_Time=163841_ImgPreproc_FastMART_TomoPIV_DirectCorrelation_48x48x48_75ov=unknown/Coordinates.h5','w') as hf3:
+with h5py.File(args.output + '/Coordinates.h5','w') as hf3:
     hf3.create_dataset('Coordinates', data=[X_coord, Y_coord, Z_coord])
+
 
     
 print('X_min: ',np.amin(X_coord))
@@ -112,4 +219,3 @@ print('X_max: ',np.amax(X_coord))
 print('Y_max: ',np.amax(Y_coord))
 print('Z_max: ',np.amax(Z_coord))
 
-'''
