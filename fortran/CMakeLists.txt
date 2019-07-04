@@ -9,15 +9,13 @@ find_package(HDF5 COMPONENTS Fortran REQUIRED)
 
 add_library(hpc-predict-io ${HPCPREDICT_IO_SOURCES})
 target_compile_options(hpc-predict-io PUBLIC -cpp)
-target_include_directories(hpc-predict-io PUBLIC ${HDF5_INCLUDE_DIRS})
+target_include_directories(hpc-predict-io PUBLIC ${HDF5_INCLUDE_DIRS}
+    INTERFACE ${CMAKE_CURRENT_BINARY_DIR}/fmod)
 target_link_libraries(hpc-predict-io PUBLIC ${HDF5_LIBRARIES})
+set_target_properties(hpc-predict-io PROPERTIES Fortran_MODULE_DIRECTORY
+    ${CMAKE_CURRENT_BINARY_DIR}/fmod)
 install(TARGETS hpc-predict-io)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/mr_io.mod
-    ${CMAKE_CURRENT_BINARY_DIR}/mr_io_parallel.mod
-    ${CMAKE_CURRENT_BINARY_DIR}/mr_io_parallel_spacetime.mod
-    ${CMAKE_CURRENT_BINARY_DIR}/mr_protocol.mod
-    DESTINATION include
-    )
+install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/fmod/ DESTINATION include)
 
 
 foreach(file mr_io_example_space_time mr_io_example_spatial
