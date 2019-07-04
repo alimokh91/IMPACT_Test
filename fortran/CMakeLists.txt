@@ -11,7 +11,8 @@ add_library(hpc-predict-io ${HPCPREDICT_IO_SOURCES})
 target_compile_options(hpc-predict-io PUBLIC -cpp)
 target_include_directories(hpc-predict-io PUBLIC ${HDF5_INCLUDE_DIRS})
 target_link_libraries(hpc-predict-io PUBLIC ${HDF5_LIBRARIES})
-install(TARGETS hpc-predict-io)
+install(TARGETS hpc-predict-io
+        ARCHIVE DESTINATION lib)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/mr_io.mod
     ${CMAKE_CURRENT_BINARY_DIR}/mr_io_parallel.mod
     ${CMAKE_CURRENT_BINARY_DIR}/mr_io_parallel_spacetime.mod
@@ -36,5 +37,6 @@ foreach(file mr_io_example_space_time mr_io_example_spatial
 )
   add_executable(${file} ${file}.f90)
   target_link_libraries(${file} hpc-predict-io)
-  install(TARGETS ${file})
+  install(TARGETS ${file}
+          RUNTIME DESTINATION bin)
 endforeach()

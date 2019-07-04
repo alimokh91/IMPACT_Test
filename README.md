@@ -9,6 +9,17 @@ The objects being communicated are currently a spatial voxel-based scalar field 
 The HDF5 group name is used for the message label, every array is in a separate dataset under this group and the memory layout is according to Fortran (column major).
 That is any necessary conversions (spatial index inversion to have forward spatial indexes in each programming language) are done in Python. For vector-valued fields on a space-time MRI we use the index ordering (x,y,z,t,i) in Python and (i,t,x,y,z) in Fortran (i is the component-index of the pointwise vector).
 
+To build the Fortran library, run 
+
+```
+mkdir install
+mkdir build
+cd build
+FC=mpifort cmake -DCMAKE_INSTALL_PREFIX=/path/to/hpc-predict-io/install ..
+make install
+```
+and set the HPC_PREDICT_IO_DIR to /path/to/hpc-predict-io/install.
+
 To run Python-to-Fortran and round trip tests execute
 
 ```
