@@ -57,6 +57,14 @@ type DistSpacetimeFeature ! (vect-comp, t, x, y, z)
      integer, dimension(3) :: dims = (/ -1, -1, -1 /) ! file_dim
 end type
 
+type DistSpacetimeMatrixFeature ! (vect-comp, t, x, y, z)
+     real*8, dimension(:,:,:,:,:,:), allocatable :: array
+     integer :: time_offset = -1
+     integer :: time_dim = -1
+     integer, dimension(3) :: offset = (/ -1, -1, -1 /) ! file_offset
+     integer, dimension(3) :: dims = (/ -1, -1, -1 /) ! file_dim
+end type
+
 type DistSpacetimeMRI
      ! time
      real*8, dimension(:), allocatable :: t_coordinates
@@ -95,8 +103,8 @@ type HPCPredictMRI
      ! velocity mean and covariance
      real*8, dimension(:,:,:,:,:), allocatable :: velocity_mean
      integer, dimension(5) :: velocity_mean_dims
-     real*8, dimension(:,:,:,:,:), allocatable :: velocity_cov
-     integer, dimension(5) :: velocity_cov_dims
+     real*8, dimension(:,:,:,:,:,:), allocatable :: velocity_cov
+     integer, dimension(6) :: velocity_cov_dims
 end type
 
 type DistHPCPredictMRI
@@ -114,7 +122,7 @@ type DistHPCPredictMRI
 
      ! velocity mean and covariance
      type(DistSpacetimeFeature) :: velocity_mean
-     type(DistSpacetimeFeature) :: velocity_cov
+     type(DistSpacetimeMatrixFeature) :: velocity_cov
 end type
 
 

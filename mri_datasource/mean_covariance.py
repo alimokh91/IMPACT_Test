@@ -1,13 +1,14 @@
 import h5py
 
 import numpy as np
-from numpy import arctan2, sqrt, pi
 
 import glob
 
 
 
 import argparse
+import logging
+from mr_io import HPCPredictMRI # Requires adding ../python to PYTHONPATH
 
 # Parse data input and output directories
 def parse_args():
@@ -22,97 +23,11 @@ def parse_args():
     return parser.parse_args()
 
 
-def read_coordinates(fname):
-    coords = np.load(fname)[:,:3]
-    assert( not np.isnan(coords[:,:3]).any() )
-    return coords[:,0], coords[:,1], coords[:,2]
-
-def read_velocity(fname):
-    velocity = np.load(fname)[:,3:]
-    velocity[np.isnan(velocity)] = 0.
-    return velocity
-
-def check_if_coordinates_are_identical(flist):
-    X_coord, Y_coord, Z_coord = read_coordinates(flist[0])
-    
-    # Check coordinates for equality in all files
-    for fname in flist:
-
-        # load data
-        data = np.load(fname)
-        data[np.isnan(data)] = 0.
-
-        #To get X, Y and Z coordinates
-        assert(all(np.equal(X_coord, np.array(data[:,0]))))
-        assert(all(np.equal(Y_coord, np.array(data[:,1]))))
-        assert(all(np.equal(Z_coord, np.array(data[:,2]))))
-
-def get_conversion(X_coord, Y_coord, Z_coord):
-    # Compute uniaxial coordinate values
-    x, x_ids = np.unique(X_coord, return_inverse=True)
-    y, y_ids = np.unique(Y_coord, return_inverse=True)
-    z, z_ids = np.unique(Z_coord, return_inverse=True)
-
-    def convert_scalar(coord):
-        return np.flip(coord.reshape(z.size, y.size, x.size), axis=1).transpose(2,1,0)
-    def convert_vector(vect):
-        return np.flip(vect.reshape(z.size, y.size, x.size,-1), axis=1).transpose(2,1,0,3)
-
-    # The following is for debugging and can left out without side-effects
-    if 1:
-        # Print coordinate ids to understand layout
-        def print_coordinate_ids(x_id, y_id, z_id):
-            print("  X-indices: ")
-            print(x_id[:4,:,:])
-            print("  ...")
-            print(x_id[-2:,:,:])
-            print("  Y-indices: ")
-            print(y_id[:4,:,:])
-            print("  ...")
-            print(y_id[-2:,:,:])
-            print("  Z-indices: ")
-            print(z_id[:4,:,:])
-            print("  ...")
-            print(z_id[-2:,:,:])
-    
-        # transform coordinate indices
-        x_ids_corr = convert_scalar(x_ids)
-        y_ids_corr = convert_scalar(y_ids)
-        z_ids_corr = convert_scalar(z_ids)
-    
-        print("\n\n********** Coordinate ids in data files **********\n\n")
-        print_coordinate_ids(x_ids.reshape(z.size, y.size, x.size),
-                             y_ids.reshape(z.size, y.size, x.size),
-                             z_ids.reshape(z.size, y.size, x.size))
-    
-        print("\n\n********** Coordinate ids after correction **********\n\n")
-        print_coordinate_ids(x_ids_corr, y_ids_corr, z_ids_corr)
-
-    # End of debugging output
-
-    return convert_scalar, convert_vector
 
 args = parse_args()
 
 # file list is the list of the n files representing the n repetitions of a specific phase. 
 flist = glob.glob(args.input + '/*masked.npy')
-
-check_if_coordinates_are_identical(flist)
-X_coord, Y_coord, Z_coord = read_coordinates(flist[0])
-convert_scalar, convert_vector = get_conversion(X_coord, Y_coord, Z_coord)
-
-if 1: # Examples of applying convert_scalar/convert_vector to scalar/vectorial quantities based  (can be left out without side-effect)
-    # This transformation  has to be applied to every scalar quantity based on the same grid (such as uniaxial coordinate)
-    X_coord_corr = convert_scalar(X_coord)
-    
-    coords = np.stack([X_coord, Y_coord, Z_coord], axis=1)
-    velocity = read_velocity(flist[0])
-    
-    # This transformation  has to be applied to every vectorial quantity based on the same grid (such as velocity field)
-    coords_corr = convert_vector(coords)
-    velocity_corr = convert_vector(velocity)
-
-
 
 # calculate mean
 #print('\ncalculate mean velocity field\n')
@@ -219,3 +134,105 @@ print('X_max: ',np.amax(X_coord))
 print('Y_max: ',np.amax(Y_coord))
 print('Z_max: ',np.amax(Z_coord))
 
+
+# Added parts
+
+def read_coordinates(fname):
+    coords = np.load(fname)[:,:3]
+    if np.isnan(coords[:,:3]).any():
+        raise ValueError("NaN-values in coordinates of file %s" % fname)
+    return coords[:,0], coords[:,1], coords[:,2]
+
+def read_velocity(fname):
+    velocity = np.load(fname)[:,3:]
+    velocity[np.isnan(velocity)] = 0.
+    return velocity
+
+def check_if_coordinates_are_identical(flist):
+    fname_ref = flist[0]
+    X_coord, Y_coord, Z_coord = read_coordinates(fname_ref)
+    
+    # Check coordinates for equality in all files
+    for fname in flist:
+        data = np.load(fname)
+        if not np.equal(np.stack([X_coord, Y_coord, Z_coord], axis=1), data[:,:3]).all():
+            raise ValueError("Inconsistent coordinates between files %s and %s" % (fname_ref, fname))
+
+def get_spatial_conversion(X_coord, Y_coord, Z_coord):
+    # Compute uniaxial coordinate values
+    x, x_ids = np.unique(X_coord, return_inverse=True)
+    y, y_ids = np.unique(Y_coord, return_inverse=True)
+    z, z_ids = np.unique(Z_coord, return_inverse=True)
+    
+    def get_coordinates():
+        return x, y, z
+    def convert_scalar(coord):
+        return np.flip(coord.reshape(z.size, y.size, x.size), axis=1).transpose(2,1,0)
+    def convert_vector(vect):
+        return np.flip(vect.reshape(z.size, y.size, x.size,-1), axis=1).transpose(2,1,0,3)
+    def convert_matrix(matr):
+        dim = int(np.sqrt(matr.size/(z.size*y.size*x.size)))
+        return np.flip(matr.reshape(z.size, y.size, x.size, dim, dim), axis=1).transpose(2,1,0,3,4)
+
+    # Print coordinate ids to understand layout
+    def log_coordinate_ids(x_id, y_id, z_id):
+        logging.debug("  X-indices: ")
+        logging.debug(x_id[:4,:,:])
+        logging.debug("  ...")
+        logging.debug(x_id[-2:,:,:])
+        logging.debug("  Y-indices: ")
+        logging.debug(y_id[:4,:,:])
+        logging.debug("  ...")
+        logging.debug(y_id[-2:,:,:])
+        logging.debug("  Z-indices: ")
+        logging.debug(z_id[:4,:,:])
+        logging.debug("  ...")
+        logging.debug(z_id[-2:,:,:])
+    
+    # transform coordinate indices
+    x_ids_corr = convert_scalar(x_ids)
+    y_ids_corr = convert_scalar(y_ids)
+    z_ids_corr = convert_scalar(z_ids)
+    
+    logging.debug("\n\n********** Coordinate ids in data files **********\n\n")
+    log_coordinate_ids(x_ids.reshape(z.size, y.size, x.size),
+                         y_ids.reshape(z.size, y.size, x.size),
+                         z_ids.reshape(z.size, y.size, x.size))
+
+    logging.debug("\n\n********** Coordinate ids after correction **********\n\n")
+    log_coordinate_ids(x_ids_corr, y_ids_corr, z_ids_corr)
+
+    # End of debugging output
+
+    return convert_scalar, convert_vector, convert_matrix, get_coordinates
+
+check_if_coordinates_are_identical(flist)
+X_coord, Y_coord, Z_coord = read_coordinates(flist[0])
+convert_scalar_to_spatial, convert_vector_to_spatial, convert_matrix_to_spatial, get_coordinates = get_spatial_conversion(X_coord, Y_coord, Z_coord)
+
+if False: # Examples of applying convert_scalar/convert_vector to scalar/vectorial quantities based  (can be left out without side-effect)
+    # This transformation  has to be applied to every scalar quantity based on the same grid (such as uniaxial coordinate)
+    X_coord_corr = convert_scalar_to_spatial(X_coord)
+    
+    coords = np.stack([X_coord, Y_coord, Z_coord], axis=1)
+    velocity = read_velocity(flist[0])
+    
+    # This transformation  has to be applied to every vectorial quantity based on the same grid (such as velocity field)
+    coords_corr = convert_vector_to_spatial(coords)
+    velocity_corr = convert_vector_to_spatial(velocity)
+
+geometry = get_coordinates()
+time = np.array([0.])
+velocity_mean = convert_vector_to_spatial(np.stack([FU_mean, FV_mean, FW_mean], axis=1))
+velocity_cov = convert_matrix_to_spatial(R)
+ 
+# convert to time slice
+def convert_spatial_to_time_slice(voxel_feature):
+    sh = voxel_feature.shape
+    return voxel_feature.reshape(*sh[:3], 1, *sh[3:])
+         
+hpc_predict_mri = HPCPredictMRI(geometry=geometry,
+                                time=time,
+                                velocity_mean=convert_spatial_to_time_slice(velocity_mean),
+                                velocity_cov=convert_spatial_to_time_slice(velocity_cov))
+hpc_predict_mri.write_hdf5(args.output + '/bern_experimental_dataset_hpc_predict_mri.h5')

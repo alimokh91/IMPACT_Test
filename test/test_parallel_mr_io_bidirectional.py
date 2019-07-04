@@ -150,7 +150,7 @@ class TestHPCPredictMRIBidirectional(unittest.TestCase): # FIXME: coordinates te
         time = np.random.rand(11)
         geometry = [np.random.rand(67), np.random.rand(43), np.random.rand(29)]
         velocity_mean = np.random.rand(67,43,29,11,3)        
-        velocity_cov = np.random.rand(67,43,29,11,6)        
+        velocity_cov = np.random.rand(67,43,29,11,3,5)        
         self.mri = HPCPredictMRI(geometry, time, velocity_mean, velocity_cov)
 
     def test_communicator(self):

@@ -12,7 +12,7 @@ program mr_io_test_parallel_reader_writer_hpc_predict
     type(DistHPCPredictMRI) :: mri_dest
 
     integer, dimension(5) :: velocity_mean_shape
-    integer, dimension(5) :: velocity_cov_shape
+    integer, dimension(6) :: velocity_cov_shape
 
     call MPI_Init(err)
     
@@ -39,13 +39,13 @@ program mr_io_test_parallel_reader_writer_hpc_predict
 
     print *, mri_dest%velocity_cov%dims
     print *, mri_dest%velocity_cov%offset
-    print *, velocity_cov_shape(3:5)
+    print *, velocity_cov_shape(4:6)
 
     print *, mri_dest%velocity_cov%time_dim
     print *, mri_dest%velocity_cov%time_offset
-    print *, velocity_cov_shape(2)
+    print *, velocity_cov_shape(3)
 
-    print *, velocity_cov_shape(1)
+    print *, velocity_cov_shape(1:2)
     print *, mri_dest%velocity_cov%array
 
     call mr_io_write_parallel_hpcpredict(MPI_COMM_WORLD, MPI_INFO_NULL, out_path, mri_dest)
