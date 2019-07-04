@@ -5,7 +5,6 @@ set(HPCPREDICT_IO_SOURCES
   mr_protocol.f90
 )
 
-cmake_policy(SET CMP0074 NEW)
 find_package(HDF5 COMPONENTS Fortran REQUIRED)
 
 add_library(hpc-predict-io ${HPCPREDICT_IO_SOURCES})
