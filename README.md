@@ -14,11 +14,12 @@ That is any necessary conversions (spatial index inversion to have forward spati
 To build the Fortran library and install it, run 
 
 ```
-export FC=mpifort # (export FC=ftn for daint)
-export HDF5_ROOT=/path/where/hdf5/can/be/found
 mkdir build
 cd build
-FC=mpifort cmake -DCMAKE_INSTALL_PREFIX=/path/where/you/want/to/install/hpc-predict-io ../
+cmake -DCMAKE_Fortran_COMPILER=mpifort \
+      -DHDF5_ROOT=/path/where/hdf5/can/be/found \
+      -DCMAKE_INSTALL_PREFIX=/path/where/you/want/to/install/hpc-predict-io \
+      ../
 make install
 ```
 
