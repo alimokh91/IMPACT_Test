@@ -22,5 +22,6 @@ fortran/*.h5
 .pydevproject
 fortran/.cproject
 fortran/.project
-
+build
+install
 

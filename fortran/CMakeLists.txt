@@ -44,7 +44,7 @@ endforeach()
 set( IMPACT_LIBRARIES libimpact.a )
 find_file(IMPACT_LIB ${IMPACT_LIBRARIES} PATHS ENV IMPACT_DIR NO_DEFAULT_PATH)
 
-if (IMPACT_LIB)
+if (EXISTS $ENV{IMPACT_DIR})
     message("Found IMPACT... building tests for IMPACT.")
 	
     set( IMPACT_DEPS libm.so libdl.so libz.so libblas.so liblapack.so )
@@ -60,5 +60,5 @@ if (IMPACT_LIB)
 	        RUNTIME DESTINATION bin)
 else ()
     message("Could not find IMPACT... skipping tests for IMPACT.")
-endif (IMPACT_LIB)
+endif ()
         
