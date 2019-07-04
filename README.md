@@ -21,6 +21,7 @@ cd build
 FC=mpifort cmake -DCMAKE_INSTALL_PREFIX=/path/where/you/want/to/install/hpc-predict-io ../
 make install
 ```
+
 For usage in IMPACT set the HPC_PREDICT_IO_DIR environment variable to /path/to/hpc-predict-io/install before running make in the src directory.
 
 # Tests
@@ -31,4 +32,3 @@ To run Python-to-Fortran and round trip tests for hpc-predict-io execute
 source python/venv/bin/activate
 ./test.sh
 ```
-
