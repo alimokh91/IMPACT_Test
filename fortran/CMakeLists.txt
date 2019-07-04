@@ -38,3 +38,27 @@ foreach(file mr_io_example_space_time mr_io_example_spatial
   install(TARGETS ${file}
           RUNTIME DESTINATION bin)
 endforeach()
+
+
+# FIXME: Do some refactoring on these tests
+set( IMPACT_LIBRARIES libimpact.a )
+find_file(IMPACT_LIB ${IMPACT_LIBRARIES} PATHS ENV IMPACT_DIR NO_DEFAULT_PATH)
+
+if (IMPACT_LIB)
+    message("Found IMPACT... building tests for IMPACT.")
+	
+    set( IMPACT_DEPS libm.so libdl.so libz.so libblas.so liblapack.so )
+    
+    add_executable(mr_io_test_impact_input mr_io_test_impact_input.f90)
+	target_link_libraries(mr_io_test_impact_input PRIVATE ${IMPACT_LIBRARIES} ${IMPACT_DEPS} ${HDF5_LIBRARIES} hpc-predict-io)
+	target_link_libraries(mr_io_test_impact_input PRIVATE -L$ENV{IMPACT_DIR} )
+	target_include_directories(mr_io_test_impact_input PRIVATE $ENV{IMPACT_DIR} )
+	target_link_libraries(mr_io_test_impact_input PRIVATE -L/home/lukasd/src/build_whale/opt_scientific/libs/petsc/lib )
+	target_include_directories(mr_io_test_impact_input PRIVATE /home/lukasd/src/build_whale/opt_scientific/libs/petsc/include )
+	
+	install(TARGETS mr_io_test_impact_input
+	        RUNTIME DESTINATION bin)
+else ()
+    message("Could not find IMPACT... skipping tests for IMPACT.")
+endif (IMPACT_LIB)
+        
