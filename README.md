@@ -15,3 +15,13 @@ To run Python-to-Fortran and round trip tests execute
 source python/venv/bin/activate
 ./test.sh
 ```
+
+
+INSTALL documentation:
+export FC=mpifort (export FC=ftn for daint)
+export HDF5_ROOT=/path/where/hdf5/can/be/found
+mkdir build
+cd build
+cmake -DCMAKE_INSTALL_PREFIX=/path/where/you/want/to/install ../
+make install
+
