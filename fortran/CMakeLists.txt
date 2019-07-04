@@ -15,7 +15,8 @@ target_include_directories(hpc-predict-io PUBLIC ${HDF5_INCLUDE_DIRS}
 target_link_libraries(hpc-predict-io PUBLIC ${HDF5_LIBRARIES})
 set_target_properties(hpc-predict-io PROPERTIES Fortran_MODULE_DIRECTORY
     ${CMAKE_CURRENT_BINARY_DIR}/fmod)
-install(TARGETS hpc-predict-io)
+install(TARGETS hpc-predict-io
+        ARCHIVE DESTINATION lib)
 install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/fmod/ DESTINATION include)
 
 
@@ -35,5 +36,6 @@ foreach(file mr_io_example_space_time mr_io_example_spatial
 )
   add_executable(${file} ${file}.f90)
   target_link_libraries(${file} hpc-predict-io)
-  install(TARGETS ${file})
+  install(TARGETS ${file}
+          RUNTIME DESTINATION bin)
 endforeach()
