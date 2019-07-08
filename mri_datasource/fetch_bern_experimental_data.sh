@@ -1,10 +1,15 @@
 #!/bin/bash
 
-if [ ! -d "./bern_data_experiments_source" ]; then
-  echo "Downloading files and extracting them to $(pwd)/data_experiments directory." 
-  wget -O bern_data_experiments.zip https://www.dropbox.com/sh/dv94nnhlt9veo9m/AAABxGfQw9i_nLDNbTJPNqT1a?dl=1
-  unzip bern_data_experiments.zip -d bern_data_experiments_source
-  rm bern_data_experiments.zip
+set -eoux pipefail
+
+DATASOURCE_DIR=./bern_data_experiments_source
+DATASOURCE_FILENAME=bern_data_experiments.zip
+
+if [ ! -d $DATASOURCE_DIR ]; then
+  echo "Downloading files and extracting them to $(pwd)/${DATASOURCE_DIR} directory." 
+  wget -O ${DATASOURCE_FILENAME} https://www.dropbox.com/sh/dv94nnhlt9veo9m/AAABxGfQw9i_nLDNbTJPNqT1a?dl=1
+  unzip ${DATASOURCE_FILENAME} -d ${DATASOURCE_DIR}
+  rm ${DATASOURCE_FILENAME}
 else
-  echo "./data_experiments directory already exists - no files downloaded."
+  echo "${DATASOURCE_DIR} directory already exists - no files downloaded."
 fi
