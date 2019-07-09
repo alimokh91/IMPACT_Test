@@ -16,6 +16,8 @@ fortran/mr_io_test_parallel_reader_space_time
 fortran/mr_io_test_parallel_reader_writer_space_time
 fortran/mr_io_test_reader_hpc_predict
 fortran/mr_io_test_reader_writer_hpc_predict
+fortran/mr_io_test_parallel_reader_hpc_predict
+fortran/mr_io_test_parallel_reader_writer_hpc_predict
 fortran/*.h5
 *.h5
 .project

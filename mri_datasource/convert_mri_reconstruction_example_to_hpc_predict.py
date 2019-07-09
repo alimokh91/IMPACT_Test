@@ -41,10 +41,9 @@ geometry = [ np.array([ i*spatial_voxel_width[j] for i in range(mat_data['result
 time = np.array([ i*time_slice_width for i in range(mat_data['results_v'].shape[3]) ])
 velocity_cov = np.zeros( mat_data['results_v'].shape + mat_data['results_v'].shape[-1:] )
 for i in range(mat_data['results_v'].shape[-1]):
-    velocity_cov[:,:,:,:,i,i] = mat_data['results_std'][:,:,:,:,i]
+    velocity_cov[:,:,:,:,i,i] = mat_data['results_std'][:,:,:,:,i]**2
     
-import pdb; pdb.set_trace()
-    
+   
 hpc_predict_mri = HPCPredictMRI(geometry=geometry,
                                 time=time,
                                 velocity_mean=mat_data['results_v'],
