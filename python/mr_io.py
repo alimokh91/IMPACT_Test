@@ -28,33 +28,34 @@ class SpatialMRI:
             # here comes the actual deserialization code
             return SpatialMRI(voxel_feature=f[SpatialMRI.group_name]["voxel_feature"][()].transpose())
 
+
 def validate_spacetime_coordinates(geometry, time):
     for i in range(3):
         if not(len(geometry[i].shape) == 1):
-            raise ValueError("geometry[%d] must be a 3D-array (instead it has shape {}).".format(i, geometry[i].shape))
+            raise ValueError("geometry[{}] must be a 3D-array (instead it has shape {}).".format(i, geometry[i].shape))
     if not(len(time.shape) == 1):
         raise ValueError("time must be a 1D-array (instead it has shape {}).".format(time.shape))
 
 def validate_spacetime_feature_coordinate_dims(geometry, time, voxel_feature):
     for i in range(3):
         if not(geometry[i].shape[0] == voxel_feature.shape[i]):
-            raise ValueError("geometry[%d] and %d-th dimension in voxel_feature have inconsistent shape: %d vs. %d.".format(i, i, geometry[i].shape[0], voxel_feature.shape[i]))        
+            raise ValueError("geometry[{}] and {}-th dimension in voxel_feature have inconsistent shape: {} vs. {}.".format(i, i, geometry[i].shape[0], voxel_feature.shape[i]))        
     if not(time.shape[0] == voxel_feature.shape[3]):
-        raise ValueError("time and %d-th dimension in voxel_feature have inconsistent shape: %d vs. %d.".format(3, time.shape[0], voxel_feature.shape[3]))        
+        raise ValueError("time and {}-th dimension in voxel_feature have inconsistent shape: {} vs. {}.".format(3, time.shape[0], voxel_feature.shape[3]))        
 
 def validate_spacetime_vector_feature(cls, geometry, time, voxel_feature):
     validate_spacetime_feature_coordinate_dims(geometry, time, voxel_feature)
     if not(len(voxel_feature.shape) == 5):
         raise ValueError("Spacetime vector field must be a 5D-array (instead it has shape {}).".format(voxel_feature.shape))        
     if not(voxel_feature.shape[4] == 3):
-        logging.warning("Constructing %s with non-3-dimensional vector field (instead %d-dimensional)", cls.__name__, voxel_feature.shape[4])                
+        logging.warning("Constructing {} with non-3-dimensional vector field (instead %d-dimensional)".format(cls.__name__, voxel_feature.shape[4]))            
         
 def validate_spacetime_matrix_feature(cls, geometry, time, voxel_feature):
     validate_spacetime_feature_coordinate_dims(geometry, time, voxel_feature)
     if not(len(voxel_feature.shape) == 6):
         raise ValueError("Spacetime matrix field must be a 6D-array (instead it has shape {}).".format(voxel_feature.shape))        
     if not(voxel_feature.shape[4] == 3) or not(voxel_feature.shape[5] == 3):
-        logging.warning("Constructing %s with non-3x3-dimensional matrix field (instead %dx%d-dimensional)", cls.__name__, voxel_feature.shape[4], voxel_feature.shape[5])                
+        logging.warning("Constructing {} with non-3x3-dimensional matrix field (instead {}x{}-dimensional)".format(cls.__name__, voxel_feature.shape[4], voxel_feature.shape[5]))                
         
 
 def write_space_time_coordinates(grp, geometry, time):

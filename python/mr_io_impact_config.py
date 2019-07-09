@@ -2,6 +2,7 @@ from mr_io import HPCPredictMRI
 from jinja2 import Environment, FileSystemLoader
 import numpy as np
 import argparse
+import logging
 
 def spatial_hyperslab_dims(mpi_size, voxel_feature_shape): 
     #import pdb; pdb.set_trace()
@@ -35,25 +36,50 @@ def main():
     
     block_dims, dims_mem, dims_mem_boundary = spatial_hyperslab_dims(args.np, [len(axis) for axis in mri.geometry])
     
-    assert((dims_mem == dims_mem_boundary).all())
+    # This will fail
+    #assert((dims_mem == dims_mem_boundary).all())
     
     template_args = dict()
-    for i in range(3):
-        template_args['M%d' % (i+1)]  = args.sr[i]*len(mri.geometry[i]) # Number of pressure grid points in each direction
-        template_args['L%d' % (i+1)]  = mri.geometry[i][-1]-mri.geometry[i][0] # position of last pressure grid point (first is at 0.)
+    for i in range(3):       
+        if (len(mri.geometry[i]) % block_dims[i] != 0):
+            logging.warn("Number of MRI-voxels (%d) along %d-th dimension not divisible by # processes along this direction (%d)." \
+                         % (len(mri.geometry[i]), i, block_dims[i]))
+
+        # sr define number of pressure grid "voxels" (bounded by pressure grid coordinates) per MRI voxel. 
+        # Due to IMPACT's limitations this has to be adjusted
+        num_refined_mri_grid_voxels = args.sr[i]*len(mri.geometry[i])
+        if (num_refined_mri_grid_voxels % block_dims[i] != 0):
+            logging.warn("Number of \"pressure grid voxels\" (%d) along %d-th dimension not divisible by # processes along this direction (%d) - " \
+                         "will be rounded up in order for IMPACT to start correctly." \
+                         % (num_refined_mri_grid_voxels, i, block_dims[i]))
+            
+        # compute rounded up number of local "pressure grid voxels" (does not change num_refined_mri_grid_voxels if divisible by block_dims[i])
+        N_i_minus_one = (num_refined_mri_grid_voxels+block_dims[i]-1)//block_dims[i]
+        if N_i_minus_one % 2 == 0: # valid number of pressure grid voxels (# pressure grid points - 1 )
+            num_pressure_grid_points = N_i_minus_one*block_dims[i]+1 # the +1 at the end is to convert number of voxels to number of grid points
+        else: # need to add one pressure grid point per block to make per-process number odd
+            num_pressure_grid_points = (N_i_minus_one+1)*block_dims[i]+1 # the +1 at the end is to convert number of voxels to number of grid points
+
+        template_args['M%d' % (i+1)]  = num_pressure_grid_points # Number of pressure grid points in each direction
+        # second line converts MRI point grid extent to MRI voxel grid extent,
+        # third line, which is commented out, would convert pressure voxel grid extent to pressure point grid extent
+        template_args['L%d' % (i+1)]  = (mri.geometry[i][-1]-mri.geometry[i][0])* \
+                                        (len(mri.geometry[i])/float(len(mri.geometry[i])-1))#* \
+                                        #(num_pressure_grid_points-1)/num_pressure_grid_points
         template_args['NB%d' % (i+1)] = block_dims[i] # Number of processes along each dimension
     
-    template_args['time_start'] = mri.time[0] # 0.
+    template_args['time_start'] = mri.time[0]   # 0.
     template_args['time_end']   = mri.time[-1]  # 5000.
     
     template_args['n_timesteps'] = args.tr*len(mri.time) #'100000000'
     
-    # Kalman filter variables (probably subject to change) # FIXME TBD
+    # Kalman filter variables (probably subject to change) # FIXME: These fields are probably all outdated
     template_args['dtime_out_scal'] = '0.0' # Delta time for saving data from DNS simulation 
                                             #for subsequent Kalman-filtered sim.
     template_args['dtime_out_kalm'] = '0.2' # Delta time for Kalman-filtered sim.
     template_args['vel_initcond_file_yes'] = 'F' # for DNS set to true, for Kalman-filtered sim. to false
     
+    # Load config.txt termplate and instantiate variables
     env = Environment(loader=FileSystemLoader(searchpath="./"))
     template = env.get_template(args.config)
     with open(args.output,'w') as config_file:

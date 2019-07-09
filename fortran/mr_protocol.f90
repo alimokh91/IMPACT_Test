@@ -125,5 +125,76 @@ type DistHPCPredictMRI
      type(DistSpacetimeMatrixFeature) :: velocity_cov
 end type
 
+contains
+
+! Deallocation subroutines
+
+subroutine mr_io_deallocate_spatial_mri(mri)
+
+    implicit none
+    type(SpatialMRI), intent(inout) :: mri
+    deallocate(mri%voxel_feature)
+
+end subroutine mr_io_deallocate_spatial_mri
+
+subroutine mr_io_deallocate_dist_spatial_mri(mri)
+
+    implicit none
+    type(DistSpatialMRI), intent(inout) :: mri
+    deallocate(mri%voxel_feature%array)
+
+end subroutine mr_io_deallocate_dist_spatial_mri
+
+
+subroutine mr_io_deallocate_spacetime_mri(mri)
+
+    implicit none
+    type(SpaceTimeMRI), intent(inout) :: mri
+    deallocate(mri%x_coordinates)
+    deallocate(mri%y_coordinates)
+    deallocate(mri%z_coordinates)
+    deallocate(mri%t_coordinates)
+    deallocate(mri%voxel_feature)
+
+end subroutine mr_io_deallocate_spacetime_mri
+
+subroutine mr_io_deallocate_dist_spacetime_mri(mri)
+
+    implicit none
+    type(DistSpacetimeMRI), intent(inout) :: mri
+    deallocate(mri%x_coordinates)
+    deallocate(mri%y_coordinates)
+    deallocate(mri%z_coordinates)
+    deallocate(mri%t_coordinates)
+    deallocate(mri%voxel_feature%array)
+
+end subroutine mr_io_deallocate_dist_spacetime_mri
+
+subroutine mr_io_deallocate_hpcpredict_mri(mri)
+
+    implicit none
+    type(HPCPredictMRI), intent(inout) :: mri
+    deallocate(mri%x_coordinates)
+    deallocate(mri%y_coordinates)
+    deallocate(mri%z_coordinates)
+    deallocate(mri%t_coordinates)
+    deallocate(mri%velocity_mean)
+    deallocate(mri%velocity_cov)
+
+end subroutine mr_io_deallocate_hpcpredict_mri
+
+subroutine mr_io_deallocate_dist_hpcpredict_mri(mri)
+
+    implicit none
+    type(DistHPCPredictMRI), intent(inout) :: mri
+    deallocate(mri%x_coordinates)
+    deallocate(mri%y_coordinates)
+    deallocate(mri%z_coordinates)
+    deallocate(mri%t_coordinates)
+    deallocate(mri%velocity_mean%array)
+    deallocate(mri%velocity_cov%array)
+
+end subroutine mr_io_deallocate_dist_hpcpredict_mri
+
 
 end module mr_protocol

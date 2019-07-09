@@ -92,7 +92,8 @@ class TestSpatialMRI(unittest.TestCase):
                 fort_array = np.fromstring(fort_array_str, dtype=float, sep=' ').reshape(np.flip(fort_dims)).transpose()
  
                 #import pdb; pdb.set_trace()
-                block_id = (mpi_rank % block_dims[0], (mpi_rank // block_dims[0]) % block_dims[1], mpi_rank // (block_dims[0]* block_dims[1]) )
+                #block_id = (mpi_rank % block_dims[0], (mpi_rank // block_dims[0]) % block_dims[1], mpi_rank // (block_dims[0]* block_dims[1]) )
+                block_id = ( mpi_rank // (block_dims[1]* block_dims[2]), (mpi_rank // block_dims[2]) % block_dims[1], mpi_rank % block_dims[2] )
                 hyperslab_offset = np.array([dims_mem[i]*block_id[i] for i in range(3)])
                 hyperslab_shape = np.array([dims_mem[i] if block_id[i] + 1 < block_dims[i] else dims_mem_boundary[i] for i in range(3)])
                 #mpi_size = TestSpatialMRI.mpi_proc
@@ -212,7 +213,8 @@ class TestSpaceTimeMRI(unittest.TestCase): # FIXME: coordinates test...
                 #import pdb; pdb.set_trace()
                 fort_array = fort_array.reshape(np.flip([fort_vector_dim, fort_time_dim-fort_time_offset] + list(fort_dims))).transpose((2,1,0,3,4))
                 
-                block_id = (mpi_rank % block_dims[0], (mpi_rank // block_dims[0]) % block_dims[1], mpi_rank // (block_dims[0]* block_dims[1]) )
+                #block_id = (mpi_rank % block_dims[0], (mpi_rank // block_dims[0]) % block_dims[1], mpi_rank // (block_dims[0]* block_dims[1]) )
+                block_id = ( mpi_rank // (block_dims[1]* block_dims[2]), (mpi_rank // block_dims[2]) % block_dims[1], mpi_rank % block_dims[2] )
                 hyperslab_offset = np.array([dims_mem[i]*block_id[i] for i in range(3)] + [0, 0])
                 hyperslab_shape  = np.array([dims_mem[i] if block_id[i] + 1 < block_dims[i] else dims_mem_boundary[i] for i in range(3)] + [self.mri.voxel_feature.shape[i] for i in range(3,5)])
                 #mpi_size = TestSpaceTimeMRI.mpi_proc
@@ -339,7 +341,8 @@ class TestHPCPredictMRI(unittest.TestCase): # FIXME: coordinates test...
                 #import pdb; pdb.set_trace()
                 fort_array = fort_array.reshape(np.flip([fort_vector_dim, fort_time_dim-fort_time_offset] + list(fort_dims))).transpose((2,1,0,3,4))
                 
-                block_id = (mpi_rank % block_dims[0], (mpi_rank // block_dims[0]) % block_dims[1], mpi_rank // (block_dims[0]* block_dims[1]) )
+                #block_id = (mpi_rank % block_dims[0], (mpi_rank // block_dims[0]) % block_dims[1], mpi_rank // (block_dims[0]* block_dims[1]) )
+                block_id = ( mpi_rank // (block_dims[1]* block_dims[2]), (mpi_rank // block_dims[2]) % block_dims[1], mpi_rank % block_dims[2] )
                 hyperslab_offset = np.array([dims_mem[i]*block_id[i] for i in range(3)] + [0, 0])
                 hyperslab_shape  = np.array([dims_mem[i] if block_id[i] + 1 < block_dims[i] else dims_mem_boundary[i] for i in range(3)] + [self.mri.velocity_mean.shape[i] for i in range(3,5)])
                 #mpi_size = TestHPCPredictMRI.mpi_proc
@@ -385,7 +388,8 @@ class TestHPCPredictMRI(unittest.TestCase): # FIXME: coordinates test...
                 #import pdb; pdb.set_trace()
                 fort_array = fort_array.reshape(np.flip([*fort_vector_dim, fort_time_dim-fort_time_offset] + list(fort_dims))).transpose((2,1,0,3,5,4))
                 
-                block_id = (mpi_rank % block_dims[0], (mpi_rank // block_dims[0]) % block_dims[1], mpi_rank // (block_dims[0]* block_dims[1]) )
+                #block_id = (mpi_rank % block_dims[0], (mpi_rank // block_dims[0]) % block_dims[1], mpi_rank // (block_dims[0]* block_dims[1]) )
+                block_id = ( mpi_rank // (block_dims[1]* block_dims[2]), (mpi_rank // block_dims[2]) % block_dims[1], mpi_rank % block_dims[2] )
                 hyperslab_offset = np.array([dims_mem[i]*block_id[i] for i in range(3)] + [0, 0, 0])
                 hyperslab_shape  = np.array([dims_mem[i] if block_id[i] + 1 < block_dims[i] else dims_mem_boundary[i] for i in range(3)] + [self.mri.velocity_cov.shape[i] for i in range(3,6)])
                 #mpi_size = TestHPCPredictMRI.mpi_proc

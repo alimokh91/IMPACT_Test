@@ -44,6 +44,8 @@ end subroutine mr_io_handle_mpi_error_
 
 ! ************************ Domain/Hyperslab decomposition ************************
 
+
+! TODO: A test that checks consistency of this function with IMPACT's input file generator
 subroutine mr_io_parallel_spatial_hyperslap_compute(mpi_comm, dims_file, offset_file, dims_mem)
 
   implicit none
@@ -73,6 +75,10 @@ subroutine mr_io_parallel_spatial_hyperslap_compute(mpi_comm, dims_file, offset_
   ! Compute hyperslab offset and shape
   CALL MPI_Comm_rank(mpi_comm, mpi_rank, mpi_error)
   mr_io_handle_error(mpi_error) ! FIXME: MPI error handling
+
+  ! TODO: Refactor this part into separate
+  !         subroutine mr_io_parallel_spatial_hyperslap_compute_dims(mpi_size, dims_file, block_dims, dims_mem, dims_mem_boundary)
+  !       where the last three arguments are output
   CALL MPI_Comm_size(mpi_comm, mpi_size, mpi_error)
   mr_io_handle_error(mpi_error)
 
@@ -105,9 +111,16 @@ subroutine mr_io_parallel_spatial_hyperslap_compute(mpi_comm, dims_file, offset_
     mpi_size_factor = mpi_size_factor/2
   end do
 
-  block_id(1) = modulo( mpi_rank , dims_blocks(1) )
-  block_id(2) = modulo( mpi_rank / dims_blocks(1) , dims_blocks(2) )
-  block_id(3) = mpi_rank/(dims_blocks(1)*dims_blocks(2))
+  ! TODO: End of refactor
+
+  ! This would be the Fortran-like column-major block layout
+!  block_id(1) = modulo( mpi_rank , dims_blocks(1) )
+!  block_id(2) = modulo( mpi_rank / dims_blocks(1) , dims_blocks(2) )
+!  block_id(3) = mpi_rank/(dims_blocks(1)*dims_blocks(2))
+  ! The IMPACT block layout is row-major
+  block_id(1) = mpi_rank/(dims_blocks(2)*dims_blocks(3))
+  block_id(2) = modulo( mpi_rank / dims_blocks(3) , dims_blocks(2) )
+  block_id(3) = modulo( mpi_rank , dims_blocks(3) )
 
   do i=1,3
     offset_file(i) = dims_mem(i)*block_id(i)

@@ -20,11 +20,13 @@ def parse_args():
                     help='Directory containing experimental data from Bern (numpy files with coordinates/velocity)')
     parser.add_argument('--output', type=str,  default="D:/HDF5_Results/Cam_Date=180306_Time=163841_ImgPreproc_FastMART_TomoPIV_DirectCorrelation_48x48x48_75ov=unknown/",
                     help='Output directory for HDF5 files')
+    parser.add_argument('--log', type=str, default="warn", help="Logging level")
     return parser.parse_args()
 
 
 
 args = parse_args()
+logging.basicConfig(level=args.log.upper())
 
 # file list is the list of the n files representing the n repetitions of a specific phase. 
 flist = glob.glob(args.input + '/*masked.npy')
