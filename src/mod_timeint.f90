@@ -50,7 +50,7 @@ MODULE mod_timeint
   
   !--- diverse Files <F6>ffnen ----------------------------------------------------------------------------------
   IF (dtime_out_scal /= 0.) CALL open_stats
-  IF (dtime_out_kalm /= 0.) CALL open_kalman
+  !IF (dtime_out_kalm /= 0.) CALL open_kalman
   
   IF (restart == 0) THEN
      time          = time_start
@@ -74,7 +74,7 @@ MODULE mod_timeint
   ELSE
                                CALL read_restart
      IF (dtime_out_scal /= 0.) CALL read_restart_stats
-     IF (dtime_out_kalm /= 0.) CALL read_restart_kalman
+     !IF (dtime_out_kalm /= 0.) CALL read_restart_kalman
      
      IF (rank == 0 .AND. write_stout_yes) THEN
         WRITE(*,'(a,1E13.5)') '             time =', time
@@ -170,7 +170,7 @@ MODULE mod_timeint
   !--- Ausschreiben ------------------------------------------------------------------------------------------
   IF (write_xdmf_yes .AND. write_out_vect) CALL write_xdmf_xml ! bbecsek
   IF (write_out_scal) CALL compute_stats
-  IF (write_out_kalm) CALL compute_kalman
+  !IF (write_out_kalm) CALL compute_kalman
   IF (write_out_vect) CALL write_fields
   !===========================================================================================================
   
@@ -286,7 +286,7 @@ MODULE mod_timeint
      !--- Ausschreiben ---------------------------------------------------------------------------------------
      IF (write_xdmf_yes .AND. write_out_vect) CALL write_xdmf_xml ! bbecsek
      IF (write_out_scal) CALL compute_stats
-     IF (write_out_kalm) CALL compute_kalman
+     !IF (write_out_kalm) CALL compute_kalman
      IF (write_out_vect) CALL write_fields
      
      !--------------------------------------------------------------------------------------------------------
@@ -326,14 +326,14 @@ MODULE mod_timeint
   restart = restart + 1
   CALL write_restart
   IF (dtime_out_scal /= 0.) CALL write_restart_stats
-  IF (dtime_out_kalm /= 0.) CALL write_restart_kalman
+  !IF (dtime_out_kalm /= 0.) CALL write_restart_kalman
   
   !--- Iterationsstatistiken auswerten -----------------------------------------------------------------------
   CALL iteration_stats
   
   !--- diverse Files schliessen ------------------------------------------------------------------------------
   IF (dtime_out_scal /= 0.) CALL close_stats
-  IF (dtime_out_kalm /= 0.) CALL close_kalman
+  !IF (dtime_out_kalm /= 0.) CALL close_kalman
  
   !--- link all XDMF files together --------------------------------------------------------------------------
   IF (write_xdmf_yes) CALL write_xdmf_timecollection ! bbecsek

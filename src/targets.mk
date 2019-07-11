@@ -27,7 +27,7 @@ local:	$(BUILD_TARGET)
 portable: COMP = mpifort
 portable: INCL = -I$(HDF5_DIR)/include -I$(MPI_HOME)/include -I$(HPC_PREDICT_IO_DIR)/include
 portable: LIBS = -L/usr/lib -lm -ldl -lz -lblas -llapack -L$(HPC_PREDICT_IO_DIR)/lib -L$(MPI_HOME)/lib -L$(HDF5_DIR)/lib -lhpc-predict-io -lmpifort -lhdf5_fortran -lhdf5_hl -lhdf5
-portable:       OPT1 = -ffree-form -ffree-line-length-none -cpp -fdefault-real-8 -O2 -g
+portable:       OPT1 = -ffree-form -ffree-line-length-none -cpp -fdefault-real-8 -O0 -g
 #-O3 -ffast-math -funroll-all-loops -fpeel-loops -ftracer -funswitch-loops \
 #-ftree-vectorize -funsafe-math-optimizations -fomit-frame-pointer -fno-math-errno
 portable:       OPT2 = $(OPT1) #-xf95-cpp-input
