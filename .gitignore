@@ -18,6 +18,11 @@ fortran/mr_io_test_reader_hpc_predict
 fortran/mr_io_test_reader_writer_hpc_predict
 fortran/mr_io_test_parallel_reader_hpc_predict
 fortran/mr_io_test_parallel_reader_writer_hpc_predict
+fortran/mr_io_test_parallel_reader_segmented_hpc_predict
+fortran/mr_io_test_parallel_reader_writer_segmented_hpc_predict
+fortran/mr_io_test_reader_segmented_hpc_predict
+fortran/mr_io_test_reader_writer_segmented_hpc_predict
+fortran/mr_io_test_impact_input
 fortran/*.h5
 *.h5
 .project
@@ -26,4 +31,5 @@ fortran/.cproject
 fortran/.project
 build
 install
-
+mri_datasource/bern_data_experiments_source/*
+mri_datasource/mri_reconstruction_example_source/*

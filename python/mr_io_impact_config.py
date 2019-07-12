@@ -42,24 +42,34 @@ def main():
     template_args = dict()
     for i in range(3):       
         if (len(mri.geometry[i]) % block_dims[i] != 0):
-            logging.warn("Number of MRI-voxels (%d) along %d-th dimension not divisible by # processes along this direction (%d)." \
+            logging.error("Number of MRI-voxels (%d) along %d-th dimension not divisible by # processes along this direction (%d). " \
+                          "This will result in a pressure grid decomposition that is nonconforming with MRI-voxel decomposition."
+                         % (len(mri.geometry[i]), i, block_dims[i]))
+            raise ValueError("Number of MRI-voxels (%d) along %d-th dimension must be divisible by number of processes along this direction (%d)." \
                          % (len(mri.geometry[i]), i, block_dims[i]))
 
-        # sr define number of pressure grid "voxels" (bounded by pressure grid coordinates) per MRI voxel. 
-        # Due to IMPACT's limitations this has to be adjusted
-        num_refined_mri_grid_voxels = args.sr[i]*len(mri.geometry[i])
-        if (num_refined_mri_grid_voxels % block_dims[i] != 0):
-            logging.warn("Number of \"pressure grid voxels\" (%d) along %d-th dimension not divisible by # processes along this direction (%d) - " \
-                         "will be rounded up in order for IMPACT to start correctly." \
-                         % (num_refined_mri_grid_voxels, i, block_dims[i]))
-            
-        # compute rounded up number of local "pressure grid voxels" (does not change num_refined_mri_grid_voxels if divisible by block_dims[i])
-        N_i_minus_one = (num_refined_mri_grid_voxels+block_dims[i]-1)//block_dims[i]
-        if N_i_minus_one % 2 == 0: # valid number of pressure grid voxels (# pressure grid points - 1 )
-            num_pressure_grid_points = N_i_minus_one*block_dims[i]+1 # the +1 at the end is to convert number of voxels to number of grid points
-        else: # need to add one pressure grid point per block to make per-process number odd
-            num_pressure_grid_points = (N_i_minus_one+1)*block_dims[i]+1 # the +1 at the end is to convert number of voxels to number of grid points
+#         # sr define number of pressure grid "voxels" (bounded by pressure grid coordinates) per MRI voxel. 
+#         # Due to IMPACT's limitations this has to be adjusted
+#         num_refined_mri_grid_voxels = args.sr[i]*len(mri.geometry[i])
+#         if (num_refined_mri_grid_voxels % block_dims[i] != 0): # This will never be triggered by the above criterion
+#             logging.warn("Number of \"pressure grid voxels\" (%d) along %d-th dimension not divisible by # processes along this direction (%d) - " \
+#                          "will be rounded up in order for IMPACT to start correctly." \
+#                          % (num_refined_mri_grid_voxels, i, block_dims[i]))
+#         # compute rounded up number of local "pressure grid voxels" (does not change num_refined_mri_grid_voxels if divisible by block_dims[i])
+#         N_i_minus_one = (num_refined_mri_grid_voxels+block_dims[i]-1)//block_dims[i]
+#         if N_i_minus_one % 2 == 0: # valid number of pressure grid voxels (# pressure grid points - 1 )
+#             num_pressure_grid_points = N_i_minus_one*block_dims[i]+1 # the +1 at the end is to convert number of voxels to number of grid points
+#         else: # need to add one pressure grid point per block to make per-process number odd
+#             num_pressure_grid_points = (N_i_minus_one+1)*block_dims[i]+1 # the +1 at the end is to convert number of voxels to number of grid points
 
+        num_refined_mri_grid_voxels = args.sr[i]*len(mri.geometry[i])
+        if ( (num_refined_mri_grid_voxels // block_dims[i]) % 2 != 0): # This will never be triggered by the above criterion
+            logging.error("Number of pressure grid voxels (or points when counting the boundary as 0.5) per process (%d) along %d-th dimension has to be even as required by IMPACT." \
+                         % (num_refined_mri_grid_voxels // block_dims[i], i))
+            raise ValueError
+         
+        num_pressure_grid_points = num_refined_mri_grid_voxels +1 # the +1 at the end is to convert number of voxels to number of grid points
+                
         template_args['M%d' % (i+1)]  = num_pressure_grid_points # Number of pressure grid points in each direction
         # second line converts MRI point grid extent to MRI voxel grid extent,
         # third line, which is commented out, would convert pressure voxel grid extent to pressure point grid extent

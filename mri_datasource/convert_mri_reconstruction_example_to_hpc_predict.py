@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import argparse
 import logging
@@ -43,9 +44,13 @@ velocity_cov = np.zeros( mat_data['results_v'].shape + mat_data['results_v'].sha
 for i in range(mat_data['results_v'].shape[-1]):
     velocity_cov[:,:,:,:,i,i] = mat_data['results_std'][:,:,:,:,i]**2
     
-   
+output_dir = os.path.dirname(os.path.realpath(args.output))
+if not os.path.exists(output_dir):
+    os.makedirs(output_dir)
+    
 hpc_predict_mri = HPCPredictMRI(geometry=geometry,
                                 time=time,
+                                intensity=mat_data['I'].real,
                                 velocity_mean=mat_data['results_v'],
                                 velocity_cov=velocity_cov)
 hpc_predict_mri.write_hdf5(args.output)

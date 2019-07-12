@@ -1,16 +1,16 @@
-program mr_io_test_reader_hpc_predict
+program mr_io_test_reader_segmented_hpc_predict
   
     use mr_io
     use mr_protocol
 
     implicit none
 
-    character(len=100) :: path = "mr_io_test_hpc_predict.h5"
-    type(HPCPredictMRI) :: mri_dest
+    character(len=100) :: path = "mr_io_test_segmented_hpc_predict.h5"
+    type(SegmentedHPCPredictMRI) :: mri_dest
 
-    call mr_io_read_hpcpredict(path, mri_dest)
+    call mr_io_read_segmentedhpcpredict(path, mri_dest)
 
-    print *, HPCPredictMRI_group_name
+    print *, SegmentedHPCPredictMRI_group_name
 
     print *, mri_dest%x_dim
     print *, mri_dest%x_coordinates
@@ -33,4 +33,7 @@ program mr_io_test_reader_hpc_predict
     print *, mri_dest%velocity_cov_dims
     print *, mri_dest%velocity_cov
 
-end program mr_io_test_reader_hpc_predict
+    print *, mri_dest%segmentation_prob_dims
+    print *, mri_dest%segmentation_prob
+
+end program mr_io_test_reader_segmented_hpc_predict

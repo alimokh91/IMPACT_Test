@@ -1,4 +1,4 @@
-program mr_io_test_parallel_reader_space_time
+program mr_io_test_parallel_reader_segmented_hpc_predict
   
     use mr_io_parallel_spacetime
     use mr_protocol
@@ -8,16 +8,17 @@ program mr_io_test_parallel_reader_space_time
     implicit none
 
     INTEGER err
-    character(len=100) :: path = "mr_io_test_parallel_hpc_predict.h5"
-    type(DistHPCPredictMRI) :: mri_dest
+    character(len=100) :: path = "mr_io_test_parallel_segmented_hpc_predict.h5"
+    type(DistSegmentedHPCPredictMRI) :: mri_dest
 
     integer, dimension(4) :: intensity_shape
     integer, dimension(5) :: velocity_mean_shape
     integer, dimension(6) :: velocity_cov_shape
+    integer, dimension(4) :: segmentation_prob_shape
 
     call MPI_Init(err)
     
-    call mr_io_read_parallel_hpcpredict(MPI_COMM_WORLD, MPI_INFO_NULL, path, mri_dest)
+    call mr_io_read_parallel_segmentedhpcpredict(MPI_COMM_WORLD, MPI_INFO_NULL, path, mri_dest)
 
     print *, SpatialMRI_group_name
 
@@ -73,7 +74,19 @@ program mr_io_test_parallel_reader_space_time
     print *, velocity_cov_shape(1:2)
     print *, mri_dest%velocity_cov%array
 
+    segmentation_prob_shape = shape(mri_dest%segmentation_prob%array)
+
+    print *, mri_dest%segmentation_prob%dims
+    print *, mri_dest%segmentation_prob%offset
+    print *, segmentation_prob_shape(2:4)
+
+    print *, mri_dest%segmentation_prob%time_dim
+    print *, mri_dest%segmentation_prob%time_offset
+    print *, segmentation_prob_shape(1)
+
+    print *, mri_dest%segmentation_prob%array
+
 
     call MPI_Finalize(err)
         
-end program mr_io_test_parallel_reader_space_time
+end program mr_io_test_parallel_reader_segmented_hpc_predict

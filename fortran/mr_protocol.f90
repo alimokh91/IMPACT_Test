@@ -49,6 +49,14 @@ type SpaceTimeMRI
      integer, dimension(5) :: voxel_feature_dims
 end type
 
+type DistSpacetimeScalarFeature ! (t, x, y, z)
+     real*8, dimension(:,:,:,:), allocatable :: array
+     integer :: time_offset = -1
+     integer :: time_dim = -1
+     integer, dimension(3) :: offset = (/ -1, -1, -1 /) ! file_offset
+     integer, dimension(3) :: dims = (/ -1, -1, -1 /) ! file_dim
+end type
+
 type DistSpacetimeFeature ! (vect-comp, t, x, y, z)
      real*8, dimension(:,:,:,:,:), allocatable :: array
      integer :: time_offset = -1
@@ -101,6 +109,8 @@ type HPCPredictMRI
      integer :: z_dim
 
      ! velocity mean and covariance
+     real*8, dimension(:,:,:,:), allocatable :: intensity
+     integer, dimension(4) :: intensity_dims
      real*8, dimension(:,:,:,:,:), allocatable :: velocity_mean
      integer, dimension(5) :: velocity_mean_dims
      real*8, dimension(:,:,:,:,:,:), allocatable :: velocity_cov
@@ -121,8 +131,57 @@ type DistHPCPredictMRI
      integer :: z_dim
 
      ! velocity mean and covariance
+     type(DistSpacetimeScalarFeature) :: intensity
      type(DistSpacetimeFeature) :: velocity_mean
      type(DistSpacetimeMatrixFeature) :: velocity_cov
+end type
+
+! ************************ SegmentedHPCPredictMRI ************************
+
+character(len=26) :: SegmentedHPCPredictMRI_group_name = "segmented-hpc-predict-mri"
+
+type SegmentedHPCPredictMRI
+     ! time
+     real*8, dimension(:), allocatable :: t_coordinates
+     integer :: t_dim
+
+     ! geometry
+     real*8, dimension(:), allocatable :: x_coordinates
+     integer :: x_dim
+     real*8, dimension(:), allocatable :: y_coordinates
+     integer :: y_dim
+     real*8, dimension(:), allocatable :: z_coordinates
+     integer :: z_dim
+
+     ! velocity mean and covariance
+     real*8, dimension(:,:,:,:), allocatable :: intensity
+     integer, dimension(4) :: intensity_dims
+     real*8, dimension(:,:,:,:,:), allocatable :: velocity_mean
+     integer, dimension(5) :: velocity_mean_dims
+     real*8, dimension(:,:,:,:,:,:), allocatable :: velocity_cov
+     integer, dimension(6) :: velocity_cov_dims
+     real*8, dimension(:,:,:,:), allocatable :: segmentation_prob
+     integer, dimension(4) :: segmentation_prob_dims
+end type
+
+type DistSegmentedHPCPredictMRI
+     ! time
+     real*8, dimension(:), allocatable :: t_coordinates
+     integer :: t_dim
+
+     ! geometry
+     real*8, dimension(:), allocatable :: x_coordinates
+     integer :: x_dim
+     real*8, dimension(:), allocatable :: y_coordinates
+     integer :: y_dim
+     real*8, dimension(:), allocatable :: z_coordinates
+     integer :: z_dim
+
+     ! velocity mean and covariance
+     type(DistSpacetimeScalarFeature) :: intensity
+     type(DistSpacetimeFeature) :: velocity_mean
+     type(DistSpacetimeMatrixFeature) :: velocity_cov
+     type(DistSpacetimeScalarFeature) :: segmentation_prob
 end type
 
 contains
@@ -178,6 +237,7 @@ subroutine mr_io_deallocate_hpcpredict_mri(mri)
     deallocate(mri%y_coordinates)
     deallocate(mri%z_coordinates)
     deallocate(mri%t_coordinates)
+    deallocate(mri%intensity)
     deallocate(mri%velocity_mean)
     deallocate(mri%velocity_cov)
 
@@ -191,10 +251,41 @@ subroutine mr_io_deallocate_dist_hpcpredict_mri(mri)
     deallocate(mri%y_coordinates)
     deallocate(mri%z_coordinates)
     deallocate(mri%t_coordinates)
+    deallocate(mri%intensity%array)
     deallocate(mri%velocity_mean%array)
     deallocate(mri%velocity_cov%array)
 
 end subroutine mr_io_deallocate_dist_hpcpredict_mri
+
+subroutine mr_io_deallocate_segmentedhpcpredict_mri(mri)
+
+    implicit none
+    type(SegmentedHPCPredictMRI), intent(inout) :: mri
+    deallocate(mri%x_coordinates)
+    deallocate(mri%y_coordinates)
+    deallocate(mri%z_coordinates)
+    deallocate(mri%t_coordinates)
+    deallocate(mri%intensity)
+    deallocate(mri%velocity_mean)
+    deallocate(mri%velocity_cov)
+    deallocate(mri%segmentation_prob)
+
+end subroutine mr_io_deallocate_segmentedhpcpredict_mri
+
+subroutine mr_io_deallocate_dist_segmentedhpcpredict_mri(mri)
+
+    implicit none
+    type(DistSegmentedHPCPredictMRI), intent(inout) :: mri
+    deallocate(mri%x_coordinates)
+    deallocate(mri%y_coordinates)
+    deallocate(mri%z_coordinates)
+    deallocate(mri%t_coordinates)
+    deallocate(mri%intensity%array)
+    deallocate(mri%velocity_mean%array)
+    deallocate(mri%velocity_cov%array)
+    deallocate(mri%segmentation_prob%array)
+
+end subroutine mr_io_deallocate_dist_segmentedhpcpredict_mri
 
 
 end module mr_protocol

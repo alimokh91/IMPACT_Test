@@ -11,6 +11,14 @@ That is any necessary conversions (spatial index inversion to have forward spati
 
 ### Building, installing and usage from IMPACT
 
+To use the Python library make sure the packages in python/requirements.txt are available in your Python environment. To create a Python virtual environment e.g. with virtualenv, execute
+
+```
+cd python
+virtualenv -p python3 venv
+pip install -r requirements.txt
+```
+
 To build the Fortran library and install it, run 
 
 ```

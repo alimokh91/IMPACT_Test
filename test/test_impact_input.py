@@ -52,10 +52,11 @@ class TestImpactInput(unittest.TestCase): # FIXME: coordinates test...
                                    2*TestImpactInput.num_vox[i]+1)[1:-1:2] for i in range(3)]
         geometry_complement = [np.linspace(0.,TestImpactInput.domain_length[i],
                                    2*TestImpactInput.num_vox[i]+1)[::2] for i in range(3)]
+        intensity = np.random.rand(*TestImpactInput.num_vox,11)
         velocity_mean = np.random.rand(*TestImpactInput.num_vox,11,3)
         velocity_cov = np.random.rand(*TestImpactInput.num_vox,11,3,3)
 
-        self.mri = HPCPredictMRI(geometry, time, velocity_mean, velocity_cov)
+        self.mri = HPCPredictMRI(geometry, time, intensity, velocity_mean, velocity_cov)
         self.geometry_complement = geometry_complement
         
         block_dims, dims_mem, dims_mem_boundary = spatial_hyperslab_dims(TestImpactInput, self.mri.velocity_mean)
