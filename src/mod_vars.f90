@@ -837,7 +837,6 @@ MODULE mod_vars
   LOGICAL                ::  write_test_yes
   LOGICAL                ::  write_covariance_yes !for writing covariance into xdmf file    defined in config.txt
   INTEGER                ::  num_windows !define in usr_stats and for write covariance into xdmf
-  INTEGER                ::  intervals   !define number of intervals in the output of a periodic flow 
 
   !--- globale Laufindizes -----------------------------------------------------------------------------------
   INTEGER                ::  direction

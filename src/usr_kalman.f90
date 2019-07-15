@@ -46,14 +46,14 @@
   CHARACTER(LEN=3) ::  M3_char
   CHARACTER(LEN=50) :: read_dir,write_dir
 
-  ALLOCATE(mean_gbl(1:intervals,b1L:(N1+b1U),b2L:(N2+b2U),b3L:(N3+b3U),1:3)); mean_gbl = 0.
-	ALLOCATE(dtime_kalm_phases(1:intervals)); dtime_kalm_phases = 0.
+  ALLOCATE(mean_gbl(1:intervals,b1L:(N1+b1U),b2L:(N2+b2U),b3L:(N3+b3U),1:3)); mean_gbl = 0. 
+  ALLOCATE(dtime_kalm_phases(1:intervals)); dtime_kalm_phases = 0.
 
-	dtime_kalm_phases(1:12) = 0.01
-	dtime_kalm_phases(13) = 0.03
-	dtime_kalm_phases(14:19) = 0.05
-	dtime_kalm_phases(20:21) = 0.1
-	dtime_kalm_phases(22) = 6./7. - 0.7 + 0.05
+  dtime_kalm_phases(1:12) = 0.01
+  dtime_kalm_phases(13) = 0.03
+  dtime_kalm_phases(14:19) = 0.05
+  dtime_kalm_phases(20:21) = 0.1
+  dtime_kalm_phases(22) = 6./7. - 0.7 + 0.05
 
   n_data_tot = 906780
   !===========================================================================================================
@@ -156,8 +156,8 @@
   CALL num_to_string(3,restart,restart_char)
 
   IF (rank == 0 .AND. dtime_out_kalm /= 0.) THEN
-		 CALL system('mkdir -p kf_result')
-	   OPEN(43,FILE='tke_domain_kalm_'//restart_char//'.txt',STATUS='UNKNOWN')
+     CALL system('mkdir -p kf_result')
+     OPEN(43,FILE='tke_domain_kalm_'//restart_char//'.txt',STATUS='UNKNOWN')
      OPEN(44,FILE='tke_window_kalm_'//restart_char//'.txt',STATUS='UNKNOWN')
      OPEN(53,FILE='turb_statxz_kalm'//restart_char//'_'//M1_char//'x'//M2_char//'x'//M3_char//'.txt',STATUS='UNKNOWN') !added M1 M2 M3
   END IF
@@ -261,6 +261,7 @@
 
   dtime_out_kalm = dtime_kalm_phases(phase)
   time_out_kalm = time_out_kalm + dtime_out_kalm
+  dtime_out_vect = dtime_out_kalm
 
   INFO = 0
   !===========================================================================================================

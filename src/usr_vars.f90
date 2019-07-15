@@ -80,7 +80,8 @@ MODULE usr_vars
 #endif
 
   INTEGER :: n_data,n_data_tot,data_shift
-	REAL, ALLOCATABLE :: mean_gbl(:,:,:,:,:)
+  INTEGER :: intervals   !define number of intervals in the output of a periodic flow
+  REAL, ALLOCATABLE :: mean_gbl(:,:,:,:,:)
 
   TYPE stats_t
      INTEGER :: i_data,m
