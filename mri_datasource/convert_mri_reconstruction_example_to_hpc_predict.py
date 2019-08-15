@@ -11,9 +11,9 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Generate hpc-predict-io HDF5-message from Jonas\' 4D flow example provided.')
     parser.add_argument('--input', type=str,
                     help='Directory containing data4Dflow_mean_std.mat (with mean and coordinate-wise std deviation of velocity)')
-    parser.add_argument('--voxel-width', type=int, nargs=3,
+    parser.add_argument('--voxel-width', type=int, nargs=3, default=[2.5, 2.45, 2.48],
                     help='Spatial voxel width')
-    parser.add_argument('--time-width', type=int,
+    parser.add_argument('--time-width', type=int, default=0.04,
                     help='Time slice width')
     parser.add_argument('--output', type=str,
                     help='Output name for HDF5 file')
@@ -41,6 +41,7 @@ geometry = [ np.array([ i*spatial_voxel_width[j] for i in range(mat_data['result
             for j in range(3) ]
 time = np.array([ i*time_slice_width for i in range(mat_data['results_v'].shape[3]) ])
 velocity_cov = np.zeros( mat_data['results_v'].shape + mat_data['results_v'].shape[-1:] )
+mat_data['results_std'][ mat_data['results_std'] < 0. ] = 0. # filter negative std deviations (cf. Jonas' email: negative standard deviations occur in regions where we have little signal (e.g. the lungs))
 for i in range(mat_data['results_v'].shape[-1]):
     velocity_cov[:,:,:,:,i,i] = mat_data['results_std'][:,:,:,:,i]**2
     
