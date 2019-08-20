@@ -79,35 +79,4 @@ MODULE usr_vars
   TYPE(C_PTR), bind(C,name='_wk_pre_c') :: wk_preptr
 #endif
 
-  INTEGER :: n_data,n_data_tot,data_shift
-  INTEGER :: intervals   !define number of intervals in the output of a periodic flow
-  REAL, ALLOCATABLE :: mean_gbl(:,:,:,:,:)
-
-  TYPE stats_t
-     INTEGER :: i_data,m
-     INTEGER, POINTER :: x(:),y(:),z(:)  !i,j,k of the grid node for each m component
-     REAL, POINTER :: mean_xyz(:),covar_xyz(:),mean_xyzt(:,:),covar_xyzt(:,:) !stats
-     REAL, POINTER :: wgt(:) !stats
-     TYPE(stats_t), POINTER :: next
-  END TYPE stats_t
-
-  TYPE stats_group_t
-     INTEGER :: group_id,phase
-     INTEGER :: n_data,n_data_tot,data_shift
-     TYPE(stats_t), pointer :: stats_first
-     TYPE(stats_group_t), POINTER :: next
-  END TYPE stats_group_t
-
-  TYPE(stats_group_t), pointer :: stats_group_first
-
-  TYPE kalman_t
-     INTEGER :: i_data,flg,m,phase
-     INTEGER, POINTER :: x(:),y(:),z(:)  !i,j,k of the grid node for each m component
-     REAL, POINTER :: mean(:,:,:),covar(:,:,:) ! phases, m, 3 or 6
-     REAL, POINTER :: muf(:),pf(:,:),obs_data(:),obs_covar(:,:),obs_oper(:,:),K(:,:) !kalman
-     TYPE(kalman_t), POINTER :: next
-  END TYPE kalman_t
-
-  TYPE(kalman_t), pointer :: kalman_first
-
 END MODULE usr_vars

@@ -170,7 +170,7 @@ MODULE mod_timeint
   !--- Ausschreiben ------------------------------------------------------------------------------------------
   IF (write_xdmf_yes .AND. write_out_vect) CALL write_xdmf_xml ! bbecsek
   IF (write_out_scal) CALL compute_stats
-  IF (write_out_kalm) CALL compute_kalman
+  IF (write_out_kalm .and. time.eq.time_start) CALL compute_kalman
   IF (write_out_vect) CALL write_fields
   !===========================================================================================================
   
