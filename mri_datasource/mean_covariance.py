@@ -117,7 +117,6 @@ output_dir = os.path.realpath(args.output)
 if not os.path.exists(output_dir):
     os.makedirs(output_dir)
 
-import pdb; pdb.set_trace()
 with h5py.File(args.output + '/Velocity_Mean.h5','w') as hf1:
     hf1.create_dataset('Velocity_mean', data=[FU_mean, FV_mean, FW_mean])
 
