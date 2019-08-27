@@ -21,6 +21,18 @@ NB1         {{ NB1 }}
 NB2         {{ NB2 }}
 NB3         {{ NB3 }}
 
+# Kalman filtering: dimensions of extended data voxel grid and location of available data to assimilate to
+# (data voxel grid is conforming with process & "pressure voxel" grid)
+kalman_num_data_voxels_per_process_1  {{ kalman_num_data_voxels_per_process_1 }}
+kalman_num_padding_data_voxels_lhs_1  {{ kalman_num_padding_data_voxels_lhs_1 }}
+kalman_num_padding_data_voxels_rhs_1  {{ kalman_num_padding_data_voxels_rhs_1 }}
+kalman_num_data_voxels_per_process_2  {{ kalman_num_data_voxels_per_process_2 }}
+kalman_num_padding_data_voxels_lhs_2  {{ kalman_num_padding_data_voxels_lhs_2 }}
+kalman_num_padding_data_voxels_rhs_2  {{ kalman_num_padding_data_voxels_rhs_2 }}
+kalman_num_data_voxels_per_process_3  {{ kalman_num_data_voxels_per_process_3 }}
+kalman_num_padding_data_voxels_lhs_3  {{ kalman_num_padding_data_voxels_lhs_3 }}
+kalman_num_padding_data_voxels_rhs_3  {{ kalman_num_padding_data_voxels_rhs_3 }}
+
 Re			3300.
 
 #--- Extents --------------------------------------------------------------
@@ -148,9 +160,9 @@ wallnorm_dir            1
 amax                    4
 bmax                    4
 
-y1_origin               0.
-y2_origin               0.
-y3_origin               0.
+y1_origin               {{ y1_origin }}
+y2_origin               {{ y2_origin }}
+y3_origin               {{ y3_origin }}
 
 #--- Fringe Forcing Specs --------------------------------------------------
 fringe_yes              F
