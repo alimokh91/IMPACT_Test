@@ -4,21 +4,7 @@ import os
 import numpy as np
 import logging
 from mr_io import HPCPredictMRI
-
-
-def spatial_hyperslab_dims(cls, voxel_feature): # NOTE: This is not the hyperslab_shape of particular block at (i,j,k), which has to account for boundaries
-    #import pdb; pdb.set_trace()
-    mpi_size = cls.mpi_proc
-    dims_mem = np.array(voxel_feature.shape[:3], dtype=int)
-    block_dims = np.array((1,1,1), dtype=int)
-    while (mpi_size > 1):
-        refinement_axis = np.argmax(dims_mem)
-        block_dims[refinement_axis] *= 2
-        dims_mem[refinement_axis] = (dims_mem[refinement_axis] + 2 - 1)// 2
-        mpi_size //= 2
-    dims_mem_boundary = np.array([ coord_shape % dims_mem[i] if coord_shape % dims_mem[i] != 0 else dims_mem[i] for i,coord_shape in enumerate(voxel_feature.shape[:3]) ], dtype=int) 
-    return block_dims, dims_mem, dims_mem_boundary
-
+from test_common import spatial_hyperslab_dims
 
 
 class TestImpactInput(unittest.TestCase): # FIXME: coordinates test...
@@ -149,7 +135,7 @@ class TestImpactInput(unittest.TestCase): # FIXME: coordinates test...
                                      impact_coord_array[::TestImpactInput.sr[i]], \
                                      self.geometry_complement[i][ block_id[i]*dims_mem[i]:(block_id[i]+1)*dims_mem[i]+1 ]))
                     self.assertTrue( np.allclose(impact_coord_array[::TestImpactInput.sr[i]], 
-                                                 self.geometry_complement[i][ block_id[i]*dims_mem[i]:(block_id[i]+1)*dims_mem[i]+1 ], rtol=1e-1)) # FIXME: probably failing due to numerical error in y-coordinates in IMPACT!
+                                                 self.geometry_complement[i][ block_id[i]*dims_mem[i]:(block_id[i]+1)*dims_mem[i]+1 ], rtol=1e-14)) # FIXME: probably failing due to numerical error in y-coordinates in IMPACT!
                                 
                 # further checks can be added as required...
     
