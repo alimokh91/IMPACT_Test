@@ -26,28 +26,17 @@ Run
 ./debug_impact.sh
 ```
 
-in a bash, which will launch impact and start CSSH. Within each CSSH xterm change to this directory and execute
+in a bash, which will launch IMPACT using MPI and start CSSH. Using CSSH's master terminal perform the following steps within each CSSH xterm
 
 ``` 
-source xterm_init.sh
-```
-
-after that run 
-
-```
-./xterm_sort_pids.sh
-```
- 
-only in a single shell and after that again 
-
-``` 
+cd /path/to/your/IMPACT/debug
 source xterm_attach.sh
 ```
-
-in all CSSH xterms. Then a gdb instance will be attached to a different MPI process in each xterm. You can then 
+ 
+which for each xterm will attach a gdb instance to a different MPI IMPACT process. Within gdb you then 
 
 ```
-up 2
-set variable gdb = 1
+source gdb_init
 ```
-which will unblock the sleeping loop and then before running `continue` define any breakpoints or others as usual.
+
+which will unblock the sleeping loop and as of now stop execution before in the MPI_INIT statement of IMPACT's main routine. 

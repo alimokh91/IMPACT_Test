@@ -2,7 +2,7 @@ IMPACT_DEBUG_INFO_DIR=/tmp/impact_debug_info
 
 echo $$ >> ${IMPACT_DEBUG_INFO_DIR}/xterm_processes/$$
 
-sleep 1
+sleep 0.5
 
 unset xterm_processes
 unset mpi_processes
@@ -18,7 +18,8 @@ declare -A mpi_processes
 
 while IFS=' ' read -r key value; do
     mpi_processes[$key]=$(echo ${value} | tr -d '\n')
-done < ${IMPACT_DEBUG_INFO_DIR}/mpi_processes
+done < <(cat ${IMPACT_DEBUG_INFO_DIR}/mpi_processes/*)
+#done < ${IMPACT_DEBUG_INFO_DIR}/mpi_processes
 
 for i in "${!mpi_processes[@]}"; do printf "\"%s\":\"%s\"\n" "$i" "${mpi_processes[$i]}";done
 
