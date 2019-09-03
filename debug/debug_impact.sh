@@ -49,5 +49,5 @@ echo "xterm_hosts is ${xterm_hosts[@]}"
 sleep 0.5
 
 # Initialize all 
-cssh --rows ${NUM_CSSH_XTERM_ROWS} "${xterm_hosts[@]}" #-a "cd src/IMPACT/debug && source xterm_attach.sh && exec bash"
+cssh --config-file clusterssh_config --rows ${NUM_CSSH_XTERM_ROWS} "${xterm_hosts[@]}" #-a "cd src/IMPACT/debug && source xterm_attach.sh && exec bash"
 
