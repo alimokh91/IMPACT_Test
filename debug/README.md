@@ -58,3 +58,7 @@ source gdb_init
 ```
 
 which will unblock the sleeping loop and as of now stop execution before in the MPI_INIT statement of IMPACT's main routine. 
+
+### Using gdb
+
+A good summary is available from [here](https://cs.brown.edu/courses/cs033//docs/guides/gdb.pdf) from the [Brown CS course](https://cs.brown.edu/courses/cs033//).
