@@ -1,5 +1,9 @@
 IMPACT_DEBUG_INFO_DIR=/tmp/impact_debug_info
 
+echo $$ >> ${IMPACT_DEBUG_INFO_DIR}/xterm_processes/$$
+
+sleep 1
+
 unset xterm_processes
 unset mpi_processes
 #readarray xterm_processes < ${IMPACT_DEBUG_INFO_DIR}/xterm_processes
@@ -7,7 +11,8 @@ unset mpi_processes
 xterm_processes=()
 while IFS=' ' read -r value; do
     xterm_processes+=( $(echo ${value} | tr -d '\n') )
-done < ${IMPACT_DEBUG_INFO_DIR}/xterm_processes
+done < <(cat ${IMPACT_DEBUG_INFO_DIR}/xterm_processes/*)
+#done < ${IMPACT_DEBUG_INFO_DIR}/xterm_processes
 
 declare -A mpi_processes
 
