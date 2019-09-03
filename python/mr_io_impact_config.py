@@ -92,7 +92,8 @@ def main():
         mri_voxel_width = (mri.geometry[i][-1]-mri.geometry[i][0])/(len(mri.geometry[i])-1.)
         template_args['L%d' % (i+1)]  = mri_voxel_width*num_ext_mri_voxels
         template_args['NB%d' % (i+1)] = block_dims[i] # Number of processes along this dimension
-        template_args['y%d_origin' % (i+1)] = -1.*mri_voxel_width*num_padding_voxels_lhs
+        template_args['y%d_origin' % (i+1)] = -1.*(mri.geometry[i][0] - mri_voxel_width/2. - mri_voxel_width*num_padding_voxels_lhs)
+
 
         template_args['kalman_num_data_voxels_per_process_%d' % (i+1)]  = num_ext_mri_voxels//block_dims[i]
         template_args['kalman_num_padding_data_voxels_lhs_%d' % (i+1)]  = num_padding_voxels_lhs

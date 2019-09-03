@@ -21,8 +21,8 @@ class TestImpactInputPadding(unittest.TestCase): # FIXME: coordinates test...
 
     # python python/mr_io_impact_config.py --mri mr_io_test_space_time.h5 --sr 2 2 2 --tr 10 --config python/config.txt.j2 --output python/config.txt --np 8
     num_vox = (7, 13, 11)   # should be divisible by domain decomposition computed in this test
+    domain_origin = (1., 4., 5.)
     domain_length = (3., 1.5, 2.)
-    offset = (0., 0., 0.) #(-0.3, 1.2, 7.5)
     sr = [2, 2, 2]
     tr = 10
     config_template = 'python/config.txt.j2'
@@ -44,10 +44,12 @@ class TestImpactInputPadding(unittest.TestCase): # FIXME: coordinates test...
         num_pad_vox_lhs = [(num_ext_vox[i]-TestImpactInputPadding.num_vox[i])//2 for i in range(3)]
         self.num_vox_per_proc = [num_ext_vox[i]//block_dims[i] for i in range(3)]
         
-        geometry = [np.linspace(TestImpactInputPadding.offset[i],TestImpactInputPadding.offset[i]+TestImpactInputPadding.domain_length[i],
-                                   2*num_ext_vox[i]+1)[1+2*num_pad_vox_lhs[i]:1+2*(num_pad_vox_lhs[i]+TestImpactInputPadding.num_vox[i]):2] for i in range(3)]
-        geometry_complement = [np.linspace(TestImpactInputPadding.offset[i],TestImpactInputPadding.offset[i]+TestImpactInputPadding.domain_length[i],
-                                   2*num_ext_vox[i]+1)[::2] for i in range(3)]
+        geometry = [TestImpactInputPadding.domain_origin[i] + \
+                    np.linspace(0, TestImpactInputPadding.domain_length[i],
+                                2*num_ext_vox[i]+1)[1+2*num_pad_vox_lhs[i]:1+2*(num_pad_vox_lhs[i]+TestImpactInputPadding.num_vox[i]):2] for i in range(3)]
+        geometry_complement = [TestImpactInputPadding.domain_origin[i] + \
+                               np.linspace(0, TestImpactInputPadding.domain_length[i],
+                                           2*num_ext_vox[i]+1)[::2] for i in range(3)]
         intensity = np.random.rand(*TestImpactInputPadding.num_vox,11)
         velocity_cov = np.random.rand(*TestImpactInputPadding.num_vox,11,3,3)
 

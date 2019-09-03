@@ -21,6 +21,7 @@ class TestImpactInput(unittest.TestCase): # FIXME: coordinates test...
 
     # python python/mr_io_impact_config.py --mri mr_io_test_space_time.h5 --sr 2 2 2 --tr 10 --config python/config.txt.j2 --output python/config.txt --np 8
     num_vox = (2**3, 2**3, 2**3)   # should be divisible by domain decomposition computed in this test
+    domain_origin = (1., 4., 5.)
     domain_length = (3., 1.5, 2.) 
     sr = [2, 2, 2]
     tr = 10
@@ -34,9 +35,11 @@ class TestImpactInput(unittest.TestCase): # FIXME: coordinates test...
 #         geometry = [np.linspace(0.,3.,2**3+1), np.linspace(0.,1.5,2**3+1), np.linspace(0.,2.0,2**3+1)]
 #         velocity_mean = np.random.rand(2**3+1,2**3+1,2**3+1,11,3)
 #         velocity_cov = np.random.rand(2**3+1,2**3+1,2**3+1,11,3,3)
-        geometry = [np.linspace(0.,TestImpactInput.domain_length[i],
+        geometry = [TestImpactInput.domain_origin[i] + \
+                    np.linspace(0.,TestImpactInput.domain_length[i],
                                    2*TestImpactInput.num_vox[i]+1)[1:-1:2] for i in range(3)]
-        geometry_complement = [np.linspace(0.,TestImpactInput.domain_length[i],
+        geometry_complement = [TestImpactInput.domain_origin[i] + \
+                    np.linspace(0.,TestImpactInput.domain_length[i],
                                    2*TestImpactInput.num_vox[i]+1)[::2] for i in range(3)]
         intensity = np.random.rand(*TestImpactInput.num_vox,11)
         velocity_mean = np.random.rand(*TestImpactInput.num_vox,11,3)
