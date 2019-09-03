@@ -22,6 +22,22 @@ into impact.f90 under "INCLUDE 'mpif.h'" - this was realized in impact_debugger.
 
 ## How to use it
 
+### Preliminary setup
+
+Make sure you're running an SSH server on the target machine, e.g. by using 
+
+```
+systemctl status ssh 
+```
+
+on Ubuntu 18.04. If it is not running, start it using
+
+```
+systemctl start ssh
+``` 
+
+### Running the debugger
+
 Run
 
 ```
