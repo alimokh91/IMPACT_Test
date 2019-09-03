@@ -44,6 +44,13 @@ PROGRAM impact
   
   INCLUDE 'mpif.h'
   
+  INTEGER :: gdb
+
+  gdb = 0
+
+  do while (gdb == 0)
+    call sleep(2)
+  end do
   
   !----------------------------------------------------------------------------------------------------------!
   ! Annotations / TO-DO list:                                                                                !

@@ -25,9 +25,9 @@ mkdir -p ${IMPACT_DEBUG_INFO_DIR}/mpi_processes
 
 # Run mpiexec async without waiting for its completion
 # Write PIDs and MPI ranks to file that is read again by cssh
-#mpiexec -np $(( ${#MPI_HOSTS[@]}*${NUM_MPI_PROCESSES_PER_HOST} )) bash -c "echo \"Hello from MPI rank \${PMI_RANK} on \$(hostname) with PID \$(echo \$\$)!\"; flock -x -w 5 ${IMPACT_DEBUG_INFO_DIR}/mpi_processes echo \"\${PMI_RANK} \$(echo \$\$)\" >> ${IMPACT_DEBUG_INFO_DIR}/mpi_processes; cd ../prog; export LD_LIBRARY_PATH=${HDF5_DIR}/lib; exec ./impact.exe" & 
+#mpiexec -np $(( ${#MPI_HOSTS[@]}*${NUM_MPI_PROCESSES_PER_HOST} )) bash -c "echo \"Hello from MPI rank \${PMI_RANK} on \$(hostname) with PID \$(echo \$\$)!\"; flock -x -w 5 ${IMPACT_DEBUG_INFO_DIR}/mpi_processes echo \"\${PMI_RANK} \$(echo \$\$)\" >> ${IMPACT_DEBUG_INFO_DIR}/mpi_processes; cd ../prog; export LD_LIBRARY_PATH=${HDF5_DIR}/lib; exec ./impact_debug.exe" & 
 
-mpiexec -np $(( ${#MPI_HOSTS[@]}*${NUM_MPI_PROCESSES_PER_HOST} )) bash -c "echo \"Hello from MPI rank \${PMI_RANK} on \$(hostname) with PID \$(echo \$\$)!\"; echo \"\${PMI_RANK} \$(echo \$\$)\" >> ${IMPACT_DEBUG_INFO_DIR}/mpi_processes/\${PMI_RANK}; cd ../prog; export LD_LIBRARY_PATH=${HDF5_DIR}/lib; exec ./impact.exe" &
+mpiexec -np $(( ${#MPI_HOSTS[@]}*${NUM_MPI_PROCESSES_PER_HOST} )) bash -c "echo \"Hello from MPI rank \${PMI_RANK} on \$(hostname) with PID \$(echo \$\$)!\"; echo \"\${PMI_RANK} \$(echo \$\$)\" >> ${IMPACT_DEBUG_INFO_DIR}/mpi_processes/\${PMI_RANK}; cd ../prog; export LD_LIBRARY_PATH=${HDF5_DIR}/lib; exec ./impact_debug.exe" &
 IMPACT_MPI_MASTER_PID=$!
 
 # Not needed for mpi_processes an associative array

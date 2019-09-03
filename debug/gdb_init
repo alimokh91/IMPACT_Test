@@ -1,5 +1,5 @@
 up 2
 set variable gdb = 1
 tui enable
-break impact.f90:68
+break impact_debug.f90:68
 continue

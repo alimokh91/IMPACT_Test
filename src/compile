@@ -60,9 +60,12 @@ endif
 #--- name of the executable ---
 NAME = impact
 EXE  = $(NAME).exe
+NAME_DEBUG = impact_debug
+EXE_DEBUG  = $(NAME_DEBUG).exe
 
 #--- objects and subunits ---
 OBJ   = $(NAME).o
+OBJ_DEBUG = $(NAME_DEBUG).o
 
 MOD1  = mod_dims
 MOD2  = mod_vars
@@ -110,8 +113,9 @@ ifeq ($(CUSR),FALSE)
 
 #--- dependencies and compilation of the EXECUTABLE ---
 
-build:  $(DST)/$(OBJ) $(MOD) $(USR)
+build:  $(DST)/$(OBJ) $(DST)/$(OBJ_DEBUG) $(MOD) $(USR)
 	$(COMP) -o $(DST)/$(EXE) $(FLAG1) $(MOD) $(USR) $(DST)/$(OBJ) $(LIBS)
+	$(COMP) -o $(DST)/$(EXE_DEBUG) $(FLAG1) $(MOD) $(USR) $(DST)/$(OBJ_DEBUG) $(LIBS)
 	ar rcs $(DST)/lib$(NAME).a $(MOD) $(USR)
 
 #--- dependencies and compilation of the OBJECT ---
@@ -119,6 +123,8 @@ build:  $(DST)/$(OBJ) $(MOD) $(USR)
 $(DST)/$(OBJ): $(MOD) $(USR) $(NAME).f90
 	$(COMP) -o $(DST)/$(NAME).o $(FLAG2) -c $(NAME).f90
 
+$(DST)/$(OBJ_DEBUG): $(MOD) $(USR) $(NAME_DEBUG).f90
+	$(COMP) -o $(DST)/$(NAME_DEBUG).o $(FLAG2) -c $(NAME_DEBUG).f90
 
 #--- dependencies and compilation of the MODULES ---
 
@@ -210,15 +216,17 @@ else
 
 #--- dependencies and compilation of the EXECUTABLE ---
 
-build:  $(DST)/$(OBJ) $(USR)
+build:  $(DST)/$(OBJ) $(DST)/$(OBJ_DEBUG) $(USR)
 	$(COMP) -o $(DST)/$(EXE) $(FLAG1) $(MOD) $(USR) $(DST)/$(OBJ) $(LIBS)
-
+        $(COMP) -o $(DST)/$(EXE_DEBUG) $(FLAG1) $(MOD) $(USR) $(DST)/$(OBJ_DEBUG) $(LIBS)
 
 #--- dependencies and compilation of the OBJECT ---
 
 $(DST)/$(OBJ): $(USR) $(NAME).f90
 	$(COMP) -o $(DST)/$(NAME).o $(FLAG2) -c $(NAME).f90
 
+$(DST)/$(OBJ_DEBUG): $(USR) $(NAME_DEBUG).f90
+	$(COMP) -o $(DST)/$(NAME_DEBUG).o $(FLAG2) -c $(NAME_DEBUG).f90
 
 #--- dependencies and compilation of the MODULES ---
 
@@ -513,12 +521,12 @@ ifeq ($(CUSR),FALSE)
 
 clean: f2py-clean
 clean:
-	rm -f $(DST)/*.o $(DST)/*.mod $(DST)/$(EXE)
+	rm -f $(DST)/*.o $(DST)/*.mod $(DST)/$(EXE) $(DST)/$(EXE_DEBUG)
 
 else
 
 clean: f2py-clean
 clean:
-	rm -f $(DST)/usr_*.o $(DST)/usr_*.mod $(DST)/$(NAME).o $(DST)/$(EXE)
+	rm -f $(DST)/usr_*.o $(DST)/usr_*.mod $(DST)/$(NAME).o $(DST)/$(EXE) $(DST)/$(NAME_DEBUG).o $(DST)/$(EXE_DEBUG)
 
 endif
