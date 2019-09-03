@@ -4,7 +4,7 @@
 
 A CSSH- and gdb-based debugging tool for IMPACT.
 
-## How to use it
+## What's required to make it work within IMPACT
 
 Put 
 
@@ -18,7 +18,9 @@ Put
 +  end do
 ```
 
-into impact.f90 under "INCLUDE 'mpif.h'" (a seperate impact_debugger.f90 should be created for this). All kalman module subroutine calls are currently commented out as they are causing memory errors. In targets.mk make sure you are using the flags "-O0 -g".
+into impact.f90 under "INCLUDE 'mpif.h'" - this was realized in impact_debugger.f90. All kalman module subroutine calls are currently commented out as they are causing memory errors. In targets.mk make sure you are using the flags "-O0 -g".
+
+## How to use it
 
 Run
 
@@ -26,7 +28,7 @@ Run
 ./debug_impact.sh
 ```
 
-in a bash, which will launch IMPACT using MPI and start CSSH. Using CSSH's master terminal perform the following steps within each CSSH xterm
+in a bash, which will launch the debugger version of IMPACT using MPI and start CSSH. Using CSSH's master terminal perform the following steps within each CSSH xterm
 
 ``` 
 cd /path/to/your/IMPACT/debug
