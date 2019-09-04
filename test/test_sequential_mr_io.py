@@ -4,104 +4,153 @@ import os
 import numpy as np
 from mr_io import SpatialMRI, SpaceTimeMRI, HPCPredictMRI, SegmentedHPCPredictMRI
 
+
+def write_hdf5_read_in_fortran(test_inst):
+    test_cls = type(test_inst)
+ 
+    # Write HDF5 from Python
+    test_inst.mri.write_hdf5(test_cls.filename_mri)
+    
+    # Read HDF5 from Fortran
+    # Run test
+    fort = sp.run(["bash", "-c", "fortran/%s %s  1> %s 2> %s" %
+                  (test_cls.filename_exec, test_cls.filename_mri,
+                   test_cls.filename_out, test_cls.filename_err)], 
+                  stdout=sp.PIPE, stderr=sp.PIPE, check=True)
+    # Debug test
+#     fort = sp.run(["xterm","-e","gdb", "--args", *("fortran/%s %s" %
+#                   (test_cls.filename_exec, test_cls.filename_mri)).split(" ")], 
+#                   stdout=sp.PIPE, stderr=sp.PIPE, check=True)
+    print("Shell command returned out/err:")
+    print(fort.stdout.decode("utf-8"))
+    print(fort.stderr.decode("utf-8"))
+         
+    with open(test_cls.filename_err, 'r') as err:
+        print("Fortran command returned err:")
+        print(err.read())
+
+def validate_group_name(test_inst, fort_group_name):
+    test_inst.assertEqual(fort_group_name, type(test_inst).mri_group_name)        
+    
+
+def validate_spatial_fort_array(test_inst, array, out_lines):
+    fort_dims = np.fromstring(out_lines[0], dtype=int, sep=' ') 
+    fort_array= np.fromstring(out_lines[1], dtype=float, sep=' ').reshape(np.flip(fort_dims)).transpose()
+
+    test_inst.assertTrue(np.array_equal(fort_dims, array.shape)) #[0])
+    test_inst.assertTrue(np.allclose(fort_array, array, rtol=1e-14))
+
+
+def validate_spacetime_fort_array(test_inst, array, out_lines, transpose_dims):
+    fort_dims = np.fromstring(out_lines[0], dtype=int, sep=' ') 
+    fort_array= np.fromstring(out_lines[1], dtype=float, sep=' ').reshape(np.flip(fort_dims)).transpose(transpose_dims)
+
+    test_inst.assertTrue(np.array_equal(fort_dims[-3:], array.shape[:3]))
+    test_inst.assertTrue(np.array_equal(fort_dims[-4], array.shape[3]))
+    test_inst.assertTrue(np.array_equal(fort_dims[:-4], array.shape[4:]))
+    test_inst.assertTrue(np.allclose(fort_array, array, rtol=1e-14))
+
+def validate_spacetime_scalar_fort_array(test_inst, array, out_lines):
+    validate_spacetime_fort_array(test_inst, array, out_lines, transpose_dims=(2,1,0,3))
+
+def validate_spacetime_vector_fort_array(test_inst, array, out_lines):
+    validate_spacetime_fort_array(test_inst, array, out_lines, transpose_dims=(2,1,0,3,4))
+
+def validate_spacetime_matrix_fort_array(test_inst, array, out_lines):
+    validate_spacetime_fort_array(test_inst, array, out_lines, transpose_dims=(2,1,0,3,5,4))
+
+
+def remove_test_files(test_inst):
+    # Clean up file
+    test_cls = type(test_inst)
+    files = [test_cls.filename_mri, test_cls.filename_err, test_cls.filename_out]
+    for f in files:
+        os.remove(f) 
+
+        
 class TestSpatialMRI(unittest.TestCase):
  
+    # Filenames
+    filename_prefix = "mr_io_test_reader"
+    
+    filename_exec = filename_prefix
+    filename_mri = filename_prefix + ".h5"
+    filename_out = filename_prefix + ".out"
+    filename_err = filename_prefix + ".err"
+
+    mri_group_name = "spatial-mri"
+
     def setUp(self):
         # Initialize the MRI data
         voxel_feature = np.random.rand(83,63,93)
         self.mri = SpatialMRI(voxel_feature)
      
     def test_communicator(self):
-        # Write HDF5 from Python
-        self.mri.write_hdf5("mr_io_test.h5")
-         
-        # Read HDF5 from Fortran
-        fort = sp.run(["fortran/mr_io_test_reader","mr_io_test.h5"], stdout=sp.PIPE, stderr=sp.PIPE, check=True)
-         
-        # Check for equality. NOTE: Possibly regexpr for parsing would make this more elegant
-        fort_stdout = fort.stdout.decode("utf-8")
-        fort_stderr = fort.stderr.decode("utf-8")        
-        print(fort_stderr)
- 
-        fort_group_name, fort_dims_str, fort_array_str, _ = fort_stdout.split('\n')
-         
-        fort_dims = np.fromstring(fort_dims_str, dtype=int, sep=' ')
-         
-        fort_array = np.fromstring(fort_array_str, dtype=float, sep=' ').reshape(np.flip(fort_dims)).transpose()
-        self.assertTrue(np.array_equal(fort_dims,self.mri.voxel_feature.shape))
-         
-        self.assertTrue(np.allclose(fort_array, self.mri.voxel_feature, rtol=1e-14))
-         
+        # Write HDF5 from Python and read HDF5 from Fortran   
+        write_hdf5_read_in_fortran(self) 
+            
+        with open(type(self).filename_out,'r') as out:
+            out_lines = [l.strip(' \n') for l in out.readlines()]
+            validate_group_name(self, out_lines[0])
+
+            validate_spatial_fort_array(self, self.mri.voxel_feature, out_lines[1:3])
+        
     def tearDown(self):
-        # Clean up file
-        os.remove("mr_io_test.h5") 
+        remove_test_files(self)
  
- 
- 
+  
+  
 class TestSpaceTimeMRI(unittest.TestCase):
+     
+    # Filenames
+    filename_prefix = "mr_io_test_reader_space_time"
+     
+    filename_exec = filename_prefix
+    filename_mri = filename_prefix + ".h5"
+    filename_out = filename_prefix + ".out"
+    filename_err = filename_prefix + ".err"
  
+    mri_group_name = "space-time-mri"
+    
     def setUp(self):
         # Initialize the MRI data
         time = np.random.rand(17)
         geometry = [np.random.rand(23), np.random.rand(13), np.random.rand(19)]
         voxel_feature = np.random.rand(23,13,19,17,21)
         self.mri = SpaceTimeMRI(geometry, time, voxel_feature)
- 
+   
     def test_communicator(self):
-        # Write HDF5 from Python
-        self.mri.write_hdf5("mr_io_test_space_time.h5")
- 
-        # Read HDF5 from Fortran
-        fort = sp.run(["fortran/mr_io_test_reader_space_time","mr_io_test_space_time.h5"], stdout=sp.PIPE, stderr=sp.PIPE, check=True)
- 
-        # Check for equality. NOTE: Possibly regexpr for parsing would make this more elegant
-        fort_stdout = fort.stdout.decode("utf-8")
-        fort_stderr = fort.stderr.decode("utf-8")   
-        print(fort_stderr)
- 
-        fort_group_name, fort_x_dim_str, fort_x_coord_str,fort_y_dim_str, fort_y_coord_str, fort_z_dim_str, fort_z_coord_str, fort_t_dim_str, fort_t_coord_str, fort_dims_str, fort_array_str, _ = fort_stdout.split('\n')
- 
-        fort_x_dim = np.fromstring(fort_x_dim_str, dtype=int, sep=' ')
-        fort_y_dim = np.fromstring(fort_y_dim_str, dtype=int, sep=' ')
-        fort_z_dim = np.fromstring(fort_z_dim_str, dtype=int, sep=' ')
-        fort_t_dim = np.fromstring(fort_t_dim_str, dtype=int, sep=' ')
- 
-        fort_x_coord = np.fromstring(fort_x_coord_str, dtype=float, sep=' ')
-        fort_y_coord = np.fromstring(fort_y_coord_str, dtype=float, sep=' ')
-        fort_z_coord = np.fromstring(fort_z_coord_str, dtype=float, sep=' ')
-        fort_t_coord = np.fromstring(fort_t_coord_str, dtype=float, sep=' ')
-      
-        #print("Fortran x-coordinates: "); print(fort_x_coord)        
-        #print("Python x-coordinates:  "); print(self.mri.geometry[0])
-        #print("Fortran y-coordinates: "); print(fort_y_coord)   
-        #print("Python y-coordinates:  "); print(self.mri.geometry[1])
-        #print("Fortran z-coordinates: "); print(fort_z_coord)   
-        #print("Python z-coordinates:  "); print(self.mri.geometry[2]) 
- 
-        self.assertEqual(fort_x_dim, fort_x_coord.shape[0])
-        self.assertEqual(fort_y_dim, fort_y_coord.shape[0])
-        self.assertEqual(fort_z_dim, fort_z_coord.shape[0])
-        self.assertEqual(fort_t_dim, fort_t_coord.shape[0])
-  
-        self.assertTrue(np.allclose(fort_x_coord, self.mri.geometry[0], rtol=1e-14))
-        self.assertTrue(np.allclose(fort_y_coord, self.mri.geometry[1], rtol=1e-14))
-        self.assertTrue(np.allclose(fort_z_coord, self.mri.geometry[2], rtol=1e-14))
-        self.assertTrue(np.allclose(fort_t_coord, self.mri.time, rtol=1e-14))
- 
-        fort_dims = np.fromstring(fort_dims_str, dtype=int, sep=' ')
- 
-        fort_array = np.fromstring(fort_array_str, dtype=float, sep=' ').reshape(np.flip(fort_dims)).transpose((2,1,0,3,4))
-        # self.assertTrue(np.array_equal(fort_dims,self.mri.voxel_feature.shape))
- 
-        self.assertTrue(np.allclose(fort_array, self.mri.voxel_feature, rtol=1e-14))
- 
+        # Write HDF5 from Python and read HDF5 from Fortran   
+        write_hdf5_read_in_fortran(self) 
+             
+        with open(type(self).filename_out,'r') as out:
+            out_lines = [l.strip(' \n') for l in out.readlines()]
+            validate_group_name(self, out_lines[0])
+            
+            validate_spatial_fort_array(self, self.mri.geometry[0], out_lines[1:3])
+            validate_spatial_fort_array(self, self.mri.geometry[1], out_lines[3:5])
+            validate_spatial_fort_array(self, self.mri.geometry[2], out_lines[5:7])
+            validate_spatial_fort_array(self, self.mri.time, out_lines[7:9])
+
+            validate_spacetime_vector_fort_array(self, self.mri.voxel_feature, out_lines[9:11])
+        
     def tearDown(self):
         # Clean up file
-        os.remove("mr_io_test_space_time.h5")
- 
- 
+        remove_test_files(self)
+
+  
 class TestHPCPredictMRI(unittest.TestCase):
+  
+    # Filenames
+    filename_prefix = "mr_io_test_reader_hpc_predict"
+     
+    filename_exec = filename_prefix
+    filename_mri = filename_prefix + ".h5"
+    filename_out = filename_prefix + ".out"
+    filename_err = filename_prefix + ".err"
  
+    mri_group_name = "hpc-predict-mri"
+
     def setUp(self):
         # Initialize the MRI data
         time = np.random.rand(17)
@@ -110,67 +159,41 @@ class TestHPCPredictMRI(unittest.TestCase):
         velocity_mean = np.random.rand(23,13,19,17,3)
         velocity_cov = np.random.rand(23,13,19,17,3,5)
         self.mri = HPCPredictMRI(geometry, time, intensity, velocity_mean, velocity_cov)
- 
-    def test_communicator(self):
-        # Write HDF5 from Python
-        self.mri.write_hdf5("mr_io_test_hpc_predict.h5")
- 
-        # Read HDF5 from Fortran
-        fort = sp.run(["fortran/mr_io_test_reader_hpc_predict","mr_io_test_hpc_predict.h5"], stdout=sp.PIPE, stderr=sp.PIPE, check=True)
- 
-        # Check for equality. NOTE: Possibly regexpr for parsing would make this more elegant
-        fort_stdout = fort.stdout.decode("utf-8")
-        fort_stderr = fort.stderr.decode("utf-8")   
-        print(fort_stderr)
- 
-        fort_group_name, fort_x_dim_str, fort_x_coord_str,fort_y_dim_str, fort_y_coord_str, fort_z_dim_str, fort_z_coord_str, fort_t_dim_str, fort_t_coord_str,  fort_dims_str0, fort_array_str0, fort_dims_str, fort_array_str, fort_dims_str2, fort_array_str2, _ = fort_stdout.split('\n')
- 
-        fort_x_dim = np.fromstring(fort_x_dim_str, dtype=int, sep=' ')
-        fort_y_dim = np.fromstring(fort_y_dim_str, dtype=int, sep=' ')
-        fort_z_dim = np.fromstring(fort_z_dim_str, dtype=int, sep=' ')
-        fort_t_dim = np.fromstring(fort_t_dim_str, dtype=int, sep=' ')
- 
-        fort_x_coord = np.fromstring(fort_x_coord_str, dtype=float, sep=' ')
-        fort_y_coord = np.fromstring(fort_y_coord_str, dtype=float, sep=' ')
-        fort_z_coord = np.fromstring(fort_z_coord_str, dtype=float, sep=' ')
-        fort_t_coord = np.fromstring(fort_t_coord_str, dtype=float, sep=' ')
-      
-        #print("Fortran x-coordinates: "); print(fort_x_coord)        
-        #print("Python x-coordinates:  "); print(self.mri.geometry[0])
-        #print("Fortran y-coordinates: "); print(fort_y_coord)   
-        #print("Python y-coordinates:  "); print(self.mri.geometry[1])
-        #print("Fortran z-coordinates: "); print(fort_z_coord)   
-        #print("Python z-coordinates:  "); print(self.mri.geometry[2]) 
- 
-        self.assertEqual(fort_x_dim, fort_x_coord.shape[0])
-        self.assertEqual(fort_y_dim, fort_y_coord.shape[0])
-        self.assertEqual(fort_z_dim, fort_z_coord.shape[0])
-        self.assertEqual(fort_t_dim, fort_t_coord.shape[0])
   
-        self.assertTrue(np.allclose(fort_x_coord, self.mri.geometry[0], rtol=1e-14))
-        self.assertTrue(np.allclose(fort_y_coord, self.mri.geometry[1], rtol=1e-14))
-        self.assertTrue(np.allclose(fort_z_coord, self.mri.geometry[2], rtol=1e-14))
-        self.assertTrue(np.allclose(fort_t_coord, self.mri.time, rtol=1e-14))
- 
-        fort_dims0 = np.fromstring(fort_dims_str0, dtype=int, sep=' ')
-        fort_array = np.fromstring(fort_array_str0, dtype=float, sep=' ').reshape(np.flip(fort_dims0)).transpose((2,1,0,3))
-        self.assertTrue(np.allclose(fort_array, self.mri.intensity, rtol=1e-14))
- 
-        fort_dims = np.fromstring(fort_dims_str, dtype=int, sep=' ')
-        fort_array = np.fromstring(fort_array_str, dtype=float, sep=' ').reshape(np.flip(fort_dims)).transpose((2,1,0,3,4))
-        self.assertTrue(np.allclose(fort_array, self.mri.velocity_mean, rtol=1e-14))
- 
-        fort_dims2 = np.fromstring(fort_dims_str2, dtype=int, sep=' ')
-        fort_array2 = np.fromstring(fort_array_str2, dtype=float, sep=' ').reshape(np.flip(fort_dims2)).transpose((2,1,0,3,5,4))
-        self.assertTrue(np.allclose(fort_array2, self.mri.velocity_cov, rtol=1e-14))
- 
+    def test_communicator(self):
+        # Write HDF5 from Python and read HDF5 from Fortran   
+        write_hdf5_read_in_fortran(self) 
+  
+        with open(type(self).filename_out,'r') as out:
+            out_lines = [l.strip(' \n') for l in out.readlines()]
+            validate_group_name(self, out_lines[0])
+            
+            validate_spatial_fort_array(self, self.mri.geometry[0], out_lines[1:3])
+            validate_spatial_fort_array(self, self.mri.geometry[1], out_lines[3:5])
+            validate_spatial_fort_array(self, self.mri.geometry[2], out_lines[5:7])
+            validate_spatial_fort_array(self, self.mri.time, out_lines[7:9])
+
+            validate_spacetime_scalar_fort_array(self, self.mri.intensity, out_lines[9:11])  
+            validate_spacetime_vector_fort_array(self, self.mri.velocity_mean, out_lines[11:13])  
+            validate_spacetime_matrix_fort_array(self, self.mri.velocity_cov, out_lines[13:15])  
+  
     def tearDown(self):
         # Clean up file
-        os.remove("mr_io_test_hpc_predict.h5")
-
-
+        remove_test_files(self)
+ 
+ 
 class TestSegmentedHPCPredictMRI(unittest.TestCase):
 
+    # Filenames
+    filename_prefix = "mr_io_test_reader_segmented_hpc_predict"
+     
+    filename_exec = filename_prefix
+    filename_mri = filename_prefix + ".h5"
+    filename_out = filename_prefix + ".out"
+    filename_err = filename_prefix + ".err"
+ 
+    mri_group_name = "segmented-hpc-predict-mri" 
+ 
     def setUp(self):
         # Initialize the MRI data
         time = np.random.rand(17)
@@ -179,69 +202,30 @@ class TestSegmentedHPCPredictMRI(unittest.TestCase):
         velocity_mean = np.random.rand(23,13,19,17,3)
         velocity_cov = np.random.rand(23,13,19,17,3,5)
         segmentation_prob = np.random.rand(23,13,19,17)
-        self.mri = SegmentedHPCPredictMRI(geometry, time, intensity, velocity_mean, velocity_cov, segmentation_prob)
-
-    def test_communicator(self):
-        # Write HDF5 from Python
-        self.mri.write_hdf5("mr_io_test_segmented_hpc_predict.h5")
-
-        # Read HDF5 from Fortran
-        fort = sp.run(["fortran/mr_io_test_reader_segmented_hpc_predict","mr_io_test_segmented_hpc_predict.h5"], stdout=sp.PIPE, stderr=sp.PIPE, check=True)
-
-        # Check for equality. NOTE: Possibly regexpr for parsing would make this more elegant
-        fort_stdout = fort.stdout.decode("utf-8")
-        fort_stderr = fort.stderr.decode("utf-8")   
-        print(fort_stderr)
-
-        fort_group_name, fort_x_dim_str, fort_x_coord_str,fort_y_dim_str, fort_y_coord_str, fort_z_dim_str, fort_z_coord_str, fort_t_dim_str, fort_t_coord_str,  fort_dims_str0, fort_array_str0, fort_dims_str, fort_array_str, fort_dims_str2, fort_array_str2, fort_dims_str3, fort_array_str3, _ = fort_stdout.split('\n')
-
-        fort_x_dim = np.fromstring(fort_x_dim_str, dtype=int, sep=' ')
-        fort_y_dim = np.fromstring(fort_y_dim_str, dtype=int, sep=' ')
-        fort_z_dim = np.fromstring(fort_z_dim_str, dtype=int, sep=' ')
-        fort_t_dim = np.fromstring(fort_t_dim_str, dtype=int, sep=' ')
-
-        fort_x_coord = np.fromstring(fort_x_coord_str, dtype=float, sep=' ')
-        fort_y_coord = np.fromstring(fort_y_coord_str, dtype=float, sep=' ')
-        fort_z_coord = np.fromstring(fort_z_coord_str, dtype=float, sep=' ')
-        fort_t_coord = np.fromstring(fort_t_coord_str, dtype=float, sep=' ')
-     
-        #print("Fortran x-coordinates: "); print(fort_x_coord)        
-        #print("Python x-coordinates:  "); print(self.mri.geometry[0])
-        #print("Fortran y-coordinates: "); print(fort_y_coord)   
-        #print("Python y-coordinates:  "); print(self.mri.geometry[1])
-        #print("Fortran z-coordinates: "); print(fort_z_coord)   
-        #print("Python z-coordinates:  "); print(self.mri.geometry[2]) 
-
-        self.assertEqual(fort_x_dim, fort_x_coord.shape[0])
-        self.assertEqual(fort_y_dim, fort_y_coord.shape[0])
-        self.assertEqual(fort_z_dim, fort_z_coord.shape[0])
-        self.assertEqual(fort_t_dim, fort_t_coord.shape[0])
+        self.mri = SegmentedHPCPredictMRI(geometry, time, intensity, velocity_mean, 
+                                          velocity_cov, segmentation_prob)
  
-        self.assertTrue(np.allclose(fort_x_coord, self.mri.geometry[0], rtol=1e-14))
-        self.assertTrue(np.allclose(fort_y_coord, self.mri.geometry[1], rtol=1e-14))
-        self.assertTrue(np.allclose(fort_z_coord, self.mri.geometry[2], rtol=1e-14))
-        self.assertTrue(np.allclose(fort_t_coord, self.mri.time, rtol=1e-14))
+    def test_communicator(self):
+        # Write HDF5 from Python and read HDF5 from Fortran   
+        write_hdf5_read_in_fortran(self) 
+  
+        with open(type(self).filename_out,'r') as out:
+            out_lines = [l.strip(' \n') for l in out.readlines()]
+            validate_group_name(self, out_lines[0])
+            
+            validate_spatial_fort_array(self, self.mri.geometry[0], out_lines[1:3])
+            validate_spatial_fort_array(self, self.mri.geometry[1], out_lines[3:5])
+            validate_spatial_fort_array(self, self.mri.geometry[2], out_lines[5:7])
+            validate_spatial_fort_array(self, self.mri.time, out_lines[7:9])
 
-        fort_dims0 = np.fromstring(fort_dims_str0, dtype=int, sep=' ')
-        fort_array0 = np.fromstring(fort_array_str0, dtype=float, sep=' ').reshape(np.flip(fort_dims0)).transpose((2,1,0,3))
-        self.assertTrue(np.allclose(fort_array0, self.mri.intensity, rtol=1e-14))
-
-        fort_dims = np.fromstring(fort_dims_str, dtype=int, sep=' ')
-        fort_array = np.fromstring(fort_array_str, dtype=float, sep=' ').reshape(np.flip(fort_dims)).transpose((2,1,0,3,4))
-        self.assertTrue(np.allclose(fort_array, self.mri.velocity_mean, rtol=1e-14))
-
-        fort_dims2 = np.fromstring(fort_dims_str2, dtype=int, sep=' ')
-        fort_array2 = np.fromstring(fort_array_str2, dtype=float, sep=' ').reshape(np.flip(fort_dims2)).transpose((2,1,0,3,5,4))
-        self.assertTrue(np.allclose(fort_array2, self.mri.velocity_cov, rtol=1e-14))
-
-        fort_dims3 = np.fromstring(fort_dims_str3, dtype=int, sep=' ')
-        fort_array3 = np.fromstring(fort_array_str3, dtype=float, sep=' ').reshape(np.flip(fort_dims3)).transpose((2,1,0,3))
-        self.assertTrue(np.allclose(fort_array3, self.mri.segmentation_prob, rtol=1e-14))
-
+            validate_spacetime_scalar_fort_array(self, self.mri.intensity, out_lines[9:11])  
+            validate_spacetime_vector_fort_array(self, self.mri.velocity_mean, out_lines[11:13])  
+            validate_spacetime_matrix_fort_array(self, self.mri.velocity_cov, out_lines[13:15])  
+            validate_spacetime_scalar_fort_array(self, self.mri.segmentation_prob, out_lines[15:17])  
+        
     def tearDown(self):
         # Clean up file
-        os.remove("mr_io_test_segmented_hpc_predict.h5")
-
+        remove_test_files(self)
 
 if __name__ == '__main__':
     unittest.main()
