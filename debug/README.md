@@ -9,13 +9,13 @@ A CSSH- and gdb-based debugging tool for IMPACT.
 Put 
 
 ```
-+  INTEGER :: gdb
-+
-+  gdb = 0
-+
-+  do while (gdb == 0)
-+    call sleep(2)
-+  end do
+  INTEGER :: gdb
+
+  gdb = 0
+
+  do while (gdb == 0)
+    call sleep(2)
+  end do
 ```
 
 into impact.f90 under "INCLUDE 'mpif.h'" - this was realized in impact_debugger.f90. All kalman module subroutine calls are currently commented out as they are causing memory errors. In targets.mk make sure you are using the flags "-O0 -g".
