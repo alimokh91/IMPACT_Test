@@ -62,13 +62,13 @@ Quit by just killing the process that runs `debug_impact.sh` - this will automat
 In impact_debug.f90, the lines
 
 ```
-+  INTEGER :: gdb
-+
-+  gdb = 0
-+
-+  do while (gdb == 0)
-+    call sleep(2)
-+  end do
+  INTEGER :: gdb
+
+  gdb = 0
+
+  do while (gdb == 0)
+    call sleep(2)
+  end do
 ```
 
 were added to impact.f90 under "INCLUDE 'mpif.h'" to let the processes spin until a gdb processes from an xterm attaches (in xterm_attach.sh) and sets the value of gdb /= 0 (in gdb_init). The program then continues until the breakpoint defined in gdb_init. All kalman module subroutine calls are currently commented out as they are causing memory errors. Whenever debugging with gdb, make sure that in targets.mk you are using the flags "-O0 -g".
