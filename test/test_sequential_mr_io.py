@@ -14,8 +14,10 @@ def write_hdf5_read_in_fortran(test_inst):
     # Read HDF5 from Fortran
     # Run test
     fort = sp.run(["bash", "-c", "fortran/%s %s  1> %s 2> %s" %
-                  (test_cls.filename_exec, test_cls.filename_mri,
-                   test_cls.filename_out, test_cls.filename_err)], 
+                  (test_cls.filename_exec, 
+                   test_cls.filename_mri,
+                   test_cls.filename_out, 
+                   test_cls.filename_err)], 
                   stdout=sp.PIPE, stderr=sp.PIPE, check=True)
     # Debug test
 #     fort = sp.run(["xterm","-e","gdb", "--args", *("fortran/%s %s" %
@@ -58,7 +60,6 @@ def validate_spacetime_vector_fort_array(test_inst, array, out_lines):
 
 def validate_spacetime_matrix_fort_array(test_inst, array, out_lines):
     validate_spacetime_fort_array(test_inst, array, out_lines, transpose_dims=(2,1,0,3,5,4))
-
 
 def remove_test_files(test_inst):
     # Clean up file
@@ -226,6 +227,7 @@ class TestSegmentedHPCPredictMRI(unittest.TestCase):
     def tearDown(self):
         # Clean up file
         remove_test_files(self)
+
 
 if __name__ == '__main__':
     unittest.main()
