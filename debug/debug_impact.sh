@@ -18,6 +18,13 @@ else
   exit 1
 fi
 
+# Set CSSH executable correctly
+case $(uname -s) in
+  Linux*)  CSSH_EXEC=cssh;;
+  Darwin*) CSSH_EXEC=csshX;;
+  *) echo "Unknown operating system..." && exit 1
+esac
+
 set -euxo pipefail
 
 MPI_HOSTS=(localhost)
@@ -78,5 +85,5 @@ sleep 0.5
 echo "Launching CSSH..."
 
 # Initialize all 
-cssh --config-file clusterssh_config --rows ${NUM_CSSH_XTERM_ROWS} "${xterm_hosts[@]}" #-a "cd src/IMPACT/debug && source xterm_attach.sh && exec bash"
+${CSSH_EXEC} --config-file clusterssh_config --rows ${NUM_CSSH_XTERM_ROWS} "${xterm_hosts[@]}" #-a "cd src/IMPACT/debug && source xterm_attach.sh && exec bash"
 
