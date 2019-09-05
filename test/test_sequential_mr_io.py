@@ -3,7 +3,7 @@ import subprocess as sp
 import os
 import numpy as np
 from mr_io import SpatialMRI, SpaceTimeMRI, HPCPredictMRI, SegmentedHPCPredictMRI
-
+from test_common import validate_group_name, validate_spatial_fort_array, validate_spacetime_fort_array, validate_spacetime_scalar_fort_array, validate_spacetime_vector_fort_array, validate_spacetime_matrix_fort_array
 
 def write_hdf5_read_in_fortran(test_inst):
     test_cls = type(test_inst)
@@ -30,36 +30,6 @@ def write_hdf5_read_in_fortran(test_inst):
     with open(test_cls.filename_err, 'r') as err:
         print("Fortran command returned err:")
         print(err.read())
-
-def validate_group_name(test_inst, fort_group_name):
-    test_inst.assertEqual(fort_group_name, type(test_inst).mri_group_name)        
-    
-
-def validate_spatial_fort_array(test_inst, array, out_lines):
-    fort_dims = np.fromstring(out_lines[0], dtype=int, sep=' ') 
-    fort_array= np.fromstring(out_lines[1], dtype=float, sep=' ').reshape(np.flip(fort_dims)).transpose()
-
-    test_inst.assertTrue(np.array_equal(fort_dims, array.shape)) #[0])
-    test_inst.assertTrue(np.allclose(fort_array, array, rtol=1e-14))
-
-
-def validate_spacetime_fort_array(test_inst, array, out_lines, transpose_dims):
-    fort_dims = np.fromstring(out_lines[0], dtype=int, sep=' ') 
-    fort_array= np.fromstring(out_lines[1], dtype=float, sep=' ').reshape(np.flip(fort_dims)).transpose(transpose_dims)
-
-    test_inst.assertTrue(np.array_equal(fort_dims[-3:], array.shape[:3]))
-    test_inst.assertTrue(np.array_equal(fort_dims[-4], array.shape[3]))
-    test_inst.assertTrue(np.array_equal(fort_dims[:-4], array.shape[4:]))
-    test_inst.assertTrue(np.allclose(fort_array, array, rtol=1e-14))
-
-def validate_spacetime_scalar_fort_array(test_inst, array, out_lines):
-    validate_spacetime_fort_array(test_inst, array, out_lines, transpose_dims=(2,1,0,3))
-
-def validate_spacetime_vector_fort_array(test_inst, array, out_lines):
-    validate_spacetime_fort_array(test_inst, array, out_lines, transpose_dims=(2,1,0,3,4))
-
-def validate_spacetime_matrix_fort_array(test_inst, array, out_lines):
-    validate_spacetime_fort_array(test_inst, array, out_lines, transpose_dims=(2,1,0,3,5,4))
 
 def remove_test_files(test_inst):
     # Clean up file
