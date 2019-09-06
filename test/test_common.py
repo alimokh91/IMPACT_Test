@@ -34,6 +34,10 @@ def validate_spacetime_vector_fort_array(test_inst, array, out_lines):
 def validate_spacetime_matrix_fort_array(test_inst, array, out_lines):
     validate_spacetime_fort_array(test_inst, array, out_lines, transpose_dims=(2,1,0,3,5,4))
 
+def mpi_cart_rank(mpi_rank, mpi_cart_dims):
+    return (  mpi_rank // (mpi_cart_dims[1] * mpi_cart_dims[2]),
+             (mpi_rank // mpi_cart_dims[2]) % mpi_cart_dims[1],
+              mpi_rank % mpi_cart_dims[2] )
 
 def spatial_hyperslab_dims(cls, voxel_feature): # NOTE: This is not the hyperslab_shape of particular block at (i,j,k), which has to account for boundaries
     #import pdb; pdb.set_trace()
