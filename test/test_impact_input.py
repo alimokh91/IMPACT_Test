@@ -13,11 +13,14 @@ def write_hdf5_start_impact_fortran(test_inst):
     test_inst.mri.write_hdf5(test_cls.filename_mri)
 
     ## Write configuration file for impact
-    config_command = "python python/mr_io_impact_config.py --mri %s --sr %d %d %d --tr %d --config %s --output %s --np %d  1> %s 2> %s" % \
+    config_command = "python python/mr_io_impact_config.py --mri %s --sr %d %d %d --padding %f %f %f --tr %d --config %s --output %s --np %d  1> %s 2> %s" % \
                            (test_cls.filename_mri,
                             test_cls.sr[0],
                             test_cls.sr[1],
                             test_cls.sr[2],
+                            test_cls.padding[0],
+                            test_cls.padding[1],
+                            test_cls.padding[2],
                             test_cls.tr,
                             test_cls.config_template,
                             test_cls.config_output,
@@ -25,8 +28,10 @@ def write_hdf5_start_impact_fortran(test_inst):
                             test_cls.filename_out_rank % ("config_writer"),
                             test_cls.filename_err_rank % ("config_writer"))
                            
+    print("IMPACT config generator command:")
     print(config_command)
-    config_run = sp.run(["bash","-c",config_command],
+    config_run = sp.run( 
+         ["bash","-c",config_command],
                             stdout=sp.PIPE, stderr=sp.PIPE, check=False)
 
 
@@ -87,7 +92,7 @@ def validate_impact_coordinates(test_inst):
             for i in range(3):
                 impact_num_uniaxial_pressure_grid_points = np.fromstring(out_lines[out_begin+2*i+1][:-1], dtype=int, sep=' ')[0]
                 impact_coord_array = np.fromstring(out_lines[out_begin+2*i+2][:-1], dtype=float, sep=' ')
-                test_inst.assertTrue( impact_num_uniaxial_pressure_grid_points == test_cls.sr[i]*(len(test_inst.geometry_complement[i])-1)/int(test_inst.mpi_cart_dims[i])+1 )
+                test_inst.assertTrue( impact_num_uniaxial_pressure_grid_points == test_cls.sr[i]*(len(test_inst.geometry_complement[i])-1)//int(test_inst.mpi_cart_dims[i])+1 )
                 test_inst.assertTrue( len(impact_coord_array) == impact_num_uniaxial_pressure_grid_points )
                 if not np.allclose(impact_coord_array[::test_cls.sr[i]], 
                                    test_inst.geometry_complement[i][mpi_rank_cart[i]*num_vox_per_proc[i]:(mpi_rank_cart[i]+1)*num_vox_per_proc[i]+1], rtol=1e-14):
@@ -136,6 +141,8 @@ class TestImpactInput(unittest.TestCase): # FIXME: coordinates test...
     config_template = 'python/config.txt.j2'
     config_output = 'config.txt'
 
+    padding = (0., 0., 0.)
+
     def setUp(self):
         # Initialize the MRI data
         time = np.linspace(0.,1.,11)
@@ -166,7 +173,7 @@ class TestImpactInput(unittest.TestCase): # FIXME: coordinates test...
 class TestImpactInputPadding(unittest.TestCase): # FIXME: coordinates test...
     
     # number of Fortran MPI processes
-    mpi_proc = 4
+    mpi_proc = 2**3
     
     # Filenames
     filename_prefix = "mr_io_test_impact_input"
@@ -185,6 +192,7 @@ class TestImpactInputPadding(unittest.TestCase): # FIXME: coordinates test...
     config_template = 'python/config.txt.j2'
     config_output = 'config.txt'
 
+    padding = (0.5, 0.4, 0.7)
 
     def setUp(self):
         test_cls = type(self)
@@ -197,10 +205,13 @@ class TestImpactInputPadding(unittest.TestCase): # FIXME: coordinates test...
 
         self.mpi_cart_dims = spatial_hyperslab_dims_new(type(self), intensity)
         
-        num_ext_vox = [((test_cls.num_vox[i] + self.mpi_cart_dims[i] -1) // self.mpi_cart_dims[i]) \
+        num_pad_vox = [int(np.ceil(2.*test_cls.padding[i]*test_cls.num_vox[i])) for i in range(3)]
+        
+        num_ext_vox = [((test_cls.num_vox[i] + num_pad_vox[i] + self.mpi_cart_dims[i] -1) // self.mpi_cart_dims[i]) \
                        * self.mpi_cart_dims[i] for i in range(3)]
         num_pad_vox_lhs = [(num_ext_vox[i]-test_cls.num_vox[i])//2 for i in range(3)]
-        self.num_vox_per_proc = [num_ext_vox[i]//self.mpi_cart_dims[i] for i in range(3)]
+        num_pad_vox_rhs = [(num_ext_vox[i]-test_cls.num_vox[i]+1)//2 for i in range(3)]
+#        num_vox_per_proc = [num_ext_vox[i]//self.mpi_cart_dims[i] for i in range(3)]
         
         geometry = [test_cls.domain_origin[i] + \
                     np.linspace(0, test_cls.domain_length[i],
@@ -209,12 +220,16 @@ class TestImpactInputPadding(unittest.TestCase): # FIXME: coordinates test...
                    [test_cls.domain_origin[i] + \
                                np.linspace(0, test_cls.domain_length[i],
                                            2*num_ext_vox[i]+1)[::2] for i in range(3)]
-                
+        
         self.mri = HPCPredictMRI(geometry, time, intensity, velocity_mean, velocity_cov)
+
+        print("MPI cartesian dims: {}\nMRI voxels: {}\nDesired padding voxels: {}\nExtended MRI voxels: {}\nComputed padding voxels: {} {}".format(\
+              self.mpi_cart_dims, test_cls.num_vox, num_pad_vox, num_ext_vox, num_pad_vox_lhs, num_pad_vox_rhs))
                 
 
     def test_communicator(self):
         write_hdf5_start_impact_fortran(self)        
+        import pdb; pdb.set_trace()
         validate_impact_coordinates(self)
         # further checks can be added as required... (MRI reader testing not done here as already tested elsewhere)
 

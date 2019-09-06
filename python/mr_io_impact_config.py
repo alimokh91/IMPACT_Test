@@ -2,8 +2,8 @@ from mr_io import HPCPredictMRI
 from jinja2 import Environment, FileSystemLoader
 import numpy as np
 import argparse
-import logging
 
+# FIXME: replace with new version from test_common
 def spatial_hyperslab_dims(mpi_size, voxel_feature_shape): 
     #import pdb; pdb.set_trace()
     dims_mem = np.array(voxel_feature_shape)
@@ -23,6 +23,8 @@ def main():
                         help='hpc-predict-io file containting MRI')
     parser.add_argument('--sr', type=int, nargs=3,
                     help='Number of spatial refinements along each dimension compared to MRI grid')
+    parser.add_argument('--padding', type=float, nargs=3, default=(0.,0.,0.),
+                    help='Amount of bilateral padding for periodic boundary conditions along each dimension relative to MRI grid')
     parser.add_argument('--tr', type=int,
                     help='Number of temporal refinements compared to MRI grid')
     parser.add_argument('--config', type=str, default='config.txt.j2',
@@ -63,15 +65,15 @@ def main():
 #             num_pressure_grid_points = (N_i_minus_one+1)*block_dims[i]+1 # the +1 at the end is to convert number of voxels to number of grid points
 
         num_mri_voxels = len(mri.geometry[i])
+        num_padding_voxels = int(np.ceil(2.*args.padding[i]*num_mri_voxels))
         
         # Extend MRI voxel grid to allow for uniform decomposition among MPI processes
-        num_ext_mri_voxels = ((num_mri_voxels + block_dims[i] -1) // block_dims[i]) * block_dims[i]
+        num_ext_mri_voxels = ((num_mri_voxels + num_padding_voxels + block_dims[i] -1) // block_dims[i]) * block_dims[i]
         # TODO: With extra added padding (relative to MRI voxel grid size)
         #num_ext_mri_voxels = (( np.ceil((padding+1.0)*num_mri_voxels) + block_dims[i] -1) // block_dims[i]) * block_dims[i]
                 
-        num_padding_voxels = num_ext_mri_voxels - num_mri_voxels 
-        num_padding_voxels_lhs = num_padding_voxels//2
-        num_padding_voxels_rhs = num_padding_voxels - num_padding_voxels_lhs
+        num_padding_voxels_lhs = (num_ext_mri_voxels - num_mri_voxels)//2
+        num_padding_voxels_rhs = (num_ext_mri_voxels - num_mri_voxels + 1)//2
  
         # Make sure number of pressure grid points per process is odd (number of (extended refined) MRI voxels must be even)
         if ( (args.sr[i]*num_ext_mri_voxels // block_dims[i]) % 2 != 0): # This will never be triggered by the above criterion
@@ -85,7 +87,7 @@ def main():
 #             raise ValueError
         
         num_pressure_grid_points = num_refined_ext_mri_voxels+1 # the +1 at the end is to convert number of voxels to number of grid points
-                
+
         template_args['M%d' % (i+1)]  = num_pressure_grid_points # Number of pressure grid points in each direction
         # second line converts MRI point grid extent to MRI voxel grid extent,
         # third line, which is commented out, would convert pressure voxel grid extent to pressure point grid extent
