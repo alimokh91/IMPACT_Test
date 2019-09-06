@@ -104,7 +104,13 @@ def validate_impact_coordinates(test_inst):
                 validate_array(test_inst,
                                impact_coord_array[::test_cls.sr[i]], 
                                test_inst.geometry_complement[i][mpi_rank_cart[i]*num_vox_per_proc[i]:(mpi_rank_cart[i]+1)*num_vox_per_proc[i]+1])
-    
+            
+            # FIXME: Uncomment when IMPACT config reader is adapted to parse extended MRI parameters
+#             for i in range(3):
+#                 validate_array(test_inst, np.fromstring(out_lines[out_begin+2*i+3][:-1], dtype=int, sep=' '), test_cls.num_vox_per_proc)  # kalman_num_data_voxels_per_process
+#                 validate_array(test_inst, np.fromstring(out_lines[out_begin+2*i+4][:-1], dtype=int, sep=' '), test_cls.num_pad_vox_lhs)  # kalman_num_padding_data_voxels_lhs
+#                 validate_array(test_inst, np.fromstring(out_lines[out_begin+2*i+5][:-1], dtype=int, sep=' '), test_cls.num_pad_vox_rhs)  # kalman_num_padding_data_voxels_rhs
+       
 def remove_test_files(test_inst):
     test_cls = type(test_inst)
     # Clean up file
@@ -133,7 +139,7 @@ class TestImpactInput(unittest.TestCase): # FIXME: coordinates test...
     impact_noise = ["test_beta.txt", "test_multigrid_properties.txt"] # IMPACT files that are written without asking
 
     # python python/mr_io_impact_config.py --mri mr_io_test_space_time.h5 --sr 2 2 2 --tr 10 --config python/config.txt.j2 --output python/config.txt --np 8
-    num_vox = (2**3, 2**3, 2**3)   # should be divisible by domain decomposition computed in this test
+    num_vox = (2**4, 2**5, 2**3)   # should be divisible by domain decomposition computed in this test
     domain_origin = (1., 4., 5.)
     domain_length = (3., 1.5, 2.) 
     sr = [2, 2, 2]
@@ -144,6 +150,7 @@ class TestImpactInput(unittest.TestCase): # FIXME: coordinates test...
     padding = (0., 0., 0.)
 
     def setUp(self):
+        test_cls = type(self)
         # Initialize the MRI data
         time = np.linspace(0.,1.,11)
         intensity = np.random.rand(*TestImpactInput.num_vox,11)
@@ -161,6 +168,13 @@ class TestImpactInput(unittest.TestCase): # FIXME: coordinates test...
         self.mri = HPCPredictMRI(geometry, time, intensity, velocity_mean, velocity_cov)
         self.mpi_cart_dims = spatial_hyperslab_dims_new(type(self), self.mri.intensity)
 
+        test_cls.num_pad_vox_lhs = [0]*3
+        test_cls.num_pad_vox_rhs = [0]*3
+        test_cls.num_vox_per_proc = [test_cls.num_vox[i]//self.mpi_cart_dims[i] for i in range(3)]
+
+        print("MPI cartesian dims: {}\nMRI voxels: {}\nDesired padding voxels: {}\nExtended MRI voxels: {}\nComputed padding voxels: {} {}".format(\
+              self.mpi_cart_dims, test_cls.num_vox, [0]*3, test_cls.num_vox, test_cls.num_pad_vox_lhs, test_cls.num_pad_vox_rhs))
+                
     def test_communicator(self):
         write_hdf5_start_impact_fortran(self)        
         validate_impact_coordinates(self)
@@ -209,13 +223,13 @@ class TestImpactInputPadding(unittest.TestCase): # FIXME: coordinates test...
         
         num_ext_vox = [((test_cls.num_vox[i] + num_pad_vox[i] + self.mpi_cart_dims[i] -1) // self.mpi_cart_dims[i]) \
                        * self.mpi_cart_dims[i] for i in range(3)]
-        num_pad_vox_lhs = [(num_ext_vox[i]-test_cls.num_vox[i])//2 for i in range(3)]
-        num_pad_vox_rhs = [(num_ext_vox[i]-test_cls.num_vox[i]+1)//2 for i in range(3)]
-#        num_vox_per_proc = [num_ext_vox[i]//self.mpi_cart_dims[i] for i in range(3)]
+        test_cls.num_pad_vox_lhs = [(num_ext_vox[i]-test_cls.num_vox[i])//2 for i in range(3)]
+        test_cls.num_pad_vox_rhs = [(num_ext_vox[i]-test_cls.num_vox[i]+1)//2 for i in range(3)]
+        test_cls.num_vox_per_proc = [num_ext_vox[i]//self.mpi_cart_dims[i] for i in range(3)]
         
         geometry = [test_cls.domain_origin[i] + \
                     np.linspace(0, test_cls.domain_length[i],
-                                2*num_ext_vox[i]+1)[1+2*num_pad_vox_lhs[i]:1+2*(num_pad_vox_lhs[i]+test_cls.num_vox[i]):2] for i in range(3)]
+                                2*num_ext_vox[i]+1)[1+2*test_cls.num_pad_vox_lhs[i]:1+2*(test_cls.num_pad_vox_lhs[i]+test_cls.num_vox[i]):2] for i in range(3)]
         self.geometry_complement = \
                    [test_cls.domain_origin[i] + \
                                np.linspace(0, test_cls.domain_length[i],
@@ -224,12 +238,10 @@ class TestImpactInputPadding(unittest.TestCase): # FIXME: coordinates test...
         self.mri = HPCPredictMRI(geometry, time, intensity, velocity_mean, velocity_cov)
 
         print("MPI cartesian dims: {}\nMRI voxels: {}\nDesired padding voxels: {}\nExtended MRI voxels: {}\nComputed padding voxels: {} {}".format(\
-              self.mpi_cart_dims, test_cls.num_vox, num_pad_vox, num_ext_vox, num_pad_vox_lhs, num_pad_vox_rhs))
+              self.mpi_cart_dims, test_cls.num_vox, num_pad_vox, num_ext_vox, test_cls.num_pad_vox_lhs, test_cls.num_pad_vox_rhs))
                 
-
     def test_communicator(self):
         write_hdf5_start_impact_fortran(self)        
-        import pdb; pdb.set_trace()
         validate_impact_coordinates(self)
         # further checks can be added as required... (MRI reader testing not done here as already tested elsewhere)
 
