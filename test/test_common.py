@@ -2,7 +2,11 @@ import numpy as np
 
 def validate_group_name(test_inst, fort_group_name):
     test_inst.assertEqual(fort_group_name, type(test_inst).mri_group_name)        
-    
+
+# For bidirectional test cases only    
+def validate_array(test_inst, array, out_array):
+    test_inst.assertTrue(np.array_equal(out_array.shape, array.shape))        
+    test_inst.assertTrue(np.allclose(out_array, array, rtol=1e-14))
 
 def validate_spatial_fort_array(test_inst, array, out_lines):
     fort_dims = np.fromstring(out_lines[0], dtype=int, sep=' ') 

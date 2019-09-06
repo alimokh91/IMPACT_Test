@@ -3,76 +3,110 @@ import subprocess as sp
 import os
 import numpy as np
 from mr_io import SpatialMRI, SpaceTimeMRI, HPCPredictMRI, SegmentedHPCPredictMRI
+from test_common import spatial_hyperslab_dims_new, validate_group_name, validate_array
+
+def write_hdf5_exec_fortran(test_inst):
+    test_cls = type(test_inst)
+ 
+    # Write HDF5 from Python
+    test_inst.mri.write_hdf5(test_cls.filename_mri_in)
+    
+
+    ## Read HDF5 from Fortran in parallel
+#   Run test
+    fort_command = "fortran/%s %d %d %d %s %s 1> %s 2> %s" % \
+                           (test_cls.filename_exec,
+                            *test_inst.mpi_cart_dims,
+                            test_cls.filename_mri_in,
+                            test_cls.filename_mri_out,
+                            test_cls.filename_out_rank % ("${PMI_RANK}"),
+                            test_cls.filename_err_rank % ("${PMI_RANK}"))
+    fort = sp.run(["mpiexec","-np", "%d" % (test_cls.mpi_proc), \
+                   "bash", "-c", fort_command],
+                   stdout=sp.PIPE, stderr=sp.PIPE, check=True)
+    
+#     # Debug test
+#     fort_command = "fortran/%s %d %d %d %s %s" % \
+#                            (test_cls.filename_exec,
+#                             *test_inst.mpi_cart_dims,
+#                             test_cls.filename_mri_in,
+#                             test_cls.filename_mri_out)
+#     fort = sp.run(["mpiexec","-np", "%d" % (test_cls.mpi_proc), \
+#                    "xterm", "-e", "gdb", "--args", 
+#                    *fort_command.split(" ")],
+#                    stdout=sp.PIPE, stderr=sp.PIPE, check=True)
+    
+    print("Shell command returned out/err:")
+    print(fort.stdout.decode("utf-8"))
+    print(fort.stderr.decode("utf-8"))
+         
+    for mpi_rank in range(test_cls.mpi_proc):
+        with open(test_cls.filename_err_rank % (mpi_rank), 'r') as err:
+            print("Fortran command for rank %d returned err:" % (mpi_rank))
+            print(err.read())
+
+
+def remove_test_files(test_inst):
+    # Clean up file
+    test_cls = type(test_inst)
+    files = [test_cls.filename_mri_in, test_cls.filename_mri_out] + \
+          [test_cls.filename_out_rank % (mpi_rank) for mpi_rank in range(test_cls.mpi_proc)] + \
+          [test_cls.filename_err_rank % (mpi_rank) for mpi_rank in range(test_cls.mpi_proc)]
+    for f in files:
+        os.remove(f) 
 
 class TestSpatialMRIBidirectional(unittest.TestCase):
-     
+      
     # number of Fortran MPI processes
     mpi_proc = 2**3
- 
+   
     # Filenames
-    filename_prefix = "mr_io_test_parallel"
-    filename_in = filename_prefix + "_in.h5"
-    filename_out = filename_prefix + "_out.h5"
+    filename_prefix = "mr_io_test_parallel_reader_writer"
+ 
+    filename_exec = filename_prefix
+    filename_mri_in = filename_prefix + "_in.h5"
+    filename_mri_out = filename_prefix + "_out.h5"
     filename_out_rank = filename_prefix + "_%s.out"
     filename_err_rank = filename_prefix + "_%s.err"
+   
+    mri_group_name = "spatial-mri"
  
     def setUp(self):
         # Initialize the MRI data
         voxel_feature = np.random.rand(91,31,71) # splitting on the last dim in Fortran (must be the largest in size due to grid splitting!)
         #voxel_feature = np.reshape(np.array((9*[0]) + (9*[1])), (2,3,3))
-        #print(voxel_feature)
         self.mri = SpatialMRI(voxel_feature)
+        self.mpi_cart_dims = spatial_hyperslab_dims_new(type(self), self.mri.voxel_feature)
          
     def test_communicator(self):
+        # Write HDF5 from Python and read HDF5 from Fortran   
+        write_hdf5_exec_fortran(self) 
+             
+        out_mri = type(self.mri).read_hdf5(type(self).filename_mri_out)
  
-        # Write HDF5 from Python
-        self.mri.write_hdf5(TestSpatialMRIBidirectional.filename_in)
- 
-        ## Read HDF5 from Fortran
-        fort_command = "fortran/mr_io_test_parallel_reader_writer %s %s  1> %s 2> %s" % \
-                               (TestSpatialMRIBidirectional.filename_in,
-                                TestSpatialMRIBidirectional.filename_out,
-                                TestSpatialMRIBidirectional.filename_out_rank % ("${PMI_RANK}"),
-                                TestSpatialMRIBidirectional.filename_err_rank % ("${PMI_RANK}"))
-        print(fort_command)
-        fort = sp.run(["mpiexec","-np", "%d" % (TestSpatialMRIBidirectional.mpi_proc), \
-                       "bash","-c",fort_command],
-                                stdout=sp.PIPE, stderr=sp.PIPE, check=True)
-    
-        # Check for equality. NOTE: Possibly regexpr for parsing would make this more elegant
-        fort_stdout = fort.stdout.decode("utf-8")
-        fort_stderr = fort.stderr.decode("utf-8")        
-        print(fort_stderr)
-        print(fort_stdout)
-        #import pdb; pdb.set_trace()
- 
-        out_mri = SpatialMRI.read_hdf5(TestSpatialMRIBidirectional.filename_out)
- 
-        self.assertTrue(np.array_equal(out_mri.voxel_feature.shape, self.mri.voxel_feature.shape))        
-        self.assertTrue(np.allclose(out_mri.voxel_feature, self.mri.voxel_feature, rtol=1e-14))
+        validate_group_name(self, out_mri.group_name)
+        validate_array(self, self.mri.voxel_feature, out_mri.voxel_feature)        
  
     def tearDown(self):
-        # Clean up file
-        files = [TestSpatialMRIBidirectional.filename_in, \
-                 TestSpatialMRIBidirectional.filename_out] + \
-                [TestSpatialMRIBidirectional.filename_out_rank % (mpi_rank) for mpi_rank in range(TestSpatialMRIBidirectional.mpi_proc)] + \
-                [TestSpatialMRIBidirectional.filename_err_rank % (mpi_rank) for mpi_rank in range(TestSpatialMRIBidirectional.mpi_proc)]
-        for f in files:
-            os.remove(f) 
-
-
+        remove_test_files(self)
+ 
+ 
 class TestSpaceTimeMRIBidirectional(unittest.TestCase): # FIXME: coordinates test...
-    
+      
     # number of Fortran MPI processes
     mpi_proc = 2**3
-
+  
     # Filenames
-    filename_prefix = "mr_io_test_parallel_space_time"
-    filename_in = filename_prefix + "_in.h5"
-    filename_out = filename_prefix + "_out.h5"
+    filename_prefix = "mr_io_test_parallel_reader_writer_space_time"
+ 
+    filename_exec = filename_prefix
+    filename_mri_in = filename_prefix + "_in.h5"
+    filename_mri_out = filename_prefix + "_out.h5"
     filename_out_rank = filename_prefix + "_%s.out"
     filename_err_rank = filename_prefix + "_%s.err"
-
+   
+    mri_group_name = "space-time-mri"
+ 
     def setUp(self):
         # Initialize the MRI data
         #geometry = [np.random.rand(4), np.random.rand(2), np.random.rand(7)] 
@@ -80,70 +114,40 @@ class TestSpaceTimeMRIBidirectional(unittest.TestCase): # FIXME: coordinates tes
         geometry = [np.random.rand(67), np.random.rand(43), np.random.rand(29)]
         voxel_feature = np.random.rand(67,43,29,11,3)
         self.mri = SpaceTimeMRI(geometry, time, voxel_feature)
-
+        self.mpi_cart_dims = spatial_hyperslab_dims_new(type(self), self.mri.voxel_feature)
+ 
     def test_communicator(self):
-
-        # Write HDF5 from Python
-        self.mri.write_hdf5(TestSpaceTimeMRIBidirectional.filename_in)
-
-        ## Read HDF5 from Fortran
-        fort_command = "fortran/mr_io_test_parallel_reader_writer_space_time %s %s 1> %s 2> %s" % \
-                               (TestSpaceTimeMRIBidirectional.filename_in,
-                                TestSpaceTimeMRIBidirectional.filename_out,
-                                TestSpaceTimeMRIBidirectional.filename_out_rank % ("${PMI_RANK}"),
-                                TestSpaceTimeMRIBidirectional.filename_err_rank % ("${PMI_RANK}"))
-        print(fort_command)
-        fort = sp.run(["mpiexec","-np", "%d" % (TestSpaceTimeMRIBidirectional.mpi_proc), \
-                       "bash","-c",fort_command],
-                                stdout=sp.PIPE, stderr=sp.PIPE, check=True)
-
-        # Read HDF5 from Fortran
-        #fort = sp.run(["mpiexec","-np", "%d" % (TestSpaceTimeMRIBidirectionalBidirectional.mpi_proc), \
-        #               "bash","-c","echo  \"spatial-mri\n 1 3 3\n %s \n \" 1> %s 2> %s" % \
-        #                       (" ".join(9 * ["${PMI_RANK}"]), 
-        #                        TestSpaceTimeMRIBidirectionalBidirectional.filename_out_rank % ("${PMI_RANK}"), 
-        #                        TestSpaceTimeMRIBidirectionalBidirectional.filename_err_rank % ("${PMI_RANK}"))], 
-        #                        stdout=sp.PIPE, stderr=sp.PIPE, check=True)
-
-        
-        
-        # Check for equality. NOTE: Possibly regexpr for parsing would make this more elegant
-        fort_stdout = fort.stdout.decode("utf-8")
-        fort_stderr = fort.stderr.decode("utf-8")        
-        print(fort_stderr)
-        print(fort_stdout)
-        #import pdb; pdb.set_trace()
-
-        out_mri = SpaceTimeMRI.read_hdf5(TestSpaceTimeMRIBidirectional.filename_out)
-
+        # Write HDF5 from Python and read HDF5 from Fortran   
+        write_hdf5_exec_fortran(self) 
+             
+        out_mri = type(self.mri).read_hdf5(type(self).filename_mri_out)
+ 
+        validate_group_name(self, out_mri.group_name)
         for i in range(3):
-            self.assertTrue(np.allclose(out_mri.geometry[i], self.mri.geometry[i], rtol=1e-14))
-        self.assertTrue(np.allclose(out_mri.time, self.mri.time, rtol=1e-14))
-#        self.assertTrue(np.array_equal(out_mri.voxel_feature.shape, self.mri.voxel_feature.shape))        
-        self.assertTrue(np.allclose(out_mri.voxel_feature, self.mri.voxel_feature, rtol=1e-14))
-    
+            validate_array(self, self.mri.geometry[i], out_mri.geometry[i])        
+        validate_array(self, self.mri.time, out_mri.time)
+        validate_array(self, self.mri.voxel_feature, out_mri.voxel_feature)
+      
     def tearDown(self):
-        # Clean up file
-        files = [TestSpaceTimeMRIBidirectional.filename_in, \
-                 TestSpaceTimeMRIBidirectional.filename_out] + \
-                [TestSpaceTimeMRIBidirectional.filename_out_rank % (mpi_rank) for mpi_rank in range(TestSpaceTimeMRIBidirectional.mpi_proc)] + \
-                [TestSpaceTimeMRIBidirectional.filename_err_rank % (mpi_rank) for mpi_rank in range(TestSpaceTimeMRIBidirectional.mpi_proc)]
-        for f in files:
-            os.remove(f) 
-
-
+        remove_test_files(self)
+  
+  
 class TestHPCPredictMRIBidirectional(unittest.TestCase): # FIXME: coordinates test...
-    
+      
     # number of Fortran MPI processes
     mpi_proc = 2**3
-
+  
     # Filenames
-    filename_prefix = "mr_io_test_parallel_hpc_predict"
-    filename_in = filename_prefix + "_in.h5"
-    filename_out = filename_prefix + "_out.h5"
+    filename_prefix = "mr_io_test_parallel_reader_writer_hpc_predict"
+ 
+    filename_exec = filename_prefix
+    filename_mri_in = filename_prefix + "_in.h5"
+    filename_mri_out = filename_prefix + "_out.h5"
     filename_out_rank = filename_prefix + "_%s.out"
     filename_err_rank = filename_prefix + "_%s.err"
-
+   
+    mri_group_name = "hpc-predict-mri"
+  
     def setUp(self):
         # Initialize the MRI data
         #geometry = [np.random.rand(4), np.random.rand(2), np.random.rand(7)] 
@@ -153,76 +157,44 @@ class TestHPCPredictMRIBidirectional(unittest.TestCase): # FIXME: coordinates te
         velocity_mean = np.random.rand(67,43,29,11,3)        
         velocity_cov = np.random.rand(67,43,29,11,3,5)        
         self.mri = HPCPredictMRI(geometry, time, intensity, velocity_mean, velocity_cov)
-
+        self.mpi_cart_dims = spatial_hyperslab_dims_new(type(self), self.mri.intensity)
+ 
     def test_communicator(self):
-
-        # Write HDF5 from Python
-        self.mri.write_hdf5(TestHPCPredictMRIBidirectional.filename_in)
-
-        ## Read HDF5 from Fortran
-        fort_command = "fortran/mr_io_test_parallel_reader_writer_hpc_predict %s %s 1> %s 2> %s" % \
-                               (TestHPCPredictMRIBidirectional.filename_in,
-                                TestHPCPredictMRIBidirectional.filename_out,
-                                TestHPCPredictMRIBidirectional.filename_out_rank % ("${PMI_RANK}"),
-                                TestHPCPredictMRIBidirectional.filename_err_rank % ("${PMI_RANK}"))
-        print(fort_command)
-        fort = sp.run(["mpiexec","-np", "%d" % (TestHPCPredictMRIBidirectional.mpi_proc), \
-                       "bash","-c",fort_command],
-                                stdout=sp.PIPE, stderr=sp.PIPE, check=True)
-
-        # Read HDF5 from Fortran
-        #fort = sp.run(["mpiexec","-np", "%d" % (TestHPCPredictMRIBidirectionalBidirectional.mpi_proc), \
-        #               "bash","-c","echo  \"spatial-mri\n 1 3 3\n %s \n \" 1> %s 2> %s" % \
-        #                       (" ".join(9 * ["${PMI_RANK}"]), 
-        #                        TestHPCPredictMRIBidirectionalBidirectional.filename_out_rank % ("${PMI_RANK}"), 
-        #                        TestHPCPredictMRIBidirectionalBidirectional.filename_err_rank % ("${PMI_RANK}"))], 
-        #                        stdout=sp.PIPE, stderr=sp.PIPE, check=True)
-
-        
-        
-        # Check for equality. NOTE: Possibly regexpr for parsing would make this more elegant
-        fort_stdout = fort.stdout.decode("utf-8")
-        fort_stderr = fort.stderr.decode("utf-8")        
-        print(fort_stderr)
-        print(fort_stdout)
-        #import pdb; pdb.set_trace()
-
-        out_mri = HPCPredictMRI.read_hdf5(TestHPCPredictMRIBidirectional.filename_out)
-
+        # Write HDF5 from Python and read HDF5 from Fortran   
+        write_hdf5_exec_fortran(self) 
+             
+        out_mri = type(self.mri).read_hdf5(type(self).filename_mri_out)
+ 
         for i in range(3):
-            self.assertTrue(np.allclose(out_mri.geometry[i], self.mri.geometry[i], rtol=1e-14))
-        self.assertTrue(np.allclose(out_mri.time, self.mri.time, rtol=1e-14))
-#        self.assertTrue(np.array_equal(out_mri.voxel_feature.shape, self.mri.voxel_feature.shape))        
-        self.assertTrue(np.allclose(out_mri.intensity, self.mri.intensity, rtol=1e-14))
-        self.assertTrue(np.allclose(out_mri.velocity_mean, self.mri.velocity_mean, rtol=1e-14))
-        self.assertTrue(np.allclose(out_mri.velocity_cov, self.mri.velocity_cov, rtol=1e-14))
-    
+            validate_array(self, self.mri.geometry[i], out_mri.geometry[i])        
+        validate_array(self, self.mri.time, out_mri.time)
+        validate_array(self, self.mri.intensity, out_mri.intensity)
+        validate_array(self, self.mri.velocity_mean, out_mri.velocity_mean)
+        validate_array(self, self.mri.velocity_cov, out_mri.velocity_cov)
+      
     def tearDown(self):
-        # Clean up file
-        files = [TestHPCPredictMRIBidirectional.filename_in, \
-                 TestHPCPredictMRIBidirectional.filename_out] + \
-                [TestHPCPredictMRIBidirectional.filename_out_rank % (mpi_rank) for mpi_rank in range(TestHPCPredictMRIBidirectional.mpi_proc)] + \
-                [TestHPCPredictMRIBidirectional.filename_err_rank % (mpi_rank) for mpi_rank in range(TestHPCPredictMRIBidirectional.mpi_proc)]
-        for f in files:
-            os.remove(f) 
-
-
+        remove_test_files(self)
+ 
 
 class TestSegmentedHPCPredictMRIBidirectional(unittest.TestCase): # FIXME: coordinates test...
-    
+     
     # number of Fortran MPI processes
     mpi_proc = 2**3
-
+  
     # Filenames
-    filename_prefix = "mr_io_test_parallel_segmented_hpc_predict"
-    filename_in = filename_prefix + "_in.h5"
-    filename_out = filename_prefix + "_out.h5"
+    filename_prefix = "mr_io_test_parallel_reader_writer_segmented_hpc_predict"
+
+    filename_exec = filename_prefix
+    filename_mri_in = filename_prefix + "_in.h5"
+    filename_mri_out = filename_prefix + "_out.h5"
     filename_out_rank = filename_prefix + "_%s.out"
     filename_err_rank = filename_prefix + "_%s.err"
+  
+    mri_group_name = "segmented-hpc-predict-mri"
 
     def setUp(self):
         # Initialize the MRI data
-        #geometry = [np.random.rand(4), np.random.rand(2), np.random.rand(7)] 
+        # geometry = [np.random.rand(4), np.random.rand(2), np.random.rand(7)] 
         time = np.random.rand(11)
         geometry = [np.random.rand(67), np.random.rand(43), np.random.rand(29)]
         intensity = np.random.rand(67,43,29,11)        
@@ -230,59 +202,25 @@ class TestSegmentedHPCPredictMRIBidirectional(unittest.TestCase): # FIXME: coord
         velocity_cov = np.random.rand(67,43,29,11,3,5)        
         segmentation_prob = np.random.rand(67,43,29,11)        
         self.mri = SegmentedHPCPredictMRI(geometry, time, intensity, velocity_mean, velocity_cov, segmentation_prob)
+        self.mpi_cart_dims = spatial_hyperslab_dims_new(type(self), self.mri.intensity)
 
     def test_communicator(self):
-
-        # Write HDF5 from Python
-        self.mri.write_hdf5(TestSegmentedHPCPredictMRIBidirectional.filename_in)
-
-        ## Read HDF5 from Fortran
-        fort_command = "fortran/mr_io_test_parallel_reader_writer_segmented_hpc_predict %s %s 1> %s 2> %s" % \
-                               (TestSegmentedHPCPredictMRIBidirectional.filename_in,
-                                TestSegmentedHPCPredictMRIBidirectional.filename_out,
-                                TestSegmentedHPCPredictMRIBidirectional.filename_out_rank % ("${PMI_RANK}"),
-                                TestSegmentedHPCPredictMRIBidirectional.filename_err_rank % ("${PMI_RANK}"))
-        print(fort_command)
-        fort = sp.run(["mpiexec","-np", "%d" % (TestSegmentedHPCPredictMRIBidirectional.mpi_proc), \
-                       "bash","-c",fort_command],
-                                stdout=sp.PIPE, stderr=sp.PIPE, check=True)
-
-        # Read HDF5 from Fortran
-        #fort = sp.run(["mpiexec","-np", "%d" % (TestSegmentedHPCPredictMRIBidirectionalBidirectional.mpi_proc), \
-        #               "bash","-c","echo  \"spatial-mri\n 1 3 3\n %s \n \" 1> %s 2> %s" % \
-        #                       (" ".join(9 * ["${PMI_RANK}"]), 
-        #                        TestSegmentedHPCPredictMRIBidirectionalBidirectional.filename_out_rank % ("${PMI_RANK}"), 
-        #                        TestSegmentedHPCPredictMRIBidirectionalBidirectional.filename_err_rank % ("${PMI_RANK}"))], 
-        #                        stdout=sp.PIPE, stderr=sp.PIPE, check=True)
-
-        
-        
-        # Check for equality. NOTE: Possibly regexpr for parsing would make this more elegant
-        fort_stdout = fort.stdout.decode("utf-8")
-        fort_stderr = fort.stderr.decode("utf-8")        
-        print(fort_stderr)
-        print(fort_stdout)
-        #import pdb; pdb.set_trace()
-
-        out_mri = SegmentedHPCPredictMRI.read_hdf5(TestSegmentedHPCPredictMRIBidirectional.filename_out)
+        # Write HDF5 from Python and read HDF5 from Fortran   
+        write_hdf5_exec_fortran(self) 
+            
+        out_mri = type(self.mri).read_hdf5(type(self).filename_mri_out)
 
         for i in range(3):
-            self.assertTrue(np.allclose(out_mri.geometry[i], self.mri.geometry[i], rtol=1e-14))
-        self.assertTrue(np.allclose(out_mri.time, self.mri.time, rtol=1e-14))
-#        self.assertTrue(np.array_equal(out_mri.voxel_feature.shape, self.mri.voxel_feature.shape))        
-        self.assertTrue(np.allclose(out_mri.intensity, self.mri.intensity, rtol=1e-14))
-        self.assertTrue(np.allclose(out_mri.velocity_mean, self.mri.velocity_mean, rtol=1e-14))
-        self.assertTrue(np.allclose(out_mri.velocity_cov, self.mri.velocity_cov, rtol=1e-14))
-        self.assertTrue(np.allclose(out_mri.segmentation_prob, self.mri.segmentation_prob, rtol=1e-14))
-    
+            validate_array(self, self.mri.geometry[i], out_mri.geometry[i])        
+        validate_array(self, self.mri.time, out_mri.time)
+        validate_array(self, self.mri.intensity, out_mri.intensity)
+        validate_array(self, self.mri.velocity_mean, out_mri.velocity_mean)
+        validate_array(self, self.mri.velocity_cov, out_mri.velocity_cov)
+        validate_array(self, self.mri.segmentation_prob, out_mri.segmentation_prob)
+     
     def tearDown(self):
-        # Clean up file
-        files = [TestSegmentedHPCPredictMRIBidirectional.filename_in, \
-                 TestSegmentedHPCPredictMRIBidirectional.filename_out] + \
-                [TestSegmentedHPCPredictMRIBidirectional.filename_out_rank % (mpi_rank) for mpi_rank in range(TestSegmentedHPCPredictMRIBidirectional.mpi_proc)] + \
-                [TestSegmentedHPCPredictMRIBidirectional.filename_err_rank % (mpi_rank) for mpi_rank in range(TestSegmentedHPCPredictMRIBidirectional.mpi_proc)]
-        for f in files:
-            os.remove(f) 
+        remove_test_files(self)
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -3,6 +3,7 @@ import subprocess as sp
 import os
 import numpy as np
 from mr_io import SpatialMRI, SpaceTimeMRI, HPCPredictMRI, SegmentedHPCPredictMRI
+from test_common import validate_group_name, validate_array        
 
 
 def write_hdf5_exec_fortran(test_inst):
@@ -32,12 +33,6 @@ def write_hdf5_exec_fortran(test_inst):
         print("Fortran command returned err:")
         print(err.read())
 
-def validate_group_name(test_inst, fort_group_name):
-    test_inst.assertEqual(fort_group_name, type(test_inst).mri_group_name)        
-    
-def validate_array(test_inst, array, out_array):
-    test_inst.assertTrue(np.array_equal(out_array.shape, array.shape))        
-    test_inst.assertTrue(np.allclose(out_array, array, rtol=1e-14))
 
 def remove_test_files(test_inst):
     # Clean up file

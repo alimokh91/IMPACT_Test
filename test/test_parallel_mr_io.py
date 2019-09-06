@@ -29,7 +29,7 @@ def write_hdf5_read_in_fortran(test_inst):
 #                            (test_cls.filename_exec,
 #                             *block_dims,
 #                             test_cls.filename_mri)
-#     fort = sp.run(["mpiexec","-np", "%d" % (TestSpatialMRI.mpi_proc), \
+#     fort = sp.run(["mpiexec","-np", "%d" % (test_cls.mpi_proc), \
 #                    "xterm", "-e", "gdb", "--args", 
 #                    *fort_command.split(" ")],
 #                    stdout=sp.PIPE, stderr=sp.PIPE, check=True)
