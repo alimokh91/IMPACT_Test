@@ -1,8 +1,10 @@
 set(HPCPREDICT_IO_SOURCES
+  mr_protocol.f90
+  mr_io_hyperslab_enum.f90
   mr_io.f90
+  mr_io_mpi_error_handler.f90
   mr_io_parallel.f90
   mr_io_parallel_spacetime.f90
-  mr_protocol.f90
 )
 
 find_package(HDF5 COMPONENTS Fortran REQUIRED)
@@ -19,21 +21,38 @@ install(TARGETS hpc-predict-io
 install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/fmod/ DESTINATION include)
 
 
-foreach(file mr_io_example_space_time mr_io_example_spatial
-    mr_io_test_parallel_reader
-    mr_io_test_parallel_reader_space_time
-    mr_io_test_parallel_reader_hpc_predict
-    mr_io_test_parallel_reader_writer
-    mr_io_test_parallel_reader_writer_space_time
-    mr_io_test_parallel_reader_writer_hpc_predict
+foreach(file 
+    mr_io_example_space_time 
+    mr_io_example_spatial
+)
+  add_executable(${file} ${file}.f90)
+  target_link_libraries(${file} hpc-predict-io)
+  install(TARGETS ${file}
+          RUNTIME DESTINATION bin)
+endforeach()
+
+
+foreach(file 
     mr_io_test_reader
     mr_io_test_reader_space_time
     mr_io_test_reader_hpc_predict
+    mr_io_test_reader_segmented_hpc_predict
     mr_io_test_reader_writer
     mr_io_test_reader_writer_space_time
     mr_io_test_reader_writer_hpc_predict
+    mr_io_test_reader_writer_segmented_hpc_predict
+    mr_io_test_parallel_reader
+    mr_io_test_parallel_reader_space_time
+    mr_io_test_parallel_reader_hpc_predict
+    mr_io_test_parallel_reader_hpc_predict_padded
+    mr_io_test_parallel_reader_segmented_hpc_predict
+    mr_io_test_parallel_reader_writer
+    mr_io_test_parallel_reader_writer_space_time
+    mr_io_test_parallel_reader_writer_hpc_predict
+    mr_io_test_parallel_reader_writer_hpc_predict_padded
+    mr_io_test_parallel_reader_writer_segmented_hpc_predict
 )
-  add_executable(${file} ${file}.f90)
+  add_executable(${file} ${file}.f90 mr_io_test_arg_parser.f90)
   target_link_libraries(${file} hpc-predict-io)
   install(TARGETS ${file}
           RUNTIME DESTINATION bin)
@@ -45,7 +64,7 @@ set( IMPACT_LIBRARIES libimpact.a )
 find_file(IMPACT_LIB ${IMPACT_LIBRARIES} PATHS ENV IMPACT_DIR NO_DEFAULT_PATH)
 
 if (EXISTS $ENV{IMPACT_DIR})
-    message("Found IMPACT... building tests for IMPACT.")
+    message("Found IMPACT... building IMPACT startup tests.")
 	
     set( IMPACT_DEPS libm.so libdl.so libz.so libblas.so liblapack.so )
     
@@ -59,6 +78,6 @@ if (EXISTS $ENV{IMPACT_DIR})
 	install(TARGETS mr_io_test_impact_input
 	        RUNTIME DESTINATION bin)
 else ()
-    message("Could not find IMPACT... skipping tests for IMPACT.")
+    message("Could not find IMPACT... skipping IMPACT startup tests.")
 endif ()
         
