@@ -7,8 +7,8 @@ program mr_io_test_parallel_reader_space_time
     implicit none
 
     INTEGER err
-!    character(len=100) :: path = "mr_io_test_parallel_hpc_predict.h5"
-    type(DistHPCPredictMRI) :: mri_dest
+!    character(len=100) :: path = "mr_io_test_parallel_flow.h5"
+    type(DistFlowMRI) :: mri_dest
 
     integer, dimension(4) :: intensity_shape
     integer, dimension(5) :: velocity_mean_shape
@@ -18,9 +18,9 @@ program mr_io_test_parallel_reader_space_time
     
     call mr_io_test_parse_args_parallel_reader()
 
-    call mr_io_read_parallel_hpcpredict(MPI_COMM_WORLD, MPI_INFO_NULL, mr_io_test_mpi_cart_dims, path, mri_dest)
+    call mr_io_read_parallel_flow(MPI_COMM_WORLD, MPI_INFO_NULL, mr_io_test_mpi_cart_dims, path, mri_dest)
 
-    print *, HPCPredictMRI_group_name
+    print *, FlowMRI_group_name
 
     print *, shape(mri_dest%t_coordinates)
     print *, mri_dest%t_coordinates

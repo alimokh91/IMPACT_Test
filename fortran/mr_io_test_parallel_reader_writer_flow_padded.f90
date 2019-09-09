@@ -1,4 +1,4 @@
-program mr_io_test_parallel_reader_hpc_predict_padded
+program mr_io_test_parallel_reader_writer_flow_padded
   
     use mr_io_parallel_spacetime
     use mr_io_test_arg_parser
@@ -7,10 +7,10 @@ program mr_io_test_parallel_reader_hpc_predict_padded
     implicit none
 
     INTEGER err
-!    character(len=100) :: path = "mr_io_test_parallel_hpc_predict_with_padding.h5"
+!    character(len=100) :: path = "mr_io_test_parallel_flow_with_padding.h5"
 
-    type(DistHPCPredictMRIPadded) :: mri_dest_padded
-    type(DistHPCPredictMRI) :: mri_dest
+    type(DistFlowMRIPadded) :: mri_dest_padded
+    type(DistFlowMRI) :: mri_dest
 
     integer, dimension(4) :: intensity_shape
     integer, dimension(5) :: velocity_mean_shape
@@ -24,7 +24,7 @@ program mr_io_test_parallel_reader_hpc_predict_padded
 
     call MPI_Init(err)
 
-    call mr_io_test_parse_args_parallel_reader_padded()
+    call mr_io_test_parse_args_parallel_reader_writer_padded()
     
 !    print *, domain_padding_lhs
 !    print *, domain_padding_rhs
@@ -37,10 +37,10 @@ program mr_io_test_parallel_reader_hpc_predict_padded
 !    print *, mri_dest_padded%domain_padding%rhs
 !    call flush()
 
-    call mr_io_read_parallel_hpcpredict_padded(MPI_COMM_WORLD, MPI_INFO_NULL, mr_io_test_mpi_cart_dims, path, mri_dest_padded)
+    call mr_io_read_parallel_flow_padded(MPI_COMM_WORLD, MPI_INFO_NULL, mr_io_test_mpi_cart_dims, path, mri_dest_padded)
     mri_dest = mri_dest_padded%mri
 
-    print *, HPCPredictMRI_group_name
+    print *, FlowMRI_group_name
 
     print *, shape(mri_dest%t_coordinates)
     print *, mri_dest%t_coordinates
@@ -94,7 +94,8 @@ program mr_io_test_parallel_reader_hpc_predict_padded
     print *, velocity_cov_shape(1:2)
     print *, mri_dest%velocity_cov%array
 
+    call mr_io_write_parallel_flow(MPI_COMM_WORLD, MPI_INFO_NULL, out_path, mri_dest_padded%mri)
 
     call MPI_Finalize(err)
         
-end program mr_io_test_parallel_reader_hpc_predict_padded
+end program mr_io_test_parallel_reader_writer_flow_padded

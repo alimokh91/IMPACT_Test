@@ -13,7 +13,7 @@ program mr_io_test_impact_input
   ! For interactive testing
 !  INTEGER :: mr_io_test_mpi_rank = -1
 !  character(len=100) :: path = "mr_io_test_impact_input.h5"
-!  type(DistHPCPredictMRI) :: mri_dest
+!  type(DistFlowMRI) :: mri_dest
 !  integer, dimension(5) :: velocity_mean_shape = (/-1,-1,-1,-1,-1/)
 
   ! For interactive testing
@@ -53,7 +53,7 @@ program mr_io_test_impact_input
 !  write(*,*) "MPI rank is "
 !  write(*,*) mr_io_test_mpi_rank
 
-!  call mr_io_read_parallel_hpcpredict(MPI_COMM_WORLD, MPI_INFO_NULL, path, mri_dest)
+!  call mr_io_read_parallel_flow(MPI_COMM_WORLD, MPI_INFO_NULL, path, mri_dest)
 !  write(*,*) "MRI: Spatial hyperslab offset"
 !  write(*,*) mri_dest%velocity_mean%offset
 !  write(*,*) "MRI: Spatial hyperslab shape"

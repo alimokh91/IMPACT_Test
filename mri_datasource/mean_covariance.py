@@ -4,7 +4,7 @@ import numpy as np
 import glob
 import argparse
 import logging
-from mr_io import HPCPredictMRI # Requires adding ../python to PYTHONPATH
+from mr_io import FlowMRI # Requires adding ../python to PYTHONPATH
 
 # Parse data input and output directories
 def parse_args():
@@ -233,9 +233,9 @@ def convert_spatial_to_time_slice(voxel_feature):
     sh = voxel_feature.shape
     return voxel_feature.reshape(*sh[:3], 1, *sh[3:])
          
-hpc_predict_mri = HPCPredictMRI(geometry=geometry,
+flow_mri = FlowMRI(geometry=geometry,
                                 time=time,
                                 intensity=np.zeros((*velocity_mean.shape[:-1],1)),
                                 velocity_mean=convert_spatial_to_time_slice(velocity_mean),
                                 velocity_cov=convert_spatial_to_time_slice(velocity_cov))
-hpc_predict_mri.write_hdf5(args.output + '/bern_experimental_dataset_hpc_predict_mri.h5')
+flow_mri.write_hdf5(args.output + '/bern_experimental_dataset_flow_mri.h5')

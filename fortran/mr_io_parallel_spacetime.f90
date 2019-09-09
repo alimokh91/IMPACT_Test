@@ -17,25 +17,25 @@ private
 
 public :: mr_io_read_parallel_spacetime
 public :: mr_io_write_parallel_spacetime
-public :: mr_io_read_parallel_hpcpredict
-public :: mr_io_write_parallel_hpcpredict
-public :: mr_io_read_parallel_hpcpredict_padded
-public :: mr_io_read_parallel_segmentedhpcpredict
-public :: mr_io_write_parallel_segmentedhpcpredict
+public :: mr_io_read_parallel_flow
+public :: mr_io_write_parallel_flow
+public :: mr_io_read_parallel_flow_padded
+public :: mr_io_read_parallel_segmentedflow
+public :: mr_io_write_parallel_segmentedflow
 
 public :: DistSpaceTimeMRI
-public :: DistHPCPredictMRI
-public :: DistHPCPredictMRIPadded
-public :: DistSegmentedHPCPredictMRI
+public :: DistFlowMRI
+public :: DistFlowMRIPadded
+public :: DistSegmentedFlowMRI
 
 public :: SpaceTimeMRI_group_name
-public :: HPCPredictMRI_group_name
-public :: SegmentedHPCPredictMRI_group_name
+public :: FlowMRI_group_name
+public :: SegmentedFlowMRI_group_name
 
 public :: mr_io_deallocate_dist_spacetime_mri
-public :: mr_io_deallocate_dist_hpcpredict_mri
-public :: mr_io_deallocate_dist_hpcpredict_mri_padded
-public :: mr_io_deallocate_dist_segmentedhpcpredict_mri
+public :: mr_io_deallocate_dist_flow_mri
+public :: mr_io_deallocate_dist_flow_mri_padded
+public :: mr_io_deallocate_dist_segmentedflow_mri
 
 
 #ifdef __GFORTRAN__
@@ -939,7 +939,7 @@ subroutine mr_io_write_parallel_spacetime(mr_io_mpi_comm, mr_io_mpi_info, path, 
 end subroutine mr_io_write_parallel_spacetime
 
 
-! ************************ DistHPCPredictMRI ************************
+! ************************ DistFlowMRI ************************
 
 subroutine mr_io_read_parallel_spacetime_scalar_feature(mr_io_mpi_comm, mr_io_mpi_cart_dims, grp_id, feature_name, &
                                                  feature_array, feature_offset, feature_shape, &
@@ -1937,14 +1937,14 @@ subroutine mr_io_read_parallel_spacetime_matrix_feature_padded(mr_io_mpi_comm, m
 end subroutine mr_io_read_parallel_spacetime_matrix_feature_padded
 
 
-subroutine mr_io_read_parallel_hpcpredict(mr_io_mpi_comm, mr_io_mpi_info, mr_io_mpi_cart_dims, path, mri_inst)
+subroutine mr_io_read_parallel_flow(mr_io_mpi_comm, mr_io_mpi_info, mr_io_mpi_cart_dims, path, mri_inst)
 
   implicit none
 
   character(len=*), intent(in) :: path
   INTEGER, intent (in) :: mr_io_mpi_comm, mr_io_mpi_info
   integer, dimension(3), intent(in) :: mr_io_mpi_cart_dims
-  type(DistHPCPredictMRI), intent(out) :: mri_inst
+  type(DistFlowMRI), intent(out) :: mri_inst
 
   INTEGER(HID_T) :: file_id       ! File identifier
   INTEGER(HID_T) :: grp_id        ! Group identifier
@@ -1972,7 +1972,7 @@ subroutine mr_io_read_parallel_hpcpredict(mr_io_mpi_comm, mr_io_mpi_info, mr_io_
   mr_io_handle_error(error)
 
   ! Open an existing group
-  CALL h5gopen_f(file_id, HPCPredictMRI_group_name, grp_id, error)
+  CALL h5gopen_f(file_id, FlowMRI_group_name, grp_id, error)
   mr_io_handle_error(error)
 
   ! Read time coordinates
@@ -2026,17 +2026,17 @@ subroutine mr_io_read_parallel_hpcpredict(mr_io_mpi_comm, mr_io_mpi_info, mr_io_
   CALL h5close_f(error)
   mr_io_handle_error(error)
 
-end subroutine mr_io_read_parallel_hpcpredict
+end subroutine mr_io_read_parallel_flow
 
 
 
-subroutine mr_io_write_parallel_hpcpredict(mr_io_mpi_comm, mr_io_mpi_info, path, mri_inst)
+subroutine mr_io_write_parallel_flow(mr_io_mpi_comm, mr_io_mpi_info, path, mri_inst)
 
   implicit none
 
   character(len=*), intent(in) :: path
   INTEGER, intent (in) :: mr_io_mpi_comm, mr_io_mpi_info
-  type(DistHPCPredictMRI), intent(in) :: mri_inst
+  type(DistFlowMRI), intent(in) :: mri_inst
 
   INTEGER(HID_T) :: file_id       ! File identifier
   INTEGER(HID_T) :: grp_id        ! Group identifier
@@ -2066,7 +2066,7 @@ subroutine mr_io_write_parallel_hpcpredict(mr_io_mpi_comm, mr_io_mpi_info, path,
   CALL h5pcreate_f(H5P_GROUP_CREATE_F, plist_id, error) ! FIXME: Not completely sure about flag
   mr_io_handle_error(error)
 
-  CALL h5gcreate_f(file_id, HPCPredictMRI_group_name, grp_id, error, gcpl_id=plist_id)
+  CALL h5gcreate_f(file_id, FlowMRI_group_name, grp_id, error, gcpl_id=plist_id)
   mr_io_handle_error(error)
 
   CALL h5pclose_f(plist_id, error)
@@ -2116,18 +2116,18 @@ subroutine mr_io_write_parallel_hpcpredict(mr_io_mpi_comm, mr_io_mpi_info, path,
   CALL h5close_f(error)
   mr_io_handle_error(error)
 
-end subroutine mr_io_write_parallel_hpcpredict
+end subroutine mr_io_write_parallel_flow
 
 
-subroutine mr_io_read_parallel_hpcpredict_padded(mr_io_mpi_comm, mr_io_mpi_info, mr_io_mpi_cart_dims, path, mri_inst_padded)
+subroutine mr_io_read_parallel_flow_padded(mr_io_mpi_comm, mr_io_mpi_info, mr_io_mpi_cart_dims, path, mri_inst_padded)
 
   implicit none
 
   character(len=*), intent(in) :: path
   INTEGER, intent (in) :: mr_io_mpi_comm, mr_io_mpi_info
   integer, dimension(3), intent(in) :: mr_io_mpi_cart_dims
-  type(DistHPCPredictMRIPadded), intent(inout) :: mri_inst_padded
-!  type(DistHPCPredictMRI) :: mri_inst
+  type(DistFlowMRIPadded), intent(inout) :: mri_inst_padded
+!  type(DistFlowMRI) :: mri_inst
 
   INTEGER(HID_T) :: file_id       ! File identifier
   INTEGER(HID_T) :: grp_id        ! Group identifier
@@ -2157,7 +2157,7 @@ subroutine mr_io_read_parallel_hpcpredict_padded(mr_io_mpi_comm, mr_io_mpi_info,
   mr_io_handle_error(error)
 
   ! Open an existing group
-  CALL h5gopen_f(file_id, HPCPredictMRI_group_name, grp_id, error)
+  CALL h5gopen_f(file_id, FlowMRI_group_name, grp_id, error)
   mr_io_handle_error(error)
 
   ! Read time coordinates
@@ -2217,19 +2217,19 @@ subroutine mr_io_read_parallel_hpcpredict_padded(mr_io_mpi_comm, mr_io_mpi_info,
   CALL h5close_f(error)
   mr_io_handle_error(error)
 
-end subroutine mr_io_read_parallel_hpcpredict_padded
+end subroutine mr_io_read_parallel_flow_padded
 
 
-! ************************ DistSegmentedHPCPredictMRI ************************
+! ************************ DistSegmentedFlowMRI ************************
 
-subroutine mr_io_read_parallel_segmentedhpcpredict(mr_io_mpi_comm, mr_io_mpi_info, mr_io_mpi_cart_dims, path, mri_inst)
+subroutine mr_io_read_parallel_segmentedflow(mr_io_mpi_comm, mr_io_mpi_info, mr_io_mpi_cart_dims, path, mri_inst)
 
   implicit none
 
   character(len=*), intent(in) :: path
   INTEGER, intent (in) :: mr_io_mpi_comm, mr_io_mpi_info
   integer, dimension(3), intent(in) :: mr_io_mpi_cart_dims
-  type(DistSegmentedHPCPredictMRI), intent(out) :: mri_inst
+  type(DistSegmentedFlowMRI), intent(out) :: mri_inst
 
   INTEGER(HID_T) :: file_id       ! File identifier
   INTEGER(HID_T) :: grp_id        ! Group identifier
@@ -2257,7 +2257,7 @@ subroutine mr_io_read_parallel_segmentedhpcpredict(mr_io_mpi_comm, mr_io_mpi_inf
   mr_io_handle_error(error)
 
   ! Open an existing group
-  CALL h5gopen_f(file_id, SegmentedHPCPredictMRI_group_name, grp_id, error)
+  CALL h5gopen_f(file_id, SegmentedFlowMRI_group_name, grp_id, error)
   mr_io_handle_error(error)
 
   ! Read time coordinates
@@ -2319,17 +2319,17 @@ subroutine mr_io_read_parallel_segmentedhpcpredict(mr_io_mpi_comm, mr_io_mpi_inf
   CALL h5close_f(error)
   mr_io_handle_error(error)
 
-end subroutine mr_io_read_parallel_segmentedhpcpredict
+end subroutine mr_io_read_parallel_segmentedflow
 
 
 
-subroutine mr_io_write_parallel_segmentedhpcpredict(mr_io_mpi_comm, mr_io_mpi_info, path, mri_inst)
+subroutine mr_io_write_parallel_segmentedflow(mr_io_mpi_comm, mr_io_mpi_info, path, mri_inst)
 
   implicit none
 
   character(len=*), intent(in) :: path
   INTEGER, intent (in) :: mr_io_mpi_comm, mr_io_mpi_info
-  type(DistSegmentedHPCPredictMRI), intent(in) :: mri_inst
+  type(DistSegmentedFlowMRI), intent(in) :: mri_inst
 
   INTEGER(HID_T) :: file_id       ! File identifier
   INTEGER(HID_T) :: grp_id        ! Group identifier
@@ -2359,7 +2359,7 @@ subroutine mr_io_write_parallel_segmentedhpcpredict(mr_io_mpi_comm, mr_io_mpi_in
   CALL h5pcreate_f(H5P_GROUP_CREATE_F, plist_id, error) ! FIXME: Not completely sure about flag
   mr_io_handle_error(error)
 
-  CALL h5gcreate_f(file_id, SegmentedHPCPredictMRI_group_name, grp_id, error, gcpl_id=plist_id)
+  CALL h5gcreate_f(file_id, SegmentedFlowMRI_group_name, grp_id, error, gcpl_id=plist_id)
   mr_io_handle_error(error)
 
   CALL h5pclose_f(plist_id, error)
@@ -2415,7 +2415,7 @@ subroutine mr_io_write_parallel_segmentedhpcpredict(mr_io_mpi_comm, mr_io_mpi_in
   CALL h5close_f(error)
   mr_io_handle_error(error)
 
-end subroutine mr_io_write_parallel_segmentedhpcpredict
+end subroutine mr_io_write_parallel_segmentedflow
 
 
 end module mr_io_parallel_spacetime

@@ -1,5 +1,5 @@
 import os
-from mr_io import HPCPredictMRI
+from mr_io import FlowMRI
 from jinja2 import Environment, FileSystemLoader
 import numpy as np
 import argparse
@@ -35,7 +35,7 @@ def main():
     parser.add_argument('--np', type=int, help='Number of MPI processes')
     args = parser.parse_args()
 
-    mri = HPCPredictMRI.read_hdf5(args.mri)
+    mri = FlowMRI.read_hdf5(args.mri)
     
     block_dims, dims_mem, dims_mem_boundary = spatial_hyperslab_dims(args.np, [len(axis) for axis in mri.geometry])
     

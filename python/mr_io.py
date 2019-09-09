@@ -112,17 +112,17 @@ class SpaceTimeMRI:
                                 voxel_feature=f[SpaceTimeMRI.group_name]["voxel_feature"][()].transpose((2,1,0,3,4)))
 
 
-class HPCPredictMRI:
-    group_name = "hpc-predict-mri"
+class FlowMRI:
+    group_name = "flow-mri"
     
     def __init__(self, geometry, time, intensity, velocity_mean, velocity_cov):
         """Voxel-based parameters must be specified in (x,y,z,t,i)-order, Fortran will treat it in (i,t,x,y,z)-order.
            The index i is used as the component index (i.e. between 0..2 for mean and 0..5 for covariance of velocity field)
         """
         validate_spacetime_coordinates(geometry, time)
-        validate_spacetime_scalar_feature(HPCPredictMRI, geometry, time, intensity)
-        validate_spacetime_vector_feature(HPCPredictMRI, geometry, time, velocity_mean)
-        validate_spacetime_matrix_feature(HPCPredictMRI, geometry, time, velocity_cov)
+        validate_spacetime_scalar_feature(FlowMRI, geometry, time, intensity)
+        validate_spacetime_vector_feature(FlowMRI, geometry, time, velocity_mean)
+        validate_spacetime_matrix_feature(FlowMRI, geometry, time, velocity_cov)
 
         self.geometry = geometry
         self.time = time
@@ -137,7 +137,7 @@ class HPCPredictMRI:
     
         with h5py.File(path, "w") as f:
             # here comes the actual serialization code (transposition to use Fortran memory layout)
-            grp = f.create_group(HPCPredictMRI.group_name)
+            grp = f.create_group(FlowMRI.group_name)
             write_space_time_coordinates(grp, self.geometry, self.time)
             write_space_time_voxel_scalar_feature(grp, "intensity", self.intensity)
             write_space_time_voxel_feature(grp, "velocity_mean", self.velocity_mean)
@@ -146,27 +146,27 @@ class HPCPredictMRI:
     def read_hdf5(path):
         with h5py.File(path, "r") as f:
             # here comes the actual deserialization code
-            return HPCPredictMRI(geometry=[f[HPCPredictMRI.group_name][coord_name][()] \
+            return FlowMRI(geometry=[f[FlowMRI.group_name][coord_name][()] \
                                           for coord_name in ["x_coordinates", "y_coordinates", "z_coordinates"]],
-                                time=f[HPCPredictMRI.group_name]["t_coordinates"][()],
-                                intensity=f[HPCPredictMRI.group_name]["intensity"][()].transpose((2,1,0,3)),
-                                velocity_mean=f[HPCPredictMRI.group_name]["velocity_mean"][()].transpose((2,1,0,3,4)),
-                                velocity_cov=f[HPCPredictMRI.group_name]["velocity_cov"][()].transpose((2,1,0,3,5,4)))
+                                time=f[FlowMRI.group_name]["t_coordinates"][()],
+                                intensity=f[FlowMRI.group_name]["intensity"][()].transpose((2,1,0,3)),
+                                velocity_mean=f[FlowMRI.group_name]["velocity_mean"][()].transpose((2,1,0,3,4)),
+                                velocity_cov=f[FlowMRI.group_name]["velocity_cov"][()].transpose((2,1,0,3,5,4)))
 
 
-#TODO: Refactor this into class hierarchy with HPCPredictMRI
-class SegmentedHPCPredictMRI:
-    group_name = "segmented-hpc-predict-mri"
+#TODO: Refactor this into class hierarchy with FlowMRI
+class SegmentedFlowMRI:
+    group_name = "segmented-flow-mri"
     
     def __init__(self, geometry, time, intensity, velocity_mean, velocity_cov, segmentation_prob):
         """Voxel-based parameters must be specified in (x,y,z,t,i)-order, Fortran will treat it in (i,t,x,y,z)-order.
            The index i is used as the component index (i.e. between 0..2 for mean and 0..5 for covariance of velocity field)
         """
         validate_spacetime_coordinates(geometry, time)
-        validate_spacetime_scalar_feature(SegmentedHPCPredictMRI, geometry, time, intensity)
-        validate_spacetime_vector_feature(SegmentedHPCPredictMRI, geometry, time, velocity_mean)
-        validate_spacetime_matrix_feature(SegmentedHPCPredictMRI, geometry, time, velocity_cov)
-        validate_spacetime_scalar_feature(SegmentedHPCPredictMRI, geometry, time, segmentation_prob)
+        validate_spacetime_scalar_feature(SegmentedFlowMRI, geometry, time, intensity)
+        validate_spacetime_vector_feature(SegmentedFlowMRI, geometry, time, velocity_mean)
+        validate_spacetime_matrix_feature(SegmentedFlowMRI, geometry, time, velocity_cov)
+        validate_spacetime_scalar_feature(SegmentedFlowMRI, geometry, time, segmentation_prob)
 
         self.geometry = geometry
         self.time = time
@@ -182,7 +182,7 @@ class SegmentedHPCPredictMRI:
     
         with h5py.File(path, "w") as f:
             # here comes the actual serialization code (transposition to use Fortran memory layout)
-            grp = f.create_group(SegmentedHPCPredictMRI.group_name)
+            grp = f.create_group(SegmentedFlowMRI.group_name)
             write_space_time_coordinates(grp, self.geometry, self.time)
             write_space_time_voxel_scalar_feature(grp, "intensity", self.intensity)
             write_space_time_voxel_feature(grp, "velocity_mean", self.velocity_mean)
@@ -192,11 +192,11 @@ class SegmentedHPCPredictMRI:
     def read_hdf5(path):
         with h5py.File(path, "r") as f:
             # here comes the actual deserialization code
-            return SegmentedHPCPredictMRI(geometry=[f[SegmentedHPCPredictMRI.group_name][coord_name][()] \
+            return SegmentedFlowMRI(geometry=[f[SegmentedFlowMRI.group_name][coord_name][()] \
                                           for coord_name in ["x_coordinates", "y_coordinates", "z_coordinates"]],
-                                time=f[SegmentedHPCPredictMRI.group_name]["t_coordinates"][()],
-                                intensity=f[SegmentedHPCPredictMRI.group_name]["intensity"][()].transpose((2,1,0,3)),
-                                velocity_mean=f[SegmentedHPCPredictMRI.group_name]["velocity_mean"][()].transpose((2,1,0,3,4)),
-                                velocity_cov=f[SegmentedHPCPredictMRI.group_name]["velocity_cov"][()].transpose((2,1,0,3,5,4)),
-                                segmentation_prob=f[SegmentedHPCPredictMRI.group_name]["segmentation_prob"][()].transpose((2,1,0,3)))
+                                time=f[SegmentedFlowMRI.group_name]["t_coordinates"][()],
+                                intensity=f[SegmentedFlowMRI.group_name]["intensity"][()].transpose((2,1,0,3)),
+                                velocity_mean=f[SegmentedFlowMRI.group_name]["velocity_mean"][()].transpose((2,1,0,3,4)),
+                                velocity_cov=f[SegmentedFlowMRI.group_name]["velocity_cov"][()].transpose((2,1,0,3,5,4)),
+                                segmentation_prob=f[SegmentedFlowMRI.group_name]["segmentation_prob"][()].transpose((2,1,0,3)))
 

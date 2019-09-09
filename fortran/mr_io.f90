@@ -10,10 +10,10 @@ public :: mr_io_read_spatial
 public :: mr_io_write_spatial
 public :: mr_io_read_spacetime
 public :: mr_io_write_spacetime
-public :: mr_io_read_hpcpredict
-public :: mr_io_write_hpcpredict
-public :: mr_io_read_segmentedhpcpredict
-public :: mr_io_write_segmentedhpcpredict
+public :: mr_io_read_flow
+public :: mr_io_write_flow
+public :: mr_io_read_segmentedflow
+public :: mr_io_write_segmentedflow
 
 ! HDF5 error interface - could be moved elsewhere probably
 public :: mr_io_handle_hdf5_error
@@ -21,18 +21,18 @@ public :: mr_io_handle_argument_error
 
 public :: SpatialMRI
 public :: SpaceTimeMRI
-public :: HPCPredictMRI
-public :: SegmentedHPCPredictMRI
+public :: FlowMRI
+public :: SegmentedFlowMRI
 
 public :: SpatialMRI_group_name
 public :: SpaceTimeMRI_group_name
-public :: HPCPredictMRI_group_name
-public :: SegmentedHPCPredictMRI_group_name
+public :: FlowMRI_group_name
+public :: SegmentedFlowMRI_group_name
 
 public :: mr_io_deallocate_spatial_mri
 public :: mr_io_deallocate_spacetime_mri
-public :: mr_io_deallocate_hpcpredict_mri
-public :: mr_io_deallocate_segmentedhpcpredict_mri
+public :: mr_io_deallocate_flow_mri
+public :: mr_io_deallocate_segmentedflow_mri
 
 contains
 
@@ -542,7 +542,7 @@ end subroutine mr_io_write_spacetime
 
 
 
-! ************************ HPCPredictMRI ************************
+! ************************ FlowMRI ************************
 
 subroutine mr_io_read_spacetime_scalar_feature(grp_id, feature_name, feature_array)
 
@@ -717,12 +717,12 @@ subroutine mr_io_write_spacetime_matrix_feature(grp_id, feature_name, feature_ar
 end subroutine mr_io_write_spacetime_matrix_feature
 
 
-subroutine mr_io_read_hpcpredict(path, mri_inst)
+subroutine mr_io_read_flow(path, mri_inst)
 
   implicit none
 
   character(len=*), intent(in) :: path
-  type(HPCPredictMRI), intent(out) :: mri_inst
+  type(FlowMRI), intent(out) :: mri_inst
 
   INTEGER(HID_T) :: file_id       ! File identifier
   INTEGER(HID_T) :: grp_id        ! Group identifier
@@ -738,7 +738,7 @@ subroutine mr_io_read_hpcpredict(path, mri_inst)
   mr_io_handle_error(error)
 
   ! Open an existing group
-  CALL h5gopen_f(file_id, HPCPredictMRI_group_name, grp_id, error)
+  CALL h5gopen_f(file_id, FlowMRI_group_name, grp_id, error)
   mr_io_handle_error(error)
 
   ! Read time data
@@ -773,16 +773,16 @@ subroutine mr_io_read_hpcpredict(path, mri_inst)
   CALL h5close_f(error)
   mr_io_handle_error(error)
 
-end subroutine mr_io_read_hpcpredict
+end subroutine mr_io_read_flow
 
 
 
-subroutine mr_io_write_hpcpredict(path, mri_inst)
+subroutine mr_io_write_flow(path, mri_inst)
 
   implicit none
 
   character(len=*), intent(in) :: path
-  type(HPCPredictMRI), intent(in) :: mri_inst
+  type(FlowMRI), intent(in) :: mri_inst
 
   INTEGER(HID_T) :: file_id       ! File identifier
   INTEGER(HID_T) :: grp_id        ! Group identifier
@@ -798,7 +798,7 @@ subroutine mr_io_write_hpcpredict(path, mri_inst)
   mr_io_handle_error(error)
 
   ! Create a new group
-  CALL h5gcreate_f(file_id, HPCPredictMRI_group_name, grp_id, error)
+  CALL h5gcreate_f(file_id, FlowMRI_group_name, grp_id, error)
   mr_io_handle_error(error)
 
   ! Write time data
@@ -826,17 +826,17 @@ subroutine mr_io_write_hpcpredict(path, mri_inst)
   CALL h5close_f(error)
   mr_io_handle_error(error)
 
-end subroutine mr_io_write_hpcpredict
+end subroutine mr_io_write_flow
 
 
-! ************************ SegmentedHPCPredictMRI ************************
+! ************************ SegmentedFlowMRI ************************
 
-subroutine mr_io_read_segmentedhpcpredict(path, mri_inst)
+subroutine mr_io_read_segmentedflow(path, mri_inst)
 
   implicit none
 
   character(len=*), intent(in) :: path
-  type(SegmentedHPCPredictMRI), intent(out) :: mri_inst
+  type(SegmentedFlowMRI), intent(out) :: mri_inst
 
   INTEGER(HID_T) :: file_id       ! File identifier
   INTEGER(HID_T) :: grp_id        ! Group identifier
@@ -852,7 +852,7 @@ subroutine mr_io_read_segmentedhpcpredict(path, mri_inst)
   mr_io_handle_error(error)
 
   ! Open an existing group
-  CALL h5gopen_f(file_id, SegmentedHPCPredictMRI_group_name, grp_id, error)
+  CALL h5gopen_f(file_id, SegmentedFlowMRI_group_name, grp_id, error)
   mr_io_handle_error(error)
 
   ! Read time data
@@ -889,16 +889,16 @@ subroutine mr_io_read_segmentedhpcpredict(path, mri_inst)
   CALL h5close_f(error)
   mr_io_handle_error(error)
 
-end subroutine mr_io_read_segmentedhpcpredict
+end subroutine mr_io_read_segmentedflow
 
 
 
-subroutine mr_io_write_segmentedhpcpredict(path, mri_inst)
+subroutine mr_io_write_segmentedflow(path, mri_inst)
 
   implicit none
 
   character(len=*), intent(in) :: path
-  type(SegmentedHPCPredictMRI), intent(in) :: mri_inst
+  type(SegmentedFlowMRI), intent(in) :: mri_inst
 
   INTEGER(HID_T) :: file_id       ! File identifier
   INTEGER(HID_T) :: grp_id        ! Group identifier
@@ -914,7 +914,7 @@ subroutine mr_io_write_segmentedhpcpredict(path, mri_inst)
   mr_io_handle_error(error)
 
   ! Create a new group
-  CALL h5gcreate_f(file_id, SegmentedHPCPredictMRI_group_name, grp_id, error)
+  CALL h5gcreate_f(file_id, SegmentedFlowMRI_group_name, grp_id, error)
   mr_io_handle_error(error)
 
   ! Write time data
@@ -943,7 +943,7 @@ subroutine mr_io_write_segmentedhpcpredict(path, mri_inst)
   CALL h5close_f(error)
   mr_io_handle_error(error)
 
-end subroutine mr_io_write_segmentedhpcpredict
+end subroutine mr_io_write_segmentedflow
 
 
 end module mr_io

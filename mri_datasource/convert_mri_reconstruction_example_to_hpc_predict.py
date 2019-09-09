@@ -3,7 +3,7 @@ import numpy as np
 import argparse
 import logging
 import scipy.io as sio
-from mr_io import HPCPredictMRI # Requires adding ../python to PYTHONPATH
+from mr_io import FlowMRI # Requires adding ../python to PYTHONPATH
 
 # Parse data input and output directories
 def parse_args():
@@ -49,9 +49,9 @@ output_dir = os.path.dirname(os.path.realpath(args.output))
 if not os.path.exists(output_dir):
     os.makedirs(output_dir)
     
-hpc_predict_mri = HPCPredictMRI(geometry=geometry,
+flow_mri = FlowMRI(geometry=geometry,
                                 time=time,
                                 intensity=mat_data['I'].real,
                                 velocity_mean=mat_data['results_v'],
                                 velocity_cov=velocity_cov)
-hpc_predict_mri.write_hdf5(args.output)
+flow_mri.write_hdf5(args.output)

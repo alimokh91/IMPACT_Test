@@ -91,11 +91,11 @@ type DistSpacetimeMRI
 end type
 
 
-! ************************ HPCPredictMRI ************************
+! ************************ FlowMRI ************************
 
-character(len=100) :: HPCPredictMRI_group_name = "hpc-predict-mri"
+character(len=100) :: FlowMRI_group_name = "flow-mri"
 
-type HPCPredictMRI
+type FlowMRI
      ! time
      real*8, dimension(:), allocatable :: t_coordinates
      integer :: t_dim
@@ -117,7 +117,7 @@ type HPCPredictMRI
      integer, dimension(6) :: velocity_cov_dims
 end type
 
-type DistHPCPredictMRI
+type DistFlowMRI
      ! time
      real*8, dimension(:), allocatable :: t_coordinates
      integer :: t_dim
@@ -141,17 +141,17 @@ type DomainPadding
      integer, dimension(3) :: rhs
 end type
 
-type DistHPCPredictMRIPadded
-     type(DistHPCPredictMRI) :: mri
+type DistFlowMRIPadded
+     type(DistFlowMRI) :: mri
      type(DomainPadding) :: domain_padding
 end type
 
 
-! ************************ SegmentedHPCPredictMRI ************************
+! ************************ SegmentedFlowMRI ************************
 
-character(len=100) :: SegmentedHPCPredictMRI_group_name = "segmented-hpc-predict-mri"
+character(len=100) :: SegmentedFlowMRI_group_name = "segmented-flow-mri"
 
-type SegmentedHPCPredictMRI
+type SegmentedFlowMRI
      ! time
      real*8, dimension(:), allocatable :: t_coordinates
      integer :: t_dim
@@ -175,7 +175,7 @@ type SegmentedHPCPredictMRI
      integer, dimension(4) :: segmentation_prob_dims
 end type
 
-type DistSegmentedHPCPredictMRI
+type DistSegmentedFlowMRI
      ! time
      real*8, dimension(:), allocatable :: t_coordinates
      integer :: t_dim
@@ -242,10 +242,10 @@ subroutine mr_io_deallocate_dist_spacetime_mri(mri)
 
 end subroutine mr_io_deallocate_dist_spacetime_mri
 
-subroutine mr_io_deallocate_hpcpredict_mri(mri)
+subroutine mr_io_deallocate_flow_mri(mri)
 
     implicit none
-    type(HPCPredictMRI), intent(inout) :: mri
+    type(FlowMRI), intent(inout) :: mri
     deallocate(mri%x_coordinates)
     deallocate(mri%y_coordinates)
     deallocate(mri%z_coordinates)
@@ -254,12 +254,12 @@ subroutine mr_io_deallocate_hpcpredict_mri(mri)
     deallocate(mri%velocity_mean)
     deallocate(mri%velocity_cov)
 
-end subroutine mr_io_deallocate_hpcpredict_mri
+end subroutine mr_io_deallocate_flow_mri
 
-subroutine mr_io_deallocate_dist_hpcpredict_mri(mri)
+subroutine mr_io_deallocate_dist_flow_mri(mri)
 
     implicit none
-    type(DistHPCPredictMRI), intent(inout) :: mri
+    type(DistFlowMRI), intent(inout) :: mri
     deallocate(mri%x_coordinates)
     deallocate(mri%y_coordinates)
     deallocate(mri%z_coordinates)
@@ -268,20 +268,20 @@ subroutine mr_io_deallocate_dist_hpcpredict_mri(mri)
     deallocate(mri%velocity_mean%array)
     deallocate(mri%velocity_cov%array)
 
-end subroutine mr_io_deallocate_dist_hpcpredict_mri
+end subroutine mr_io_deallocate_dist_flow_mri
 
-subroutine mr_io_deallocate_dist_hpcpredict_mri_padded(mri)
-
-    implicit none
-    type(DistHPCPredictMRIPadded), intent(inout) :: mri
-    call mr_io_deallocate_dist_hpcpredict_mri(mri%mri)
-
-end subroutine mr_io_deallocate_dist_hpcpredict_mri_padded
-
-subroutine mr_io_deallocate_segmentedhpcpredict_mri(mri)
+subroutine mr_io_deallocate_dist_flow_mri_padded(mri)
 
     implicit none
-    type(SegmentedHPCPredictMRI), intent(inout) :: mri
+    type(DistFlowMRIPadded), intent(inout) :: mri
+    call mr_io_deallocate_dist_flow_mri(mri%mri)
+
+end subroutine mr_io_deallocate_dist_flow_mri_padded
+
+subroutine mr_io_deallocate_segmentedflow_mri(mri)
+
+    implicit none
+    type(SegmentedFlowMRI), intent(inout) :: mri
     deallocate(mri%x_coordinates)
     deallocate(mri%y_coordinates)
     deallocate(mri%z_coordinates)
@@ -291,12 +291,12 @@ subroutine mr_io_deallocate_segmentedhpcpredict_mri(mri)
     deallocate(mri%velocity_cov)
     deallocate(mri%segmentation_prob)
 
-end subroutine mr_io_deallocate_segmentedhpcpredict_mri
+end subroutine mr_io_deallocate_segmentedflow_mri
 
-subroutine mr_io_deallocate_dist_segmentedhpcpredict_mri(mri)
+subroutine mr_io_deallocate_dist_segmentedflow_mri(mri)
 
     implicit none
-    type(DistSegmentedHPCPredictMRI), intent(inout) :: mri
+    type(DistSegmentedFlowMRI), intent(inout) :: mri
     deallocate(mri%x_coordinates)
     deallocate(mri%y_coordinates)
     deallocate(mri%z_coordinates)
@@ -306,7 +306,7 @@ subroutine mr_io_deallocate_dist_segmentedhpcpredict_mri(mri)
     deallocate(mri%velocity_cov%array)
     deallocate(mri%segmentation_prob%array)
 
-end subroutine mr_io_deallocate_dist_segmentedhpcpredict_mri
+end subroutine mr_io_deallocate_dist_segmentedflow_mri
 
 
 end module mr_io_protocol

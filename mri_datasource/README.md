@@ -14,7 +14,7 @@ To generate an IMPACT config.txt file, then use the following command (feel free
 
 ```
 cd bern_data_experiments_hpc_predict/
-PYTHONPATH=../../ python ../../python/mr_io_impact_config.py --mri bern_experimental_dataset_hpc_predict_mri.h5 --sr 2 2 2 --padding 0.5 0.5 0.5 --tr 2 --config ../../python/config.txt.j2 --output config.txt --np 4
+PYTHONPATH=../../ python ../../python/mr_io_impact_config.py --mri bern_experimental_dataset_flow_mri.h5 --sr 2 2 2 --padding 0.5 0.5 0.5 --tr 2 --config ../../python/config.txt.j2 --output config.txt --np 4
 ```
 
-As of the first version, you can then copy both config.txt and bern_experimental_dataset_hpc_predict_mri.h5 to the prog directory of IMPACT and start impact_debug.exe from there.
+As of the first version, you can then copy both config.txt and bern_experimental_dataset_flow_mri.h5 to the prog directory of IMPACT and start impact_debug.exe from there.

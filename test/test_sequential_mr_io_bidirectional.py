@@ -2,7 +2,7 @@ import unittest
 import subprocess as sp
 import os
 import numpy as np
-from mr_io import SpatialMRI, SpaceTimeMRI, HPCPredictMRI, SegmentedHPCPredictMRI
+from mr_io import SpatialMRI, SpaceTimeMRI, FlowMRI, SegmentedFlowMRI
 from test_common import validate_group_name, validate_array        
 
 
@@ -109,10 +109,10 @@ class TestSpaceTimeMRIBidirectional(unittest.TestCase):
         remove_test_files(self)
  
  
-class TestHPCPredictMRIBidirectional(unittest.TestCase):
+class TestFlowMRIBidirectional(unittest.TestCase):
  
     # Filenames
-    filename_prefix = "mr_io_test_reader_writer_hpc_predict"
+    filename_prefix = "mr_io_test_reader_writer_flow"
     
     filename_exec = filename_prefix
     filename_mri_in = filename_prefix + "_in.h5"
@@ -120,7 +120,7 @@ class TestHPCPredictMRIBidirectional(unittest.TestCase):
     filename_out = filename_prefix + ".out"
     filename_err = filename_prefix + ".err"
 
-    mri_group_name = "hpc-predict-mri"
+    mri_group_name = "flow-mri"
 
     def setUp(self):
         # Initialize the MRI data
@@ -129,13 +129,13 @@ class TestHPCPredictMRIBidirectional(unittest.TestCase):
         intensity= np.random.rand(23,13,19,17)
         velocity_mean = np.random.rand(23,13,19,17,3)
         velocity_cov = np.random.rand(23,13,19,17,3,5)
-        self.mri = HPCPredictMRI(geometry, time, intensity, velocity_mean, velocity_cov)
+        self.mri = FlowMRI(geometry, time, intensity, velocity_mean, velocity_cov)
  
     def test_communicator(self):
         # Write HDF5 from Python and read HDF5 from Fortran   
         write_hdf5_exec_fortran(self) 
             
-        out_mri = HPCPredictMRI.read_hdf5(type(self).filename_mri_out)
+        out_mri = FlowMRI.read_hdf5(type(self).filename_mri_out)
 
         for i in range(3):
             validate_array(self, self.mri.geometry[i], out_mri.geometry[i])        
@@ -148,10 +148,10 @@ class TestHPCPredictMRIBidirectional(unittest.TestCase):
         remove_test_files(self)
          
  
-class TestSegmentedHPCPredictMRIBidirectional(unittest.TestCase):
+class TestSegmentedFlowMRIBidirectional(unittest.TestCase):
  
     # Filenames
-    filename_prefix = "mr_io_test_reader_writer_segmented_hpc_predict"
+    filename_prefix = "mr_io_test_reader_writer_segmented_flow"
     
     filename_exec = filename_prefix
     filename_mri_in = filename_prefix + "_in.h5"
@@ -159,7 +159,7 @@ class TestSegmentedHPCPredictMRIBidirectional(unittest.TestCase):
     filename_out = filename_prefix + ".out"
     filename_err = filename_prefix + ".err"
 
-    mri_group_name = "segmented-hpc-predict-mri"
+    mri_group_name = "segmented-flow-mri"
 
     def setUp(self):
         # Initialize the MRI data
@@ -169,13 +169,13 @@ class TestSegmentedHPCPredictMRIBidirectional(unittest.TestCase):
         velocity_mean = np.random.rand(23,13,19,17,3)
         velocity_cov = np.random.rand(23,13,19,17,3,5)
         segmentation_prob = np.random.rand(23,13,19,17)
-        self.mri = SegmentedHPCPredictMRI(geometry, time, intensity, velocity_mean, velocity_cov, segmentation_prob)
+        self.mri = SegmentedFlowMRI(geometry, time, intensity, velocity_mean, velocity_cov, segmentation_prob)
  
     def test_communicator(self):
         # Write HDF5 from Python and read HDF5 from Fortran   
         write_hdf5_exec_fortran(self) 
             
-        out_mri = SegmentedHPCPredictMRI.read_hdf5(type(self).filename_mri_out)
+        out_mri = SegmentedFlowMRI.read_hdf5(type(self).filename_mri_out)
      
         for i in range(3):
             validate_array(self, self.mri.geometry[i], out_mri.geometry[i])        

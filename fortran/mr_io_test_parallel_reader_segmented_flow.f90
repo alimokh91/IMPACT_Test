@@ -1,4 +1,4 @@
-program mr_io_test_parallel_reader_writer_hpc_predict_padded
+program mr_io_test_parallel_reader_segmented_flow
   
     use mr_io_parallel_spacetime
     use mr_io_test_arg_parser
@@ -7,40 +7,21 @@ program mr_io_test_parallel_reader_writer_hpc_predict_padded
     implicit none
 
     INTEGER err
-!    character(len=100) :: path = "mr_io_test_parallel_hpc_predict_with_padding.h5"
-
-    type(DistHPCPredictMRIPadded) :: mri_dest_padded
-    type(DistHPCPredictMRI) :: mri_dest
+!    character(len=100) :: path = "mr_io_test_parallel_segmented_flow.h5"
+    type(DistSegmentedFlowMRI) :: mri_dest
 
     integer, dimension(4) :: intensity_shape
     integer, dimension(5) :: velocity_mean_shape
     integer, dimension(6) :: velocity_cov_shape
-
-!    integer :: gdb = 0
-!
-!    do while (gdb == 0)
-!      call sleep(1)
-!    end do
+    integer, dimension(4) :: segmentation_prob_shape
 
     call MPI_Init(err)
-
-    call mr_io_test_parse_args_parallel_reader_writer_padded()
     
-!    print *, domain_padding_lhs
-!    print *, domain_padding_rhs
+    call mr_io_test_parse_args_parallel_reader()
 
-    mri_dest_padded%domain_padding%lhs = domain_padding_lhs
-    mri_dest_padded%domain_padding%rhs = domain_padding_rhs
+    call mr_io_read_parallel_segmentedflow(MPI_COMM_WORLD, MPI_INFO_NULL, mr_io_test_mpi_cart_dims, path, mri_dest)
 
-!    print *, "Padding... (lhs/rhs)"
-!    print *, mri_dest_padded%domain_padding%lhs
-!    print *, mri_dest_padded%domain_padding%rhs
-!    call flush()
-
-    call mr_io_read_parallel_hpcpredict_padded(MPI_COMM_WORLD, MPI_INFO_NULL, mr_io_test_mpi_cart_dims, path, mri_dest_padded)
-    mri_dest = mri_dest_padded%mri
-
-    print *, HPCPredictMRI_group_name
+    print *, SegmentedFlowMRI_group_name
 
     print *, shape(mri_dest%t_coordinates)
     print *, mri_dest%t_coordinates
@@ -94,8 +75,19 @@ program mr_io_test_parallel_reader_writer_hpc_predict_padded
     print *, velocity_cov_shape(1:2)
     print *, mri_dest%velocity_cov%array
 
-    call mr_io_write_parallel_hpcpredict(MPI_COMM_WORLD, MPI_INFO_NULL, out_path, mri_dest_padded%mri)
+    segmentation_prob_shape = shape(mri_dest%segmentation_prob%array)
+
+    print *, mri_dest%segmentation_prob%dims
+    print *, mri_dest%segmentation_prob%offset
+    print *, segmentation_prob_shape(2:4)
+
+    print *, mri_dest%segmentation_prob%time_dim
+    print *, mri_dest%segmentation_prob%time_offset
+    print *, segmentation_prob_shape(1)
+
+    print *, mri_dest%segmentation_prob%array
+
 
     call MPI_Finalize(err)
         
-end program mr_io_test_parallel_reader_writer_hpc_predict_padded
+end program mr_io_test_parallel_reader_segmented_flow

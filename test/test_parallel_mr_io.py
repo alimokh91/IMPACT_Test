@@ -2,7 +2,7 @@ import unittest
 import subprocess as sp
 import os
 import numpy as np
-from mr_io import SpatialMRI, SpaceTimeMRI, HPCPredictMRI, SegmentedHPCPredictMRI
+from mr_io import SpatialMRI, SpaceTimeMRI, FlowMRI, SegmentedFlowMRI
 from test_common import spatial_hyperslab_dims_new, spatial_hyperslab_loc, validate_spatial_fort_array
 
 
@@ -238,19 +238,19 @@ class TestSpaceTimeMRI(unittest.TestCase): # FIXME: coordinates test...
         remove_test_files(self)
                
    
-class TestHPCPredictMRI(unittest.TestCase): # FIXME: coordinates test...
+class TestFlowMRI(unittest.TestCase): # FIXME: coordinates test...
     # number of Fortran MPI processes
     mpi_proc = 2**3
    
     # Filenames
-    filename_prefix = "mr_io_test_parallel_reader_hpc_predict"
+    filename_prefix = "mr_io_test_parallel_reader_flow"
  
     filename_exec = filename_prefix
     filename_mri = filename_prefix + ".h5"
     filename_out_rank = filename_prefix + "_%s.out"
     filename_err_rank = filename_prefix + "_%s.err"
    
-    mri_group_name = "hpc-predict-mri"
+    mri_group_name = "flow-mri"
    
    
     def setUp(self):
@@ -260,7 +260,7 @@ class TestHPCPredictMRI(unittest.TestCase): # FIXME: coordinates test...
         intensity = np.random.rand(67,43,29,11)        
         velocity_mean = np.random.rand(67,43,29,11,3)        
         velocity_cov = np.random.rand(67,43,29,11,3,5)        
-        self.mri = HPCPredictMRI(geometry, time, intensity, velocity_mean, velocity_cov)
+        self.mri = FlowMRI(geometry, time, intensity, velocity_mean, velocity_cov)
         self.mpi_cart_dims = spatial_hyperslab_dims_new(type(self), self.mri.intensity)
  
      
@@ -289,19 +289,19 @@ class TestHPCPredictMRI(unittest.TestCase): # FIXME: coordinates test...
         remove_test_files(self)
               
  
-class TestSegmentedHPCPredictMRI(unittest.TestCase): # FIXME: coordinates test...
+class TestSegmentedFlowMRI(unittest.TestCase): # FIXME: coordinates test...
     # number of Fortran MPI processes
     mpi_proc = 2**3
    
     # Filenames
-    filename_prefix = "mr_io_test_parallel_reader_segmented_hpc_predict"
+    filename_prefix = "mr_io_test_parallel_reader_segmented_flow"
  
     filename_exec = filename_prefix
     filename_mri = filename_prefix + ".h5"
     filename_out_rank = filename_prefix + "_%s.out"
     filename_err_rank = filename_prefix + "_%s.err"
    
-    mri_group_name = "segmented-hpc-predict-mri"
+    mri_group_name = "segmented-flow-mri"
    
    
     def setUp(self):
@@ -312,7 +312,7 @@ class TestSegmentedHPCPredictMRI(unittest.TestCase): # FIXME: coordinates test..
         velocity_mean = np.random.rand(67,43,29,11,3)        
         velocity_cov = np.random.rand(67,43,29,11,3,5)        
         segmentation_prob = np.random.rand(67,43,29,11)        
-        self.mri = SegmentedHPCPredictMRI(geometry, time, intensity, velocity_mean, velocity_cov, segmentation_prob)
+        self.mri = SegmentedFlowMRI(geometry, time, intensity, velocity_mean, velocity_cov, segmentation_prob)
         self.mpi_cart_dims = spatial_hyperslab_dims_new(type(self), self.mri.intensity)
  
      
@@ -342,19 +342,19 @@ class TestSegmentedHPCPredictMRI(unittest.TestCase): # FIXME: coordinates test..
         remove_test_files(self)
 
             
-class TestHPCPredictMRIPadded(unittest.TestCase): # FIXME: coordinates test...
+class TestFlowMRIPadded(unittest.TestCase): # FIXME: coordinates test...
     # number of Fortran MPI processes
     mpi_proc = 2**3
   
     # Filenames
-    filename_prefix = "mr_io_test_parallel_reader_hpc_predict_padded"
+    filename_prefix = "mr_io_test_parallel_reader_flow_padded"
 
     filename_exec = filename_prefix
     filename_mri = filename_prefix + ".h5"
     filename_out_rank = filename_prefix + "_%s.out"
     filename_err_rank = filename_prefix + "_%s.err"
   
-    mri_group_name = "hpc-predict-mri"
+    mri_group_name = "flow-mri"
     
     padding = (1.5, 1.4, 1.7)
   
@@ -367,7 +367,7 @@ class TestHPCPredictMRIPadded(unittest.TestCase): # FIXME: coordinates test...
         intensity = np.random.rand(67,43,29,11)        
         velocity_mean = np.random.rand(67,43,29,11,3)        
         velocity_cov = np.random.rand(67,43,29,11,3,5)        
-        self.mri = HPCPredictMRI(geometry, time, intensity, velocity_mean, velocity_cov)
+        self.mri = FlowMRI(geometry, time, intensity, velocity_mean, velocity_cov)
         
         self.mpi_cart_dims = spatial_hyperslab_dims_new(type(self), self.mri.intensity)
         

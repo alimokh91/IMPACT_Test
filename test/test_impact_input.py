@@ -3,7 +3,7 @@ import subprocess as sp
 import os
 import logging
 import numpy as np
-from mr_io import HPCPredictMRI
+from mr_io import FlowMRI
 from test_common import mpi_cart_rank, spatial_hyperslab_dims_new, spatial_hyperslab_loc, validate_array
 
 
@@ -165,7 +165,7 @@ class TestImpactInput(unittest.TestCase): # FIXME: coordinates test...
                     np.linspace(0.,TestImpactInput.domain_length[i],
                                    2*TestImpactInput.num_vox[i]+1)[::2] for i in range(3)]
 
-        self.mri = HPCPredictMRI(geometry, time, intensity, velocity_mean, velocity_cov)
+        self.mri = FlowMRI(geometry, time, intensity, velocity_mean, velocity_cov)
         self.mpi_cart_dims = spatial_hyperslab_dims_new(type(self), self.mri.intensity)
 
         test_cls.num_pad_vox_lhs = [0]*3
@@ -235,7 +235,7 @@ class TestImpactInputPadding(unittest.TestCase): # FIXME: coordinates test...
                                np.linspace(0, test_cls.domain_length[i],
                                            2*num_ext_vox[i]+1)[::2] for i in range(3)]
         
-        self.mri = HPCPredictMRI(geometry, time, intensity, velocity_mean, velocity_cov)
+        self.mri = FlowMRI(geometry, time, intensity, velocity_mean, velocity_cov)
 
         print("MPI cartesian dims: {}\nMRI voxels: {}\nDesired padding voxels: {}\nExtended MRI voxels: {}\nComputed padding voxels: {} {}".format(\
               self.mpi_cart_dims, test_cls.num_vox, num_pad_vox, num_ext_vox, test_cls.num_pad_vox_lhs, test_cls.num_pad_vox_rhs))

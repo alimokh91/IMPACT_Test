@@ -36,22 +36,22 @@ endforeach()
 foreach(file 
     mr_io_test_reader
     mr_io_test_reader_space_time
-    mr_io_test_reader_hpc_predict
-    mr_io_test_reader_segmented_hpc_predict
+    mr_io_test_reader_flow
+    mr_io_test_reader_segmented_flow
     mr_io_test_reader_writer
     mr_io_test_reader_writer_space_time
-    mr_io_test_reader_writer_hpc_predict
-    mr_io_test_reader_writer_segmented_hpc_predict
+    mr_io_test_reader_writer_flow
+    mr_io_test_reader_writer_segmented_flow
     mr_io_test_parallel_reader
     mr_io_test_parallel_reader_space_time
-    mr_io_test_parallel_reader_hpc_predict
-    mr_io_test_parallel_reader_hpc_predict_padded
-    mr_io_test_parallel_reader_segmented_hpc_predict
+    mr_io_test_parallel_reader_flow
+    mr_io_test_parallel_reader_flow_padded
+    mr_io_test_parallel_reader_segmented_flow
     mr_io_test_parallel_reader_writer
     mr_io_test_parallel_reader_writer_space_time
-    mr_io_test_parallel_reader_writer_hpc_predict
-    mr_io_test_parallel_reader_writer_hpc_predict_padded
-    mr_io_test_parallel_reader_writer_segmented_hpc_predict
+    mr_io_test_parallel_reader_writer_flow
+    mr_io_test_parallel_reader_writer_flow_padded
+    mr_io_test_parallel_reader_writer_segmented_flow
 )
   add_executable(${file} ${file}.f90 mr_io_test_arg_parser.f90)
   target_compile_options(${file} PUBLIC -cpp -g -fbacktrace)

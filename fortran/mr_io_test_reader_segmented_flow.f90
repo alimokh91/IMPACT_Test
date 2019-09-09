@@ -1,4 +1,4 @@
-program mr_io_test_reader_segmented_hpc_predict
+program mr_io_test_reader_segmented_flow
   
     use mr_io
 
@@ -6,14 +6,14 @@ program mr_io_test_reader_segmented_hpc_predict
 
     implicit none
 
-!    character(len=100) :: path = "mr_io_test_segmented_hpc_predict.h5"
-    type(SegmentedHPCPredictMRI) :: mri_dest
+!    character(len=100) :: path = "mr_io_test_segmented_flow.h5"
+    type(SegmentedFlowMRI) :: mri_dest
 
     call mr_io_test_parse_args_reader()
 
-    call mr_io_read_segmentedhpcpredict(path, mri_dest)
+    call mr_io_read_segmentedflow(path, mri_dest)
 
-    print *, SegmentedHPCPredictMRI_group_name
+    print *, SegmentedFlowMRI_group_name
 
     print *, mri_dest%x_dim
     print *, mri_dest%x_coordinates
@@ -39,4 +39,4 @@ program mr_io_test_reader_segmented_hpc_predict
     print *, mri_dest%segmentation_prob_dims
     print *, mri_dest%segmentation_prob
 
-end program mr_io_test_reader_segmented_hpc_predict
+end program mr_io_test_reader_segmented_flow

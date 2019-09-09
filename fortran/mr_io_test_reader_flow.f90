@@ -1,4 +1,4 @@
-program mr_io_test_reader_hpc_predict
+program mr_io_test_reader_flow
   
     use mr_io
 
@@ -6,14 +6,14 @@ program mr_io_test_reader_hpc_predict
 
     implicit none
 
-!    character(len=100) :: path = "mr_io_test_hpc_predict.h5"
-    type(HPCPredictMRI) :: mri_dest
+!    character(len=100) :: path = "mr_io_test_flow.h5"
+    type(FlowMRI) :: mri_dest
 
     call mr_io_test_parse_args_reader()
 
-    call mr_io_read_hpcpredict(path, mri_dest)
+    call mr_io_read_flow(path, mri_dest)
 
-    print *, HPCPredictMRI_group_name
+    print *, FlowMRI_group_name
 
     print *, mri_dest%x_dim
     print *, mri_dest%x_coordinates
@@ -36,4 +36,4 @@ program mr_io_test_reader_hpc_predict
     print *, mri_dest%velocity_cov_dims
     print *, mri_dest%velocity_cov
 
-end program mr_io_test_reader_hpc_predict
+end program mr_io_test_reader_flow
