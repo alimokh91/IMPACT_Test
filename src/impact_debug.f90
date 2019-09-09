@@ -142,7 +142,22 @@ PROGRAM impact
   CALL mr_io_read_parallel_hpcpredict_padded(MPI_COMM_WORLD, MPI_INFO_NULL, (/NB1,NB2,NB3/), &
        mri_file_path, mri_inst) 
   CALL h5open_f(herror) ! Required as hpc-predict-io closes HDF5 environment with h5close_f
-  
+ 
+  ! The indices in distributed arrays of mri_inst are aligned with the pressure grid x1p/x2p/x3p.
+  ! That is for 3-dimensional MRI voxel index i = (i1,i2,i3) e.g. used to access 
+  !
+  !              mri_inst%mri%intensity%array(i1,i2,i3) 
+  !
+  ! and 3-dimensional refinement sr = (sr1,sr2,sr3) of the pressure grid relative to the MRI voxel grid
+  ! all the pressure grid points with coordinates in 
+  !
+  !              x1p(i1*sr1+1:(i1+1)*sr1+1)
+  !              x2p(i2*sr2+1:(i2+1)*sr2+1)
+  !              x3p(i3*sr3+1:(i3+1)*sr3+1)
+  !
+  ! are within that MRI voxel (the pressure grid points with the first/last coordinate from this set always
+  ! lie within the neighboring voxel as well).
+ 
   write(0,*) "### MRI data ('local' refers to local pressure grid) ##" 
   write(0,*) "## Number of data voxels "
   write(0,*) "   (incl. both with  "
