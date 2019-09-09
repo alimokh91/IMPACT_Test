@@ -18,7 +18,7 @@ program mr_io_test_parallel_reader_writer_space_time
     
     call mr_io_test_parse_args_parallel_reader_writer()
 
-    call mr_io_read_parallel_spacetime(MPI_COMM_WORLD, MPI_INFO_NULL, mpi_cart_dims, in_path, mri_dest)
+    call mr_io_read_parallel_spacetime(MPI_COMM_WORLD, MPI_INFO_NULL, mr_io_test_mpi_cart_dims, in_path, mri_dest)
 
     print *, SpatialMRI_group_name
 

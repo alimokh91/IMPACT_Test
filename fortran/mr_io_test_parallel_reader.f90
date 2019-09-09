@@ -15,7 +15,7 @@ program mr_io_test_parallel_reader
     
     call mr_io_test_parse_args_parallel_reader()
 
-    call mr_io_read_parallel_spatial(MPI_COMM_WORLD, MPI_INFO_NULL, mpi_cart_dims, &
+    call mr_io_read_parallel_spatial(MPI_COMM_WORLD, MPI_INFO_NULL, mr_io_test_mpi_cart_dims, &
                                      path, mri_dest)
 
     print *, SpatialMRI_group_name

@@ -39,7 +39,7 @@ program mr_io_test_parallel_reader_hpc_predict_padded
 !    print *, mri_dest_padded%domain_padding%rhs
 !    call flush()
 
-    call mr_io_read_parallel_hpcpredict_padded(MPI_COMM_WORLD, MPI_INFO_NULL, mpi_cart_dims, path, mri_dest_padded)
+    call mr_io_read_parallel_hpcpredict_padded(MPI_COMM_WORLD, MPI_INFO_NULL, mr_io_test_mpi_cart_dims, path, mri_dest_padded)
     mri_dest = mri_dest_padded%mri
 
     print *, HPCPredictMRI_group_name

@@ -51,14 +51,14 @@ end subroutine mr_io_handle_mpi_error_
 
 ! ************************ DistSpaceTimeMRI ************************
 
-subroutine mr_io_read_parallel_spacetime_feature(mpi_comm, mpi_cart_dims, grp_id, feature_name, &
+subroutine mr_io_read_parallel_spacetime_feature(mr_io_mpi_comm, mr_io_mpi_cart_dims, grp_id, feature_name, &
                                                  feature_array, feature_offset, feature_shape, &
                                                  time_offset, time_dim) !, feature_halo_shape)
 
   implicit none
 
-  INTEGER, intent(in) :: mpi_comm
-  integer, dimension(3), intent(in) :: mpi_cart_dims
+  INTEGER, intent(in) :: mr_io_mpi_comm
+  integer, dimension(3), intent(in) :: mr_io_mpi_cart_dims
   INTEGER(HID_T), intent(in) :: grp_id                 ! Group identifier
   character(len=*), intent(in) :: feature_name
 
@@ -149,7 +149,7 @@ subroutine mr_io_read_parallel_spacetime_feature(mpi_comm, mpi_cart_dims, grp_id
     dims_mem(2) = dims_file(2)-offset_file(2)
 
     ! spatial
-    call mr_io_parallel_spatial_hyperslap_compute(mpi_comm, mpi_cart_dims, feature_shape, feature_offset, dims_mem(3:5))
+    call mr_io_parallel_spatial_hyperslap_compute(mr_io_mpi_comm, mr_io_mpi_cart_dims, feature_shape, feature_offset, dims_mem(3:5))
     ! feature_offset set in mr_io_parallel_spatial_hyperslap_compute
     offset_file(3:5) = feature_offset
 
@@ -219,7 +219,7 @@ subroutine mr_io_read_parallel_spacetime_feature(mpi_comm, mpi_cart_dims, grp_id
 end subroutine mr_io_read_parallel_spacetime_feature
 
 
-subroutine mr_io_read_parallel_spacetime_feature_padded(mpi_comm, mpi_cart_dims, grp_id, &
+subroutine mr_io_read_parallel_spacetime_feature_padded(mr_io_mpi_comm, mr_io_mpi_cart_dims, grp_id, &
                                                  domain_padding, &
                                                  feature_name, &
                                                  feature_array, feature_offset, feature_shape, &
@@ -227,8 +227,8 @@ subroutine mr_io_read_parallel_spacetime_feature_padded(mpi_comm, mpi_cart_dims,
 
   implicit none
 
-  INTEGER, intent(in) :: mpi_comm
-  integer, dimension(3), intent(in) :: mpi_cart_dims
+  INTEGER, intent(in) :: mr_io_mpi_comm
+  integer, dimension(3), intent(in) :: mr_io_mpi_cart_dims
   INTEGER(HID_T), intent(in) :: grp_id                 ! Group identifier
   type(DomainPadding) :: domain_padding
   character(len=*), intent(in) :: feature_name
@@ -321,7 +321,7 @@ subroutine mr_io_read_parallel_spacetime_feature_padded(mpi_comm, mpi_cart_dims,
     dims_mem(2) = dims_file(2)-offset_file(2)
 
     ! spatial
-    call mr_io_parallel_spatial_hyperslap_compute_padded(mpi_comm, mpi_cart_dims, domain_padding, &
+    call mr_io_parallel_spatial_hyperslap_compute_padded(mr_io_mpi_comm, mr_io_mpi_cart_dims, domain_padding, &
                                                          feature_shape, feature_offset, dims_mem(3:5), offset_local_hyperslab)
     ! feature_offset set in mr_io_parallel_spatial_hyperslap_compute
     offset_file(3:5) = feature_offset
@@ -396,11 +396,11 @@ subroutine mr_io_read_parallel_spacetime_feature_padded(mpi_comm, mpi_cart_dims,
 end subroutine mr_io_read_parallel_spacetime_feature_padded
 
 
-subroutine mr_io_read_parallel_coordinates(mpi_comm, grp_id, coordinate, coordinate_array)
+subroutine mr_io_read_parallel_coordinates(mr_io_mpi_comm, grp_id, coordinate, coordinate_array)
 
   implicit none
 
-  INTEGER, intent(in) :: mpi_comm
+  INTEGER, intent(in) :: mr_io_mpi_comm
   INTEGER(HID_T), intent(in) :: grp_id                 ! Group identifier
   character(len=*), intent(in) :: coordinate
   real*8, dimension(:), allocatable, intent(out) :: coordinate_array
@@ -452,13 +452,13 @@ subroutine mr_io_read_parallel_coordinates(mpi_comm, grp_id, coordinate, coordin
 end subroutine mr_io_read_parallel_coordinates
 
 
-subroutine mr_io_read_parallel_spacetime(mpi_comm, mpi_info, mpi_cart_dims, path, mri_inst)
+subroutine mr_io_read_parallel_spacetime(mr_io_mpi_comm, mr_io_mpi_info, mr_io_mpi_cart_dims, path, mri_inst)
 
   implicit none
 
   character(len=*), intent(in) :: path
-  INTEGER, intent (in) :: mpi_comm, mpi_info
-  integer, dimension(3), intent(in) :: mpi_cart_dims
+  INTEGER, intent (in) :: mr_io_mpi_comm, mr_io_mpi_info
+  integer, dimension(3), intent(in) :: mr_io_mpi_cart_dims
   type(DistSpacetimeMRI), intent(out) :: mri_inst
 
   INTEGER(HID_T) :: file_id       ! File identifier
@@ -476,7 +476,7 @@ subroutine mr_io_read_parallel_spacetime(mpi_comm, mpi_info, mpi_cart_dims, path
   CALL h5pcreate_f(H5P_FILE_ACCESS_F, plist_id, error)
   mr_io_handle_error(error)
 
-  CALL h5pset_fapl_mpio_f(plist_id, mpi_comm, mpi_info, error)
+  CALL h5pset_fapl_mpio_f(plist_id, mr_io_mpi_comm, mr_io_mpi_info, error)
   mr_io_handle_error(error)
 
   ! Open existing file collectively
@@ -491,21 +491,21 @@ subroutine mr_io_read_parallel_spacetime(mpi_comm, mpi_info, mpi_cart_dims, path
   mr_io_handle_error(error)
 
   ! Read time coordinates
-  CALL mr_io_read_parallel_coordinates(mpi_comm, grp_id, "t", &
+  CALL mr_io_read_parallel_coordinates(mr_io_mpi_comm, grp_id, "t", &
                                        mri_inst%t_coordinates)
 
   ! Read coordinates
-  CALL mr_io_read_parallel_coordinates(mpi_comm, grp_id, "x", &
+  CALL mr_io_read_parallel_coordinates(mr_io_mpi_comm, grp_id, "x", &
                                        mri_inst%x_coordinates)
-  CALL mr_io_read_parallel_coordinates(mpi_comm, grp_id, "y", &
+  CALL mr_io_read_parallel_coordinates(mr_io_mpi_comm, grp_id, "y", &
                                        mri_inst%y_coordinates)
-  CALL mr_io_read_parallel_coordinates(mpi_comm, grp_id, "z", &
+  CALL mr_io_read_parallel_coordinates(mr_io_mpi_comm, grp_id, "z", &
                                        mri_inst%z_coordinates)
 
 
   ! Read spatial feature
-  CALL mr_io_read_parallel_spacetime_feature(mpi_comm, &
-                                             mpi_cart_dims, &
+  CALL mr_io_read_parallel_spacetime_feature(mr_io_mpi_comm, &
+                                             mr_io_mpi_cart_dims, &
                                              grp_id, "voxel_feature", &
                                              mri_inst%voxel_feature%array, &
                                              mri_inst%voxel_feature%offset, &
@@ -528,14 +528,14 @@ subroutine mr_io_read_parallel_spacetime(mpi_comm, mpi_info, mpi_cart_dims, path
 end subroutine mr_io_read_parallel_spacetime
 
 
-subroutine mr_io_write_parallel_spacetime_feature(mpi_comm, &
+subroutine mr_io_write_parallel_spacetime_feature(mr_io_mpi_comm, &
                                                   grp_id, feature_name, &
                                                   feature_array, feature_offset, feature_shape, &
                                                   time_offset, time_dim) !, feature_halo_shape)
 
   implicit none
 
-  INTEGER, intent(in) :: mpi_comm
+  INTEGER, intent(in) :: mr_io_mpi_comm
   INTEGER(HID_T), intent(in) :: grp_id                 ! Group identifier
   character(len=*), intent(in) :: feature_name
 
@@ -688,11 +688,11 @@ subroutine mr_io_write_parallel_spacetime_feature(mpi_comm, &
 end subroutine mr_io_write_parallel_spacetime_feature
 
 
-subroutine mr_io_write_parallel_coordinates(mpi_comm, grp_id, coordinate, coordinate_array) !, feature_halo_shape)
+subroutine mr_io_write_parallel_coordinates(mr_io_mpi_comm, grp_id, coordinate, coordinate_array) !, feature_halo_shape)
 
   implicit none
 
-  INTEGER, intent(in) :: mpi_comm
+  INTEGER, intent(in) :: mr_io_mpi_comm
   INTEGER(HID_T), intent(in) :: grp_id                 ! Group identifier
   character(len=*), intent(in) :: coordinate
   real*8, dimension(:), allocatable, intent(in) :: coordinate_array
@@ -717,19 +717,19 @@ subroutine mr_io_write_parallel_coordinates(mpi_comm, grp_id, coordinate, coordi
   INTEGER     ::   rank = 1       ! Dataset rank
   INTEGER     ::   error          ! Error flag
 
-  INTEGER     ::   mpi_rank, mpi_size, mpi_error
+  INTEGER     ::   mr_io_mpi_rank, mr_io_mpi_size, mr_io_mpi_error
 
   INTEGER     ::   i
 
   ! Compute hyperslab offset and shape
-  CALL MPI_Comm_rank(mpi_comm, mpi_rank, mpi_error)
-  mr_io_handle_error(mpi_error) ! FIXME: MPI error handling
-  CALL MPI_Comm_size(mpi_comm, mpi_size, mpi_error)
-  mr_io_handle_error(mpi_error)
+  CALL mpi_comm_rank(mr_io_mpi_comm, mr_io_mpi_rank, mr_io_mpi_error)
+  mr_io_handle_error(mr_io_mpi_error) ! FIXME: MPI error handling
+  CALL mpi_comm_size(mr_io_mpi_comm, mr_io_mpi_size, mr_io_mpi_error)
+  mr_io_handle_error(mr_io_mpi_error)
 
 
   dims_file = shape(coordinate_array)
-  if (mpi_rank == 0) then
+  if (mr_io_mpi_rank == 0) then
     dims_mem = dims_file
   else
     dims_mem = (/0/)
@@ -739,16 +739,16 @@ subroutine mr_io_write_parallel_coordinates(mpi_comm, grp_id, coordinate, coordi
   offset_mem = (/0/)
 
 !  dims_file = shape(coordinate_array)
-!  if(mpi_rank + 1 == mpi_size) then
-!    if( modulo(dims_file(1), mpi_size) == 0 ) then
-!      dims_mem(1) = dims_file(1) / mpi_size
+!  if(mr_io_mpi_rank + 1 == mr_io_mpi_size) then
+!    if( modulo(dims_file(1), mr_io_mpi_size) == 0 ) then
+!      dims_mem(1) = dims_file(1) / mr_io_mpi_size
 !    else
-!      dims_mem(1) = modulo(dims_file(1), mpi_size)
+!      dims_mem(1) = modulo(dims_file(1), mr_io_mpi_size)
 !    end if
 !  else
-!    dims_mem(1) = (dims_file(1) + mpi_size - 1) / mpi_size
+!    dims_mem(1) = (dims_file(1) + mr_io_mpi_size - 1) / mr_io_mpi_size
 !  end if
-!  offset_file(1) = (dims_file(1) + mpi_size - 1) / mpi_size * mpi_rank
+!  offset_file(1) = (dims_file(1) + mr_io_mpi_size - 1) / mr_io_mpi_size * mr_io_mpi_rank
 !  offset_mem = offset_file
 
 !   write (*,*) "dims_file"
@@ -795,7 +795,7 @@ subroutine mr_io_write_parallel_coordinates(mpi_comm, grp_id, coordinate, coordi
 !   CALL h5pclose_f(plist_id , error)
 !   mr_io_handle_error(error)
 
-  if (mpi_rank == 0) then
+  if (mr_io_mpi_rank == 0) then
     count_blocks = (/1/)
   else
     count_blocks = (/1/)
@@ -834,12 +834,12 @@ end subroutine mr_io_write_parallel_coordinates
 
 
 
-subroutine mr_io_write_parallel_spacetime(mpi_comm, mpi_info, path, mri_inst)
+subroutine mr_io_write_parallel_spacetime(mr_io_mpi_comm, mr_io_mpi_info, path, mri_inst)
 
   implicit none
 
   character(len=*), intent(in) :: path
-  INTEGER, intent (in) :: mpi_comm, mpi_info
+  INTEGER, intent (in) :: mr_io_mpi_comm, mr_io_mpi_info
   type(DistSpacetimeMRI), intent(in) :: mri_inst
 
   INTEGER(HID_T) :: file_id       ! File identifier
@@ -857,7 +857,7 @@ subroutine mr_io_write_parallel_spacetime(mpi_comm, mpi_info, path, mri_inst)
   CALL h5pcreate_f(H5P_FILE_ACCESS_F, plist_id, error)
   mr_io_handle_error(error)
 
-  CALL h5pset_fapl_mpio_f(plist_id, mpi_comm, mpi_info, error)
+  CALL h5pset_fapl_mpio_f(plist_id, mr_io_mpi_comm, mr_io_mpi_info, error)
   mr_io_handle_error(error)
 
   CALL h5fcreate_f(trim(path), H5F_ACC_TRUNC_F, file_id, error, access_prp = plist_id)
@@ -879,17 +879,17 @@ subroutine mr_io_write_parallel_spacetime(mpi_comm, mpi_info, path, mri_inst)
 !   print *, mri_inst%voxel_feature%dims
 !   print *, mri_inst%voxel_feature%offset
 !   print *, shape(mri_inst%voxel_feature%array)
-  CALL mr_io_write_parallel_coordinates(mpi_comm, grp_id, "t", &
+  CALL mr_io_write_parallel_coordinates(mr_io_mpi_comm, grp_id, "t", &
                                         mri_inst%t_coordinates)
-  CALL mr_io_write_parallel_coordinates(mpi_comm, grp_id, "x", &
+  CALL mr_io_write_parallel_coordinates(mr_io_mpi_comm, grp_id, "x", &
                                         mri_inst%x_coordinates)
-  CALL mr_io_write_parallel_coordinates(mpi_comm, grp_id, "y", &
+  CALL mr_io_write_parallel_coordinates(mr_io_mpi_comm, grp_id, "y", &
                                         mri_inst%y_coordinates)
-  CALL mr_io_write_parallel_coordinates(mpi_comm, grp_id, "z", &
+  CALL mr_io_write_parallel_coordinates(mr_io_mpi_comm, grp_id, "z", &
                                         mri_inst%z_coordinates)
 
   ! Read spatial feature
-  CALL mr_io_write_parallel_spacetime_feature(mpi_comm, &
+  CALL mr_io_write_parallel_spacetime_feature(mr_io_mpi_comm, &
                                            grp_id, "voxel_feature", &
                                            mri_inst%voxel_feature%array, &
                                            mri_inst%voxel_feature%offset, &
@@ -914,14 +914,14 @@ end subroutine mr_io_write_parallel_spacetime
 
 ! ************************ DistHPCPredictMRI ************************
 
-subroutine mr_io_read_parallel_spacetime_scalar_feature(mpi_comm, mpi_cart_dims, grp_id, feature_name, &
+subroutine mr_io_read_parallel_spacetime_scalar_feature(mr_io_mpi_comm, mr_io_mpi_cart_dims, grp_id, feature_name, &
                                                  feature_array, feature_offset, feature_shape, &
                                                  time_offset, time_dim) !, feature_halo_shape)
 
   implicit none
 
-  INTEGER, intent(in) :: mpi_comm
-  integer, dimension(3), intent(in) :: mpi_cart_dims
+  INTEGER, intent(in) :: mr_io_mpi_comm
+  integer, dimension(3), intent(in) :: mr_io_mpi_cart_dims
   INTEGER(HID_T), intent(in) :: grp_id                 ! Group identifier
   character(len=*), intent(in) :: feature_name
 
@@ -1007,7 +1007,7 @@ subroutine mr_io_read_parallel_spacetime_scalar_feature(mpi_comm, mpi_cart_dims,
     dims_mem(1) = dims_file(1)-offset_file(1)
 
     ! spatial
-    call mr_io_parallel_spatial_hyperslap_compute(mpi_comm, mpi_cart_dims, feature_shape, feature_offset, dims_mem(2:4))
+    call mr_io_parallel_spatial_hyperslap_compute(mr_io_mpi_comm, mr_io_mpi_cart_dims, feature_shape, feature_offset, dims_mem(2:4))
     ! feature_offset set in mr_io_parallel_spatial_hyperslap_compute
     offset_file(2:4) = feature_offset
 
@@ -1077,13 +1077,13 @@ subroutine mr_io_read_parallel_spacetime_scalar_feature(mpi_comm, mpi_cart_dims,
 end subroutine mr_io_read_parallel_spacetime_scalar_feature
 
 
-subroutine mr_io_write_parallel_spacetime_scalar_feature(mpi_comm, grp_id, feature_name, &
+subroutine mr_io_write_parallel_spacetime_scalar_feature(mr_io_mpi_comm, grp_id, feature_name, &
                                                   feature_array, feature_offset, feature_shape, &
                                                   time_offset, time_dim) !, feature_halo_shape)
 
   implicit none
 
-  INTEGER, intent(in) :: mpi_comm
+  INTEGER, intent(in) :: mr_io_mpi_comm
   INTEGER(HID_T), intent(in) :: grp_id                 ! Group identifier
   character(len=*), intent(in) :: feature_name
 
@@ -1234,7 +1234,7 @@ subroutine mr_io_write_parallel_spacetime_scalar_feature(mpi_comm, grp_id, featu
 end subroutine mr_io_write_parallel_spacetime_scalar_feature
 
 
-subroutine mr_io_read_parallel_spacetime_scalar_feature_padded(mpi_comm, mpi_cart_dims, grp_id, &
+subroutine mr_io_read_parallel_spacetime_scalar_feature_padded(mr_io_mpi_comm, mr_io_mpi_cart_dims, grp_id, &
                                                  domain_padding, &
                                                  feature_name, &
                                                  feature_array, feature_offset, feature_shape, &
@@ -1242,8 +1242,8 @@ subroutine mr_io_read_parallel_spacetime_scalar_feature_padded(mpi_comm, mpi_car
 
   implicit none
 
-  INTEGER, intent(in) :: mpi_comm
-  integer, dimension(3), intent(in) :: mpi_cart_dims
+  INTEGER, intent(in) :: mr_io_mpi_comm
+  integer, dimension(3), intent(in) :: mr_io_mpi_cart_dims
   INTEGER(HID_T), intent(in) :: grp_id                 ! Group identifier
   type(DomainPadding) :: domain_padding
   character(len=*), intent(in) :: feature_name
@@ -1331,7 +1331,7 @@ subroutine mr_io_read_parallel_spacetime_scalar_feature_padded(mpi_comm, mpi_car
     dims_mem(1) = dims_file(1)-offset_file(1)
 
     ! spatial
-    call mr_io_parallel_spatial_hyperslap_compute_padded(mpi_comm, mpi_cart_dims, domain_padding, &
+    call mr_io_parallel_spatial_hyperslap_compute_padded(mr_io_mpi_comm, mr_io_mpi_cart_dims, domain_padding, &
                                                          feature_shape, feature_offset, dims_mem(2:4), offset_local_hyperslab)
     ! feature_offset set in mr_io_parallel_spatial_hyperslap_compute
     offset_file(2:4) = feature_offset
@@ -1406,14 +1406,14 @@ subroutine mr_io_read_parallel_spacetime_scalar_feature_padded(mpi_comm, mpi_car
 end subroutine mr_io_read_parallel_spacetime_scalar_feature_padded
 
 
-subroutine mr_io_read_parallel_spacetime_matrix_feature(mpi_comm, mpi_cart_dims, grp_id, feature_name, &
+subroutine mr_io_read_parallel_spacetime_matrix_feature(mr_io_mpi_comm, mr_io_mpi_cart_dims, grp_id, feature_name, &
                                                  feature_array, feature_offset, feature_shape, &
                                                  time_offset, time_dim) !, feature_halo_shape)
 
   implicit none
 
-  INTEGER, intent(in) :: mpi_comm
-  integer, dimension(3), intent(in) :: mpi_cart_dims
+  INTEGER, intent(in) :: mr_io_mpi_comm
+  integer, dimension(3), intent(in) :: mr_io_mpi_cart_dims
   INTEGER(HID_T), intent(in) :: grp_id                 ! Group identifier
   character(len=*), intent(in) :: feature_name
 
@@ -1504,7 +1504,7 @@ subroutine mr_io_read_parallel_spacetime_matrix_feature(mpi_comm, mpi_cart_dims,
     dims_mem(3) = dims_file(3)-offset_file(3)
 
     ! spatial
-    call mr_io_parallel_spatial_hyperslap_compute(mpi_comm, mpi_cart_dims, feature_shape, feature_offset, dims_mem(4:6))
+    call mr_io_parallel_spatial_hyperslap_compute(mr_io_mpi_comm, mr_io_mpi_cart_dims, feature_shape, feature_offset, dims_mem(4:6))
     ! feature_offset set in mr_io_parallel_spatial_hyperslap_compute
     offset_file(4:6) = feature_offset
 
@@ -1574,13 +1574,13 @@ subroutine mr_io_read_parallel_spacetime_matrix_feature(mpi_comm, mpi_cart_dims,
 end subroutine mr_io_read_parallel_spacetime_matrix_feature
 
 
-subroutine mr_io_write_parallel_spacetime_matrix_feature(mpi_comm, grp_id, feature_name, &
+subroutine mr_io_write_parallel_spacetime_matrix_feature(mr_io_mpi_comm, grp_id, feature_name, &
                                                   feature_array, feature_offset, feature_shape, &
                                                   time_offset, time_dim) !, feature_halo_shape)
 
   implicit none
 
-  INTEGER, intent(in) :: mpi_comm
+  INTEGER, intent(in) :: mr_io_mpi_comm
   INTEGER(HID_T), intent(in) :: grp_id                 ! Group identifier
   character(len=*), intent(in) :: feature_name
 
@@ -1733,7 +1733,7 @@ subroutine mr_io_write_parallel_spacetime_matrix_feature(mpi_comm, grp_id, featu
 end subroutine mr_io_write_parallel_spacetime_matrix_feature
 
 
-subroutine mr_io_read_parallel_spacetime_matrix_feature_padded(mpi_comm, mpi_cart_dims, grp_id, &
+subroutine mr_io_read_parallel_spacetime_matrix_feature_padded(mr_io_mpi_comm, mr_io_mpi_cart_dims, grp_id, &
                                                  domain_padding, &
                                                  feature_name, &
                                                  feature_array, feature_offset, feature_shape, &
@@ -1741,8 +1741,8 @@ subroutine mr_io_read_parallel_spacetime_matrix_feature_padded(mpi_comm, mpi_car
 
   implicit none
 
-  INTEGER, intent(in) :: mpi_comm
-  integer, dimension(3), intent(in) :: mpi_cart_dims
+  INTEGER, intent(in) :: mr_io_mpi_comm
+  integer, dimension(3), intent(in) :: mr_io_mpi_cart_dims
   INTEGER(HID_T), intent(in) :: grp_id                 ! Group identifier
   type(DomainPadding) :: domain_padding
   character(len=*), intent(in) :: feature_name
@@ -1835,7 +1835,7 @@ subroutine mr_io_read_parallel_spacetime_matrix_feature_padded(mpi_comm, mpi_car
     dims_mem(3) = dims_file(3)-offset_file(3)
 
     ! spatial
-    call mr_io_parallel_spatial_hyperslap_compute_padded(mpi_comm, mpi_cart_dims, domain_padding, &
+    call mr_io_parallel_spatial_hyperslap_compute_padded(mr_io_mpi_comm, mr_io_mpi_cart_dims, domain_padding, &
                                                          feature_shape, feature_offset, dims_mem(4:6), offset_local_hyperslab)
     ! feature_offset set in mr_io_parallel_spatial_hyperslap_compute
     offset_file(4:6) = feature_offset
@@ -1910,13 +1910,13 @@ subroutine mr_io_read_parallel_spacetime_matrix_feature_padded(mpi_comm, mpi_car
 end subroutine mr_io_read_parallel_spacetime_matrix_feature_padded
 
 
-subroutine mr_io_read_parallel_hpcpredict(mpi_comm, mpi_info, mpi_cart_dims, path, mri_inst)
+subroutine mr_io_read_parallel_hpcpredict(mr_io_mpi_comm, mr_io_mpi_info, mr_io_mpi_cart_dims, path, mri_inst)
 
   implicit none
 
   character(len=*), intent(in) :: path
-  INTEGER, intent (in) :: mpi_comm, mpi_info
-  integer, dimension(3), intent(in) :: mpi_cart_dims
+  INTEGER, intent (in) :: mr_io_mpi_comm, mr_io_mpi_info
+  integer, dimension(3), intent(in) :: mr_io_mpi_cart_dims
   type(DistHPCPredictMRI), intent(out) :: mri_inst
 
   INTEGER(HID_T) :: file_id       ! File identifier
@@ -1934,7 +1934,7 @@ subroutine mr_io_read_parallel_hpcpredict(mpi_comm, mpi_info, mpi_cart_dims, pat
   CALL h5pcreate_f(H5P_FILE_ACCESS_F, plist_id, error)
   mr_io_handle_error(error)
 
-  CALL h5pset_fapl_mpio_f(plist_id, mpi_comm, mpi_info, error)
+  CALL h5pset_fapl_mpio_f(plist_id, mr_io_mpi_comm, mr_io_mpi_info, error)
   mr_io_handle_error(error)
 
   ! Open existing file collectively
@@ -1949,37 +1949,37 @@ subroutine mr_io_read_parallel_hpcpredict(mpi_comm, mpi_info, mpi_cart_dims, pat
   mr_io_handle_error(error)
 
   ! Read time coordinates
-  CALL mr_io_read_parallel_coordinates(mpi_comm, grp_id, "t", &
+  CALL mr_io_read_parallel_coordinates(mr_io_mpi_comm, grp_id, "t", &
                                        mri_inst%t_coordinates)
 
   ! Read coordinates
-  CALL mr_io_read_parallel_coordinates(mpi_comm, grp_id, "x", &
+  CALL mr_io_read_parallel_coordinates(mr_io_mpi_comm, grp_id, "x", &
                                        mri_inst%x_coordinates)
-  CALL mr_io_read_parallel_coordinates(mpi_comm, grp_id, "y", &
+  CALL mr_io_read_parallel_coordinates(mr_io_mpi_comm, grp_id, "y", &
                                        mri_inst%y_coordinates)
-  CALL mr_io_read_parallel_coordinates(mpi_comm, grp_id, "z", &
+  CALL mr_io_read_parallel_coordinates(mr_io_mpi_comm, grp_id, "z", &
                                        mri_inst%z_coordinates)
 
 
   ! Read spatial feature
-  CALL mr_io_read_parallel_spacetime_scalar_feature(mpi_comm, &
-                                             mpi_cart_dims, &
+  CALL mr_io_read_parallel_spacetime_scalar_feature(mr_io_mpi_comm, &
+                                             mr_io_mpi_cart_dims, &
                                              grp_id, "intensity", &
                                              mri_inst%intensity%array, &
                                              mri_inst%intensity%offset, &
                                              mri_inst%intensity%dims, &
                                              mri_inst%intensity%time_offset, &
                                              mri_inst%intensity%time_dim)
-  CALL mr_io_read_parallel_spacetime_feature(mpi_comm, &
-                                             mpi_cart_dims, &
+  CALL mr_io_read_parallel_spacetime_feature(mr_io_mpi_comm, &
+                                             mr_io_mpi_cart_dims, &
                                              grp_id, "velocity_mean", &
                                              mri_inst%velocity_mean%array, &
                                              mri_inst%velocity_mean%offset, &
                                              mri_inst%velocity_mean%dims, &
                                              mri_inst%velocity_mean%time_offset, &
                                              mri_inst%velocity_mean%time_dim)
-  CALL mr_io_read_parallel_spacetime_matrix_feature(mpi_comm, &
-                                             mpi_cart_dims, &
+  CALL mr_io_read_parallel_spacetime_matrix_feature(mr_io_mpi_comm, &
+                                             mr_io_mpi_cart_dims, &
                                              grp_id, "velocity_cov", &
                                              mri_inst%velocity_cov%array, &
                                              mri_inst%velocity_cov%offset, &
@@ -2003,12 +2003,12 @@ end subroutine mr_io_read_parallel_hpcpredict
 
 
 
-subroutine mr_io_write_parallel_hpcpredict(mpi_comm, mpi_info, path, mri_inst)
+subroutine mr_io_write_parallel_hpcpredict(mr_io_mpi_comm, mr_io_mpi_info, path, mri_inst)
 
   implicit none
 
   character(len=*), intent(in) :: path
-  INTEGER, intent (in) :: mpi_comm, mpi_info
+  INTEGER, intent (in) :: mr_io_mpi_comm, mr_io_mpi_info
   type(DistHPCPredictMRI), intent(in) :: mri_inst
 
   INTEGER(HID_T) :: file_id       ! File identifier
@@ -2026,7 +2026,7 @@ subroutine mr_io_write_parallel_hpcpredict(mpi_comm, mpi_info, path, mri_inst)
   CALL h5pcreate_f(H5P_FILE_ACCESS_F, plist_id, error)
   mr_io_handle_error(error)
 
-  CALL h5pset_fapl_mpio_f(plist_id, mpi_comm, mpi_info, error)
+  CALL h5pset_fapl_mpio_f(plist_id, mr_io_mpi_comm, mr_io_mpi_info, error)
   mr_io_handle_error(error)
 
   CALL h5fcreate_f(trim(path), H5F_ACC_TRUNC_F, file_id, error, access_prp = plist_id)
@@ -2048,29 +2048,29 @@ subroutine mr_io_write_parallel_hpcpredict(mpi_comm, mpi_info, path, mri_inst)
 !   print *, mri_inst%voxel_feature%dims
 !   print *, mri_inst%voxel_feature%offset
 !   print *, shape(mri_inst%voxel_feature%array)
-  CALL mr_io_write_parallel_coordinates(mpi_comm, grp_id, "t", &
+  CALL mr_io_write_parallel_coordinates(mr_io_mpi_comm, grp_id, "t", &
                                         mri_inst%t_coordinates)
-  CALL mr_io_write_parallel_coordinates(mpi_comm, grp_id, "x", &
+  CALL mr_io_write_parallel_coordinates(mr_io_mpi_comm, grp_id, "x", &
                                         mri_inst%x_coordinates)
-  CALL mr_io_write_parallel_coordinates(mpi_comm, grp_id, "y", &
+  CALL mr_io_write_parallel_coordinates(mr_io_mpi_comm, grp_id, "y", &
                                         mri_inst%y_coordinates)
-  CALL mr_io_write_parallel_coordinates(mpi_comm, grp_id, "z", &
+  CALL mr_io_write_parallel_coordinates(mr_io_mpi_comm, grp_id, "z", &
                                         mri_inst%z_coordinates)
 
   ! Read spatial feature
-  CALL mr_io_write_parallel_spacetime_scalar_feature(mpi_comm, grp_id, "intensity", &
+  CALL mr_io_write_parallel_spacetime_scalar_feature(mr_io_mpi_comm, grp_id, "intensity", &
                                            mri_inst%intensity%array, &
                                            mri_inst%intensity%offset, &
                                            mri_inst%intensity%dims, &
                                            mri_inst%intensity%time_offset, &
                                            mri_inst%intensity%time_dim)
-  CALL mr_io_write_parallel_spacetime_feature(mpi_comm, grp_id, "velocity_mean", &
+  CALL mr_io_write_parallel_spacetime_feature(mr_io_mpi_comm, grp_id, "velocity_mean", &
                                            mri_inst%velocity_mean%array, &
                                            mri_inst%velocity_mean%offset, &
                                            mri_inst%velocity_mean%dims, &
                                            mri_inst%velocity_mean%time_offset, &
                                            mri_inst%velocity_mean%time_dim)
-  CALL mr_io_write_parallel_spacetime_matrix_feature(mpi_comm, grp_id, "velocity_cov", &
+  CALL mr_io_write_parallel_spacetime_matrix_feature(mr_io_mpi_comm, grp_id, "velocity_cov", &
                                            mri_inst%velocity_cov%array, &
                                            mri_inst%velocity_cov%offset, &
                                            mri_inst%velocity_cov%dims, &
@@ -2092,13 +2092,13 @@ subroutine mr_io_write_parallel_hpcpredict(mpi_comm, mpi_info, path, mri_inst)
 end subroutine mr_io_write_parallel_hpcpredict
 
 
-subroutine mr_io_read_parallel_hpcpredict_padded(mpi_comm, mpi_info, mpi_cart_dims, path, mri_inst_padded)
+subroutine mr_io_read_parallel_hpcpredict_padded(mr_io_mpi_comm, mr_io_mpi_info, mr_io_mpi_cart_dims, path, mri_inst_padded)
 
   implicit none
 
   character(len=*), intent(in) :: path
-  INTEGER, intent (in) :: mpi_comm, mpi_info
-  integer, dimension(3), intent(in) :: mpi_cart_dims
+  INTEGER, intent (in) :: mr_io_mpi_comm, mr_io_mpi_info
+  integer, dimension(3), intent(in) :: mr_io_mpi_cart_dims
   type(DistHPCPredictMRIPadded), intent(inout) :: mri_inst_padded
 !  type(DistHPCPredictMRI) :: mri_inst
 
@@ -2119,7 +2119,7 @@ subroutine mr_io_read_parallel_hpcpredict_padded(mpi_comm, mpi_info, mpi_cart_di
   CALL h5pcreate_f(H5P_FILE_ACCESS_F, plist_id, error)
   mr_io_handle_error(error)
 
-  CALL h5pset_fapl_mpio_f(plist_id, mpi_comm, mpi_info, error)
+  CALL h5pset_fapl_mpio_f(plist_id, mr_io_mpi_comm, mr_io_mpi_info, error)
   mr_io_handle_error(error)
 
   ! Open existing file collectively
@@ -2134,21 +2134,21 @@ subroutine mr_io_read_parallel_hpcpredict_padded(mpi_comm, mpi_info, mpi_cart_di
   mr_io_handle_error(error)
 
   ! Read time coordinates
-  CALL mr_io_read_parallel_coordinates(mpi_comm, grp_id, "t", &
+  CALL mr_io_read_parallel_coordinates(mr_io_mpi_comm, grp_id, "t", &
                                        mri_inst_padded%mri%t_coordinates)
 
   ! Read coordinates
-  CALL mr_io_read_parallel_coordinates(mpi_comm, grp_id, "x", &
+  CALL mr_io_read_parallel_coordinates(mr_io_mpi_comm, grp_id, "x", &
                                        mri_inst_padded%mri%x_coordinates)
-  CALL mr_io_read_parallel_coordinates(mpi_comm, grp_id, "y", &
+  CALL mr_io_read_parallel_coordinates(mr_io_mpi_comm, grp_id, "y", &
                                        mri_inst_padded%mri%y_coordinates)
-  CALL mr_io_read_parallel_coordinates(mpi_comm, grp_id, "z", &
+  CALL mr_io_read_parallel_coordinates(mr_io_mpi_comm, grp_id, "z", &
                                        mri_inst_padded%mri%z_coordinates)
 
 
   ! Read spatial feature
-  CALL mr_io_read_parallel_spacetime_scalar_feature_padded(mpi_comm, &
-                                             mpi_cart_dims, &
+  CALL mr_io_read_parallel_spacetime_scalar_feature_padded(mr_io_mpi_comm, &
+                                             mr_io_mpi_cart_dims, &
                                              grp_id, &
                                              mri_inst_padded%domain_padding, &
                                              "intensity", &
@@ -2157,8 +2157,8 @@ subroutine mr_io_read_parallel_hpcpredict_padded(mpi_comm, mpi_info, mpi_cart_di
                                              mri_inst_padded%mri%intensity%dims, &
                                              mri_inst_padded%mri%intensity%time_offset, &
                                              mri_inst_padded%mri%intensity%time_dim)
-  CALL mr_io_read_parallel_spacetime_feature_padded(mpi_comm, &
-                                             mpi_cart_dims, &
+  CALL mr_io_read_parallel_spacetime_feature_padded(mr_io_mpi_comm, &
+                                             mr_io_mpi_cart_dims, &
                                              grp_id, &
                                              mri_inst_padded%domain_padding, &
                                              "velocity_mean", &
@@ -2167,8 +2167,8 @@ subroutine mr_io_read_parallel_hpcpredict_padded(mpi_comm, mpi_info, mpi_cart_di
                                              mri_inst_padded%mri%velocity_mean%dims, &
                                              mri_inst_padded%mri%velocity_mean%time_offset, &
                                              mri_inst_padded%mri%velocity_mean%time_dim)
-  CALL mr_io_read_parallel_spacetime_matrix_feature_padded(mpi_comm, &
-                                             mpi_cart_dims, &
+  CALL mr_io_read_parallel_spacetime_matrix_feature_padded(mr_io_mpi_comm, &
+                                             mr_io_mpi_cart_dims, &
                                              grp_id, &
                                              mri_inst_padded%domain_padding, &
                                              "velocity_cov", &
@@ -2195,13 +2195,13 @@ end subroutine mr_io_read_parallel_hpcpredict_padded
 
 ! ************************ DistSegmentedHPCPredictMRI ************************
 
-subroutine mr_io_read_parallel_segmentedhpcpredict(mpi_comm, mpi_info, mpi_cart_dims, path, mri_inst)
+subroutine mr_io_read_parallel_segmentedhpcpredict(mr_io_mpi_comm, mr_io_mpi_info, mr_io_mpi_cart_dims, path, mri_inst)
 
   implicit none
 
   character(len=*), intent(in) :: path
-  INTEGER, intent (in) :: mpi_comm, mpi_info
-  integer, dimension(3), intent(in) :: mpi_cart_dims
+  INTEGER, intent (in) :: mr_io_mpi_comm, mr_io_mpi_info
+  integer, dimension(3), intent(in) :: mr_io_mpi_cart_dims
   type(DistSegmentedHPCPredictMRI), intent(out) :: mri_inst
 
   INTEGER(HID_T) :: file_id       ! File identifier
@@ -2219,7 +2219,7 @@ subroutine mr_io_read_parallel_segmentedhpcpredict(mpi_comm, mpi_info, mpi_cart_
   CALL h5pcreate_f(H5P_FILE_ACCESS_F, plist_id, error)
   mr_io_handle_error(error)
 
-  CALL h5pset_fapl_mpio_f(plist_id, mpi_comm, mpi_info, error)
+  CALL h5pset_fapl_mpio_f(plist_id, mr_io_mpi_comm, mr_io_mpi_info, error)
   mr_io_handle_error(error)
 
   ! Open existing file collectively
@@ -2234,45 +2234,45 @@ subroutine mr_io_read_parallel_segmentedhpcpredict(mpi_comm, mpi_info, mpi_cart_
   mr_io_handle_error(error)
 
   ! Read time coordinates
-  CALL mr_io_read_parallel_coordinates(mpi_comm, grp_id, "t", &
+  CALL mr_io_read_parallel_coordinates(mr_io_mpi_comm, grp_id, "t", &
                                        mri_inst%t_coordinates)
 
   ! Read coordinates
-  CALL mr_io_read_parallel_coordinates(mpi_comm, grp_id, "x", &
+  CALL mr_io_read_parallel_coordinates(mr_io_mpi_comm, grp_id, "x", &
                                        mri_inst%x_coordinates)
-  CALL mr_io_read_parallel_coordinates(mpi_comm, grp_id, "y", &
+  CALL mr_io_read_parallel_coordinates(mr_io_mpi_comm, grp_id, "y", &
                                        mri_inst%y_coordinates)
-  CALL mr_io_read_parallel_coordinates(mpi_comm, grp_id, "z", &
+  CALL mr_io_read_parallel_coordinates(mr_io_mpi_comm, grp_id, "z", &
                                        mri_inst%z_coordinates)
 
 
   ! Read spatial feature
-  CALL mr_io_read_parallel_spacetime_scalar_feature(mpi_comm, &
-                                             mpi_cart_dims, &
+  CALL mr_io_read_parallel_spacetime_scalar_feature(mr_io_mpi_comm, &
+                                             mr_io_mpi_cart_dims, &
                                              grp_id, "intensity", &
                                              mri_inst%intensity%array, &
                                              mri_inst%intensity%offset, &
                                              mri_inst%intensity%dims, &
                                              mri_inst%intensity%time_offset, &
                                              mri_inst%intensity%time_dim)
-  CALL mr_io_read_parallel_spacetime_feature(mpi_comm, &
-                                             mpi_cart_dims, &
+  CALL mr_io_read_parallel_spacetime_feature(mr_io_mpi_comm, &
+                                             mr_io_mpi_cart_dims, &
                                              grp_id, "velocity_mean", &
                                              mri_inst%velocity_mean%array, &
                                              mri_inst%velocity_mean%offset, &
                                              mri_inst%velocity_mean%dims, &
                                              mri_inst%velocity_mean%time_offset, &
                                              mri_inst%velocity_mean%time_dim)
-  CALL mr_io_read_parallel_spacetime_matrix_feature(mpi_comm, &
-                                             mpi_cart_dims, &
+  CALL mr_io_read_parallel_spacetime_matrix_feature(mr_io_mpi_comm, &
+                                             mr_io_mpi_cart_dims, &
                                              grp_id, "velocity_cov", &
                                              mri_inst%velocity_cov%array, &
                                              mri_inst%velocity_cov%offset, &
                                              mri_inst%velocity_cov%dims, &
                                              mri_inst%velocity_cov%time_offset, &
                                              mri_inst%velocity_cov%time_dim)
-  CALL mr_io_read_parallel_spacetime_scalar_feature(mpi_comm, &
-                                             mpi_cart_dims, &
+  CALL mr_io_read_parallel_spacetime_scalar_feature(mr_io_mpi_comm, &
+                                             mr_io_mpi_cart_dims, &
                                              grp_id, "segmentation_prob", &
                                              mri_inst%segmentation_prob%array, &
                                              mri_inst%segmentation_prob%offset, &
@@ -2296,12 +2296,12 @@ end subroutine mr_io_read_parallel_segmentedhpcpredict
 
 
 
-subroutine mr_io_write_parallel_segmentedhpcpredict(mpi_comm, mpi_info, path, mri_inst)
+subroutine mr_io_write_parallel_segmentedhpcpredict(mr_io_mpi_comm, mr_io_mpi_info, path, mri_inst)
 
   implicit none
 
   character(len=*), intent(in) :: path
-  INTEGER, intent (in) :: mpi_comm, mpi_info
+  INTEGER, intent (in) :: mr_io_mpi_comm, mr_io_mpi_info
   type(DistSegmentedHPCPredictMRI), intent(in) :: mri_inst
 
   INTEGER(HID_T) :: file_id       ! File identifier
@@ -2319,7 +2319,7 @@ subroutine mr_io_write_parallel_segmentedhpcpredict(mpi_comm, mpi_info, path, mr
   CALL h5pcreate_f(H5P_FILE_ACCESS_F, plist_id, error)
   mr_io_handle_error(error)
 
-  CALL h5pset_fapl_mpio_f(plist_id, mpi_comm, mpi_info, error)
+  CALL h5pset_fapl_mpio_f(plist_id, mr_io_mpi_comm, mr_io_mpi_info, error)
   mr_io_handle_error(error)
 
   CALL h5fcreate_f(trim(path), H5F_ACC_TRUNC_F, file_id, error, access_prp = plist_id)
@@ -2341,35 +2341,35 @@ subroutine mr_io_write_parallel_segmentedhpcpredict(mpi_comm, mpi_info, path, mr
 !   print *, mri_inst%voxel_feature%dims
 !   print *, mri_inst%voxel_feature%offset
 !   print *, shape(mri_inst%voxel_feature%array)
-  CALL mr_io_write_parallel_coordinates(mpi_comm, grp_id, "t", &
+  CALL mr_io_write_parallel_coordinates(mr_io_mpi_comm, grp_id, "t", &
                                         mri_inst%t_coordinates)
-  CALL mr_io_write_parallel_coordinates(mpi_comm, grp_id, "x", &
+  CALL mr_io_write_parallel_coordinates(mr_io_mpi_comm, grp_id, "x", &
                                         mri_inst%x_coordinates)
-  CALL mr_io_write_parallel_coordinates(mpi_comm, grp_id, "y", &
+  CALL mr_io_write_parallel_coordinates(mr_io_mpi_comm, grp_id, "y", &
                                         mri_inst%y_coordinates)
-  CALL mr_io_write_parallel_coordinates(mpi_comm, grp_id, "z", &
+  CALL mr_io_write_parallel_coordinates(mr_io_mpi_comm, grp_id, "z", &
                                         mri_inst%z_coordinates)
 
   ! Read spatial feature
-  CALL mr_io_write_parallel_spacetime_scalar_feature(mpi_comm, grp_id, "intensity", &
+  CALL mr_io_write_parallel_spacetime_scalar_feature(mr_io_mpi_comm, grp_id, "intensity", &
                                            mri_inst%intensity%array, &
                                            mri_inst%intensity%offset, &
                                            mri_inst%intensity%dims, &
                                            mri_inst%intensity%time_offset, &
                                            mri_inst%intensity%time_dim)
-  CALL mr_io_write_parallel_spacetime_feature(mpi_comm, grp_id, "velocity_mean", &
+  CALL mr_io_write_parallel_spacetime_feature(mr_io_mpi_comm, grp_id, "velocity_mean", &
                                            mri_inst%velocity_mean%array, &
                                            mri_inst%velocity_mean%offset, &
                                            mri_inst%velocity_mean%dims, &
                                            mri_inst%velocity_mean%time_offset, &
                                            mri_inst%velocity_mean%time_dim)
-  CALL mr_io_write_parallel_spacetime_matrix_feature(mpi_comm, grp_id, "velocity_cov", &
+  CALL mr_io_write_parallel_spacetime_matrix_feature(mr_io_mpi_comm, grp_id, "velocity_cov", &
                                            mri_inst%velocity_cov%array, &
                                            mri_inst%velocity_cov%offset, &
                                            mri_inst%velocity_cov%dims, &
                                            mri_inst%velocity_cov%time_offset, &
                                            mri_inst%velocity_cov%time_dim)
-  CALL mr_io_write_parallel_spacetime_scalar_feature(mpi_comm, grp_id, "segmentation_prob", &
+  CALL mr_io_write_parallel_spacetime_scalar_feature(mr_io_mpi_comm, grp_id, "segmentation_prob", &
                                            mri_inst%segmentation_prob%array, &
                                            mri_inst%segmentation_prob%offset, &
                                            mri_inst%segmentation_prob%dims, &

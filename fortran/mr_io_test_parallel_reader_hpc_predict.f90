@@ -20,7 +20,7 @@ program mr_io_test_parallel_reader_space_time
     
     call mr_io_test_parse_args_parallel_reader()
 
-    call mr_io_read_parallel_hpcpredict(MPI_COMM_WORLD, MPI_INFO_NULL, mpi_cart_dims, path, mri_dest)
+    call mr_io_read_parallel_hpcpredict(MPI_COMM_WORLD, MPI_INFO_NULL, mr_io_test_mpi_cart_dims, path, mri_dest)
 
     print *, HPCPredictMRI_group_name
 

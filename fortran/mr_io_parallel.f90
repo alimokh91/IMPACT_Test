@@ -26,12 +26,12 @@ contains
 ! ************************ Domain/Hyperslab decomposition ************************
 
 
-subroutine mr_io_parallel_spatial_hyperslap_compute(mpi_comm, mpi_cart_dims, dims_file, offset_file, dims_mem)
+subroutine mr_io_parallel_spatial_hyperslap_compute(mr_io_mpi_comm, mr_io_mpi_cart_dims, dims_file, offset_file, dims_mem)
 
   implicit none
 
-  INTEGER, intent(in) :: mpi_comm
-  integer, dimension(3), intent(in) :: mpi_cart_dims
+  INTEGER, intent(in) :: mr_io_mpi_comm
+  integer, dimension(3), intent(in) :: mr_io_mpi_cart_dims
 
   INTEGER, DIMENSION(3), intent(in)  :: dims_file ! Shape of full HDF5 dataset
   INTEGER, DIMENSION(3), intent(out) :: offset_file  ! Offset of data subset to read/write in HDF5 dataset
@@ -39,7 +39,7 @@ subroutine mr_io_parallel_spatial_hyperslap_compute(mpi_comm, mpi_cart_dims, dim
 
   INTEGER, DIMENSION(3) :: block_id = (/-1, -1, -1/) ! block index of this MPI process
 
-  INTEGER     ::   mpi_rank, mpi_size, mpi_error
+  INTEGER     ::   mr_io_mpi_rank, mr_io_mpi_size, mr_io_mpi_error
 
   INTEGER     ::   i
 
@@ -47,18 +47,18 @@ subroutine mr_io_parallel_spatial_hyperslap_compute(mpi_comm, mpi_cart_dims, dim
   dims_mem = (/-1, -1, -1/)
 
   ! Compute hyperslab offset and shape
-  CALL MPI_Comm_rank(mpi_comm, mpi_rank, mpi_error)
-  mr_io_handle_error(mpi_error) ! FIXME: MPI error handling
+  CALL mpi_comm_rank(mr_io_mpi_comm, mr_io_mpi_rank, mr_io_mpi_error)
+  mr_io_handle_error(mr_io_mpi_error) ! FIXME: MPI error handling
 
   ! The IMPACT block layout is row-major
-  block_id(1) = mpi_rank/(mpi_cart_dims(2)*mpi_cart_dims(3))
-  block_id(2) = modulo( mpi_rank / mpi_cart_dims(3) , mpi_cart_dims(2) )
-  block_id(3) = modulo( mpi_rank , mpi_cart_dims(3) )
+  block_id(1) = mr_io_mpi_rank/(mr_io_mpi_cart_dims(2)*mr_io_mpi_cart_dims(3))
+  block_id(2) = modulo( mr_io_mpi_rank / mr_io_mpi_cart_dims(3) , mr_io_mpi_cart_dims(2) )
+  block_id(3) = modulo( mr_io_mpi_rank , mr_io_mpi_cart_dims(3) )
 
   do i=1,3
-    dims_mem(i) = (dims_file(i) + mpi_cart_dims(i) - 1)/mpi_cart_dims(i)
+    dims_mem(i) = (dims_file(i) + mr_io_mpi_cart_dims(i) - 1)/mr_io_mpi_cart_dims(i)
     offset_file(i) = dims_mem(i)*block_id(i)
-    if ((block_id(i) + 1 == mpi_cart_dims(i)) .and. (modulo(dims_file(i), mpi_cart_dims(i)) /= 0)) then ! boundary correction
+    if ((block_id(i) + 1 == mr_io_mpi_cart_dims(i)) .and. (modulo(dims_file(i), mr_io_mpi_cart_dims(i)) /= 0)) then ! boundary correction
         dims_mem(i) =  modulo(dims_file(i), dims_mem(i))
     endif
   end do
@@ -66,13 +66,13 @@ subroutine mr_io_parallel_spatial_hyperslap_compute(mpi_comm, mpi_cart_dims, dim
 end subroutine mr_io_parallel_spatial_hyperslap_compute
 
 
-subroutine mr_io_parallel_spatial_hyperslap_compute_padded(mpi_comm, mpi_cart_dims, domain_padding, &
+subroutine mr_io_parallel_spatial_hyperslap_compute_padded(mr_io_mpi_comm, mr_io_mpi_cart_dims, domain_padding, &
                                                            dims_file, offset_file, dims_mem, offset_hyperslab)
 
   implicit none
 
-  INTEGER, intent(in) :: mpi_comm
-  integer, dimension(3), intent(in) :: mpi_cart_dims
+  INTEGER, intent(in) :: mr_io_mpi_comm
+  integer, dimension(3), intent(in) :: mr_io_mpi_cart_dims
   type(DomainPadding) :: domain_padding
 
   INTEGER, DIMENSION(3), intent(in)  :: dims_file ! Shape of full HDF5 dataset
@@ -84,7 +84,7 @@ subroutine mr_io_parallel_spatial_hyperslap_compute_padded(mpi_comm, mpi_cart_di
 
   INTEGER, DIMENSION(3) :: block_id = (/-1, -1, -1/) ! block index of this MPI process
 
-  INTEGER     ::   mpi_rank, mpi_size, mpi_error
+  INTEGER     ::   mr_io_mpi_rank, mr_io_mpi_size, mr_io_mpi_error
 
   INTEGER     ::   i
 
@@ -93,26 +93,26 @@ subroutine mr_io_parallel_spatial_hyperslap_compute_padded(mpi_comm, mpi_cart_di
   offset_hyperslab = (/0, 0, 0/)
 
   ! Compute hyperslab offset and shape
-  CALL MPI_Comm_rank(mpi_comm, mpi_rank, mpi_error)
-  mr_io_handle_error(mpi_error) ! FIXME: MPI error handling
+  CALL mpi_comm_rank(mr_io_mpi_comm, mr_io_mpi_rank, mr_io_mpi_error)
+  mr_io_handle_error(mr_io_mpi_error) ! FIXME: MPI error handling
 
   ! The IMPACT block layout is row-major
-  block_id(1) = mpi_rank/(mpi_cart_dims(2)*mpi_cart_dims(3))
-  block_id(2) = modulo( mpi_rank / mpi_cart_dims(3) , mpi_cart_dims(2) )
-  block_id(3) = modulo( mpi_rank , mpi_cart_dims(3) )
+  block_id(1) = mr_io_mpi_rank/(mr_io_mpi_cart_dims(2)*mr_io_mpi_cart_dims(3))
+  block_id(2) = modulo( mr_io_mpi_rank / mr_io_mpi_cart_dims(3) , mr_io_mpi_cart_dims(2) )
+  block_id(3) = modulo( mr_io_mpi_rank , mr_io_mpi_cart_dims(3) )
 
   dims_file_padded = dims_file + domain_padding%lhs + domain_padding%rhs
 
   do i=1,3
-    dims_mem(i) = (dims_file_padded(i) + mpi_cart_dims(i) - 1)/mpi_cart_dims(i)
+    dims_mem(i) = (dims_file_padded(i) + mr_io_mpi_cart_dims(i) - 1)/mr_io_mpi_cart_dims(i)
     offset_file(i) = dims_mem(i)*block_id(i)
-    if ((block_id(i) + 1 == mpi_cart_dims(i)) .and. (modulo(dims_file_padded(i), mpi_cart_dims(i)) /= 0)) then ! boundary correction
+    if ((block_id(i) + 1 == mr_io_mpi_cart_dims(i)) .and. (modulo(dims_file_padded(i), mr_io_mpi_cart_dims(i)) /= 0)) then ! boundary correction
         dims_mem(i) =  modulo(dims_file_padded(i), dims_mem(i))
     endif
   end do
 
-!  write(0,*) "mpi_cart_rank      ", block_id
-!  write(0,*) "mpi_cart_dims      ", mpi_cart_dims
+!  write(0,*) "mr_io_mpi_cart_rank      ", block_id
+!  write(0,*) "mr_io_mpi_cart_dims      ", mr_io_mpi_cart_dims
 !
 !  write(0,*) "dims_file          ", dims_file
 !  write(0,*) "dims_file_padded   ", dims_file_padded
@@ -132,7 +132,7 @@ subroutine mr_io_parallel_spatial_hyperslap_compute_padded(mpi_comm, mpi_cart_di
   do i=1,3
     if( (offset_file(i) < domain_padding%lhs(i)) .and. (offset_file(i) + dims_mem(i) >= domain_padding%lhs(i)) ) then
       offset_hyperslab(i) = modulo(domain_padding%lhs(i), &
-                                   (dims_file_padded(i) + mpi_cart_dims(i) - 1)/mpi_cart_dims(i))
+                                   (dims_file_padded(i) + mr_io_mpi_cart_dims(i) - 1)/mr_io_mpi_cart_dims(i))
     end if
   end do
 
@@ -184,13 +184,13 @@ end function mr_io_parallel_spatial_hyperslab_get_type
 
 ! ************************ DistSpatialMRI ************************
 
-subroutine mr_io_read_parallel_spatial_feature(mpi_comm, mpi_cart_dims, grp_id, feature_name, &
+subroutine mr_io_read_parallel_spatial_feature(mr_io_mpi_comm, mr_io_mpi_cart_dims, grp_id, feature_name, &
                                                feature_array, feature_offset, feature_shape) !, feature_halo_shape)
 
   implicit none
 
-  INTEGER, intent(in) :: mpi_comm
-  integer, dimension(3), intent(in) :: mpi_cart_dims
+  INTEGER, intent(in) :: mr_io_mpi_comm
+  integer, dimension(3), intent(in) :: mr_io_mpi_cart_dims
   INTEGER(HID_T), intent(in) :: grp_id                 ! Group identifier
   character(len=*), intent(in) :: feature_name
   
@@ -257,7 +257,7 @@ subroutine mr_io_read_parallel_spatial_feature(mpi_comm, mpi_cart_dims, grp_id, 
   case ( mr_io_parallel_spatial_hyperslab_enum_compute )
     feature_shape = dims_file
 
-    call mr_io_parallel_spatial_hyperslap_compute(mpi_comm, mpi_cart_dims, feature_shape, feature_offset, dims_mem)
+    call mr_io_parallel_spatial_hyperslap_compute(mr_io_mpi_comm, mr_io_mpi_cart_dims, feature_shape, feature_offset, dims_mem)
     offset_file = feature_offset
     ! MRI array - TODO: handle feature_halo_shape
     allocate(feature_array(dims_mem(1), dims_mem(2), dims_mem(3)))
@@ -334,12 +334,12 @@ end subroutine mr_io_read_parallel_spatial_feature
 
 
 
-subroutine mr_io_read_parallel_spatial(mpi_comm, mpi_info, mpi_cart_dims, path, mri_inst)
+subroutine mr_io_read_parallel_spatial(mr_io_mpi_comm, mr_io_mpi_info, mr_io_mpi_cart_dims, path, mri_inst)
 
   implicit none
 
-  integer, intent (in) :: mpi_comm, mpi_info
-  integer, dimension(3), intent(in) :: mpi_cart_dims
+  integer, intent (in) :: mr_io_mpi_comm, mr_io_mpi_info
+  integer, dimension(3), intent(in) :: mr_io_mpi_cart_dims
   character(len=*), intent(in) :: path
   type(DistSpatialMRI), intent(out) :: mri_inst
 
@@ -358,7 +358,7 @@ subroutine mr_io_read_parallel_spatial(mpi_comm, mpi_info, mpi_cart_dims, path, 
   CALL h5pcreate_f(H5P_FILE_ACCESS_F, plist_id, error)
   mr_io_handle_error(error)
   
-  CALL h5pset_fapl_mpio_f(plist_id, mpi_comm, mpi_info, error)
+  CALL h5pset_fapl_mpio_f(plist_id, mr_io_mpi_comm, mr_io_mpi_info, error)
   mr_io_handle_error(error)
 
   ! Open existing file collectively 
@@ -373,8 +373,8 @@ subroutine mr_io_read_parallel_spatial(mpi_comm, mpi_info, mpi_cart_dims, path, 
   mr_io_handle_error(error)
 
   ! Read spatial feature
-  CALL mr_io_read_parallel_spatial_feature(mpi_comm, &
-                                           mpi_cart_dims, &
+  CALL mr_io_read_parallel_spatial_feature(mr_io_mpi_comm, &
+                                           mr_io_mpi_cart_dims, &
                                            grp_id, "voxel_feature", &
                                            mri_inst%voxel_feature%array, &
                                            mri_inst%voxel_feature%offset, &
@@ -395,12 +395,12 @@ subroutine mr_io_read_parallel_spatial(mpi_comm, mpi_info, mpi_cart_dims, path, 
 end subroutine mr_io_read_parallel_spatial
 
 
-subroutine mr_io_write_parallel_spatial_feature(mpi_comm, grp_id, feature_name, &
+subroutine mr_io_write_parallel_spatial_feature(mr_io_mpi_comm, grp_id, feature_name, &
                                                feature_array, feature_offset, feature_shape) !, feature_halo_shape)
 
   implicit none
 
-  INTEGER, intent(in) :: mpi_comm
+  INTEGER, intent(in) :: mr_io_mpi_comm
   INTEGER(HID_T), intent(in) :: grp_id                 ! Group identifier
   character(len=*), intent(in) :: feature_name
   
@@ -532,12 +532,12 @@ subroutine mr_io_write_parallel_spatial_feature(mpi_comm, grp_id, feature_name, 
 end subroutine mr_io_write_parallel_spatial_feature
 
 
-subroutine mr_io_write_parallel_spatial(mpi_comm, mpi_info, path, mri_inst)     
+subroutine mr_io_write_parallel_spatial(mr_io_mpi_comm, mr_io_mpi_info, path, mri_inst)
 
   implicit none
 
   character(len=*), intent(in) :: path
-  INTEGER, intent (in) :: mpi_comm, mpi_info
+  INTEGER, intent (in) :: mr_io_mpi_comm, mr_io_mpi_info
   type(DistSpatialMRI), intent(in) :: mri_inst
 
   INTEGER(HID_T) :: file_id       ! File identifier
@@ -555,7 +555,7 @@ subroutine mr_io_write_parallel_spatial(mpi_comm, mpi_info, path, mri_inst)
   CALL h5pcreate_f(H5P_FILE_ACCESS_F, plist_id, error)
   mr_io_handle_error(error)
   
-  CALL h5pset_fapl_mpio_f(plist_id, mpi_comm, mpi_info, error)
+  CALL h5pset_fapl_mpio_f(plist_id, mr_io_mpi_comm, mr_io_mpi_info, error)
   mr_io_handle_error(error)
 
   CALL h5fcreate_f(trim(path), H5F_ACC_TRUNC_F, file_id, error, access_prp = plist_id)
@@ -579,7 +579,7 @@ subroutine mr_io_write_parallel_spatial(mpi_comm, mpi_info, path, mri_inst)
 !   print *, shape(mri_inst%voxel_feature%array)   
 
   ! Read spatial feature
-  CALL mr_io_write_parallel_spatial_feature(mpi_comm, grp_id, "voxel_feature", &
+  CALL mr_io_write_parallel_spatial_feature(mr_io_mpi_comm, grp_id, "voxel_feature", &
                                            mri_inst%voxel_feature%array, &
                                            mri_inst%voxel_feature%offset, &
                                            mri_inst%voxel_feature%dims)

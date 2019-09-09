@@ -11,7 +11,7 @@ program mr_io_test_impact_input
   integer, dimension(3) :: impact_shape = (/-1,-1,-1/)
 
   ! For interactive testing
-!  INTEGER :: mpi_rank = -1
+!  INTEGER :: mr_io_test_mpi_rank = -1
 !  character(len=100) :: path = "mr_io_test_impact_input.h5"
 !  type(DistHPCPredictMRI) :: mri_dest
 !  integer, dimension(5) :: velocity_mean_shape = (/-1,-1,-1,-1,-1/)
@@ -49,9 +49,9 @@ program mr_io_test_impact_input
 ! !TODO: Test MRI padding parameters for Kalman filter
 
    ! This is for interactive testing...
-!  CALL MPI_COMM_RANK(MPI_COMM_WORLD,mpi_rank,merror)
+!  CALL MPI_COMM_RANK(MPI_COMM_WORLD,mr_io_test_mpi_rank,merror)
 !  write(*,*) "MPI rank is "
-!  write(*,*) mpi_rank
+!  write(*,*) mr_io_test_mpi_rank
 
 !  call mr_io_read_parallel_hpcpredict(MPI_COMM_WORLD, MPI_INFO_NULL, path, mri_dest)
 !  write(*,*) "MRI: Spatial hyperslab offset"

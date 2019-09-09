@@ -1,7 +1,7 @@
 module mr_io_test_arg_parser
 
     ! parallel tests
-    integer, dimension(3) :: mpi_cart_dims
+    integer, dimension(3) :: mr_io_test_mpi_cart_dims
     ! reader tests
     character(len=200) :: path
     ! reader writer tests
@@ -62,7 +62,7 @@ subroutine mr_io_test_parse_args_parallel_topology()
     read(NB2char,*)NB2
     read(NB3char,*)NB3
 
-    mpi_cart_dims = (/NB1, NB2, NB3/)
+    mr_io_test_mpi_cart_dims = (/NB1, NB2, NB3/)
 
     call get_command_argument(4,path)
 
