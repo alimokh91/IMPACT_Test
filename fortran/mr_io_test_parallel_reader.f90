@@ -2,6 +2,7 @@ program mr_io_test_parallel_reader
   
     use mr_io_parallel
     use mr_io_test_arg_parser
+    use mpi
 
     implicit none
 

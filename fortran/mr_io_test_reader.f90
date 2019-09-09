@@ -1,7 +1,6 @@
 program mr_io_test_reader
   
     use mr_io
-    use mr_protocol
 
     use mr_io_test_arg_parser
 

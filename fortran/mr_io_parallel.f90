@@ -1,10 +1,24 @@
 module mr_io_parallel
 
 use hdf5
-use mr_protocol
+use mr_io_protocol
 use mr_io, only : mr_io_handle_hdf5_error, mr_io_handle_argument_error
 
 use mpi !include 'mpif.h'
+
+implicit none
+private
+
+public :: mr_io_read_parallel_spatial
+public :: mr_io_write_parallel_spatial
+
+public :: mr_io_parallel_spatial_hyperslap_compute
+public :: mr_io_parallel_spatial_hyperslap_compute_padded
+public :: mr_io_parallel_spatial_hyperslab_get_type
+
+public :: DistSpatialMRI
+public :: SpatialMRI_group_name
+public :: mr_io_deallocate_dist_spatial_mri
 
 !#ifdef __GFORTRAN__
 !! Spatial hyperslab macro enum

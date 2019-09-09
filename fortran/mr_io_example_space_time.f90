@@ -1,5 +1,6 @@
 program mr_io_example_space_time
-  
+
+  use mr_io_protocol
   use mr_io
 
   implicit none

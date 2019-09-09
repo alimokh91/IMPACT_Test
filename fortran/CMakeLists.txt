@@ -1,5 +1,5 @@
 set(HPCPREDICT_IO_SOURCES
-  mr_protocol.f90
+  mr_io_protocol.f90
   mr_io_hyperslab_enum.f90
   mr_io.f90
   mr_io_mpi_error_handler.f90

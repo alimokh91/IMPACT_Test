@@ -1,13 +1,13 @@
-module mr_protocol
+module mr_io_protocol
 
 use hdf5
 
 implicit none
-
+public
 
 ! ************************ SpatialMRI ************************
 
-character(len=11) :: SpatialMRI_group_name = "spatial-mri"
+character(len=100) :: SpatialMRI_group_name = "spatial-mri"
 
 type SpatialMRI
      ! voxel_feature
@@ -29,7 +29,7 @@ end type
 
 ! ************************ SpaceTimeMRI ************************
 
-character(len=14) :: SpaceTimeMRI_group_name = "space-time-mri"
+character(len=100) :: SpaceTimeMRI_group_name = "space-time-mri"
 
 type SpaceTimeMRI
      ! time
@@ -93,7 +93,7 @@ end type
 
 ! ************************ HPCPredictMRI ************************
 
-character(len=16) :: HPCPredictMRI_group_name = "hpc-predict-mri"
+character(len=100) :: HPCPredictMRI_group_name = "hpc-predict-mri"
 
 type HPCPredictMRI
      ! time
@@ -149,7 +149,7 @@ end type
 
 ! ************************ SegmentedHPCPredictMRI ************************
 
-character(len=26) :: SegmentedHPCPredictMRI_group_name = "segmented-hpc-predict-mri"
+character(len=100) :: SegmentedHPCPredictMRI_group_name = "segmented-hpc-predict-mri"
 
 type SegmentedHPCPredictMRI
      ! time
@@ -309,4 +309,4 @@ subroutine mr_io_deallocate_dist_segmentedhpcpredict_mri(mri)
 end subroutine mr_io_deallocate_dist_segmentedhpcpredict_mri
 
 
-end module mr_protocol
+end module mr_io_protocol

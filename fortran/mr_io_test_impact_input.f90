@@ -3,7 +3,7 @@ program mr_io_test_impact_input
   USE mod_vars
   USE usr_vars
   USE mr_io_parallel_spacetime
-  USE mr_protocol
+  USE mr_io_protocol
 
   implicit none
 

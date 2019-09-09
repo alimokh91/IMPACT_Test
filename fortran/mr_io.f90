@@ -1,11 +1,38 @@
 module mr_io
 
 use hdf5
-use mr_protocol
+use mr_io_protocol
 
-!include 'mpif.h'
+implicit none
+private
 
-! TODO: private/public API
+public :: mr_io_read_spatial
+public :: mr_io_write_spatial
+public :: mr_io_read_spacetime
+public :: mr_io_write_spacetime
+public :: mr_io_read_hpcpredict
+public :: mr_io_write_hpcpredict
+public :: mr_io_read_segmentedhpcpredict
+public :: mr_io_write_segmentedhpcpredict
+
+! HDF5 error interface - could be moved elsewhere probably
+public :: mr_io_handle_hdf5_error
+public :: mr_io_handle_argument_error
+
+public :: SpatialMRI
+public :: SpaceTimeMRI
+public :: HPCPredictMRI
+public :: SegmentedHPCPredictMRI
+
+public :: SpatialMRI_group_name
+public :: SpaceTimeMRI_group_name
+public :: HPCPredictMRI_group_name
+public :: SegmentedHPCPredictMRI_group_name
+
+public :: mr_io_deallocate_spatial_mri
+public :: mr_io_deallocate_spacetime_mri
+public :: mr_io_deallocate_hpcpredict_mri
+public :: mr_io_deallocate_segmentedhpcpredict_mri
 
 contains
 

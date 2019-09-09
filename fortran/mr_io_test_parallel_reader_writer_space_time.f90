@@ -2,6 +2,7 @@ program mr_io_test_parallel_reader_writer_space_time
   
     use mr_io_parallel_spacetime
     use mr_io_test_arg_parser
+    use mpi
 
     implicit none
 
@@ -18,7 +19,7 @@ program mr_io_test_parallel_reader_writer_space_time
 
     call mr_io_read_parallel_spacetime(MPI_COMM_WORLD, MPI_INFO_NULL, mr_io_test_mpi_cart_dims, in_path, mri_dest)
 
-    print *, SpatialMRI_group_name
+    print *, SpaceTimeMRI_group_name
 
     voxel_feature_shape = shape(mri_dest%voxel_feature%array)
 

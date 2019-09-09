@@ -1,7 +1,7 @@
 module mr_io_parallel_spacetime
 
 use hdf5
-use mr_protocol
+use mr_io_protocol
 use mr_io, only : mr_io_handle_hdf5_error, &
                   mr_io_handle_argument_error
 use mr_io_parallel, only : mr_io_parallel_spatial_hyperslap_compute, &
@@ -10,6 +10,33 @@ use mr_io_parallel, only : mr_io_parallel_spatial_hyperslap_compute, &
                            mr_io_parallel_spatial_hyperslap_compute_padded
 
 use mpi !include 'mpif.h'
+
+implicit none
+
+private
+
+public :: mr_io_read_parallel_spacetime
+public :: mr_io_write_parallel_spacetime
+public :: mr_io_read_parallel_hpcpredict
+public :: mr_io_write_parallel_hpcpredict
+public :: mr_io_read_parallel_hpcpredict_padded
+public :: mr_io_read_parallel_segmentedhpcpredict
+public :: mr_io_write_parallel_segmentedhpcpredict
+
+public :: DistSpaceTimeMRI
+public :: DistHPCPredictMRI
+public :: DistHPCPredictMRIPadded
+public :: DistSegmentedHPCPredictMRI
+
+public :: SpaceTimeMRI_group_name
+public :: HPCPredictMRI_group_name
+public :: SegmentedHPCPredictMRI_group_name
+
+public :: mr_io_deallocate_dist_spacetime_mri
+public :: mr_io_deallocate_dist_hpcpredict_mri
+public :: mr_io_deallocate_dist_hpcpredict_mri_padded
+public :: mr_io_deallocate_dist_segmentedhpcpredict_mri
+
 
 #ifdef __GFORTRAN__
 ! Spatial hyperslab macro enum
