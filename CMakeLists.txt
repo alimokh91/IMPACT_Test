@@ -26,3 +26,7 @@ add_test(NAME parallel COMMAND ${CMAKE_COMMAND} -E env
 add_test(NAME parallel_bidirectional COMMAND ${CMAKE_COMMAND} -E env
     PYTHONPATH=${CMAKE_CURRENT_SOURCE_DIR}/python
     python ${CMAKE_CURRENT_SOURCE_DIR}/test/test_parallel_mr_io_bidirectional.py)
+add_test(NAME impact_input COMMAND ${CMAKE_COMMAND} -E env
+    PYTHONPATH=${CMAKE_CURRENT_SOURCE_DIR}/python
+    python ${CMAKE_CURRENT_SOURCE_DIR}/test/test_impact_input.py)
+

@@ -10,7 +10,7 @@ set(HPCPREDICT_IO_SOURCES
 find_package(HDF5 COMPONENTS Fortran REQUIRED)
 
 add_library(hpc-predict-io ${HPCPREDICT_IO_SOURCES})
-target_compile_options(hpc-predict-io PUBLIC -cpp)
+target_compile_options(hpc-predict-io PUBLIC -cpp -g -fbacktrace)
 target_include_directories(hpc-predict-io PUBLIC ${HDF5_INCLUDE_DIRS}
     INTERFACE ${CMAKE_CURRENT_BINARY_DIR}/fmod)
 target_link_libraries(hpc-predict-io PUBLIC ${HDF5_LIBRARIES})
@@ -26,6 +26,7 @@ foreach(file
     mr_io_example_spatial
 )
   add_executable(${file} ${file}.f90)
+  target_compile_options(${file} PUBLIC -cpp -g -fbacktrace)
   target_link_libraries(${file} hpc-predict-io)
   install(TARGETS ${file}
           RUNTIME DESTINATION bin)
@@ -53,6 +54,7 @@ foreach(file
     mr_io_test_parallel_reader_writer_segmented_hpc_predict
 )
   add_executable(${file} ${file}.f90 mr_io_test_arg_parser.f90)
+  target_compile_options(${file} PUBLIC -cpp -g -fbacktrace)
   target_link_libraries(${file} hpc-predict-io)
   install(TARGETS ${file}
           RUNTIME DESTINATION bin)
