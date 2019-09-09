@@ -4,8 +4,6 @@ program mr_io_test_parallel_reader_writer_hpc_predict_padded
     use mr_protocol
     use mr_io_test_arg_parser
 
-    !include 'mpif.h'
-
     implicit none
 
     INTEGER err

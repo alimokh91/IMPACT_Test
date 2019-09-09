@@ -3,8 +3,6 @@ program mr_io_test_parallel_reader_writer_hpc_predict
     use mr_io_parallel_spacetime
     use mr_io_test_arg_parser
 
-    !include 'mpif.h'
-
     implicit none
 
     INTEGER err

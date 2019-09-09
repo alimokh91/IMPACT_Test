@@ -3,7 +3,7 @@ module mr_io
 use hdf5
 use mr_protocol
 
-include 'mpif.h'
+!include 'mpif.h'
 
 ! TODO: private/public API
 

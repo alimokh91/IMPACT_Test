@@ -4,7 +4,7 @@ use hdf5
 use mr_protocol
 use mr_io, only : mr_io_handle_hdf5_error, mr_io_handle_argument_error
 
-include 'mpif.h'
+use mpi !include 'mpif.h'
 
 !#ifdef __GFORTRAN__
 !! Spatial hyperslab macro enum

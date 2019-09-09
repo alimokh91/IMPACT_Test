@@ -9,7 +9,7 @@ use mr_io_parallel, only : mr_io_parallel_spatial_hyperslap_compute, &
                            mr_io_parallel_spatial_hyperslap_compute, &
                            mr_io_parallel_spatial_hyperslap_compute_padded
 
-include 'mpif.h'
+use mpi !include 'mpif.h'
 
 #ifdef __GFORTRAN__
 ! Spatial hyperslab macro enum
