@@ -25,7 +25,8 @@ contains
 
 ! ************************ Domain/Hyperslab decomposition ************************
 
-
+! This does unsymmetric positioning with padding at the RHS of the domain. For symmetric alignment use the padded version
+! with 0 domain padding.
 subroutine mr_io_parallel_spatial_hyperslap_compute(mr_io_mpi_comm, mr_io_mpi_cart_dims, dims_file, offset_file, dims_mem)
 
   implicit none
