@@ -69,14 +69,23 @@ def spatial_hyperslab_dims_new(cls, voxel_feature): # NOTE: This is not the hype
 
 def spatial_hyperslab_loc(cls, mpi_rank, mpi_cart_dims, voxel_feature): 
     #block_dims, dims_mem, dims_mem_boundary = spatial_hyperslab_dims(cls, voxel_feature)
-    dims_mem = np.array([(voxel_feature.shape[i] + mpi_cart_dims[i] -1)//mpi_cart_dims[i] for i in range(3)])
+    with_padding = hasattr(cls, "num_pad_vox_lhs")
+    num_vox_ext = np.array([ voxel_feature.shape[i] + 
+                            (cls.num_pad_vox_lhs[i] + cls.num_pad_vox_rhs[i] if with_padding else 0) for i in range(3)])
+    dims_mem = np.array([(num_vox_ext[i] + mpi_cart_dims[i] - 1)//mpi_cart_dims[i] for i in range(3)])
     dims_mem_boundary = np.array([coord_shape % dims_mem[i] \
                                   if coord_shape % dims_mem[i] != 0 
                                   else dims_mem[i] 
-                                  for i,coord_shape in enumerate(voxel_feature.shape[:3])])
+                                  for i,coord_shape in enumerate(num_vox_ext)])
     
-    block_id = ( mpi_rank // (mpi_cart_dims[1]* mpi_cart_dims[2]), (mpi_rank // mpi_cart_dims[2]) % mpi_cart_dims[1], mpi_rank % mpi_cart_dims[2] )
-    hyperslab_offset = np.array([dims_mem[i]*block_id[i] for i in range(3)] + [0]*(len(voxel_feature.shape)-3))
-    hyperslab_shape = np.array([dims_mem[i] if block_id[i] + 1 < mpi_cart_dims[i] else dims_mem_boundary[i] for i in range(3)] + list(voxel_feature.shape[3:]))
+    mpi_rank_cart = mpi_cart_rank(mpi_rank, mpi_cart_dims)
+    hyperslab_offset = np.array([dims_mem[i]*mpi_rank_cart[i] for i in range(3)] + [0]*(len(voxel_feature.shape)-3))
+    hyperslab_shape = np.array([dims_mem[i] if mpi_rank_cart[i] + 1 < mpi_cart_dims[i] else dims_mem_boundary[i] for i in range(3)] + list(voxel_feature.shape[3:]))
+    if with_padding:
+        hyperslab_shape[:3] -= np.maximum(hyperslab_offset[:3]+hyperslab_shape[:3]-(num_vox_ext-cls.num_pad_vox_rhs), [0,0,0])
+        hyperslab_shape[:3] -= np.maximum(cls.num_pad_vox_lhs - hyperslab_offset[:3], [0,0,0])
+        if any(hyperslab_shape[:3] <= 0):
+            hyperslab_shape[:3] = [0, 0, 0]
+        hyperslab_offset[:3] = np.maximum(hyperslab_offset[:3] - cls.num_pad_vox_lhs, [0,0,0])
     
     return hyperslab_offset, hyperslab_shape

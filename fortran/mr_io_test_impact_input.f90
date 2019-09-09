@@ -46,6 +46,7 @@ program mr_io_test_impact_input
   write(*,*) x3p(1:impact_shape(3)) ! corresponds to M3
 !  write(*,*) "*********************************"
 
+! !TODO: Test MRI padding parameters for Kalman filter
 
    ! This is for interactive testing...
 !  CALL MPI_COMM_RANK(MPI_COMM_WORLD,mpi_rank,merror)

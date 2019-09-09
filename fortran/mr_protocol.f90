@@ -136,6 +136,17 @@ type DistHPCPredictMRI
      type(DistSpacetimeMatrixFeature) :: velocity_cov
 end type
 
+type DomainPadding
+     integer, dimension(3) :: lhs
+     integer, dimension(3) :: rhs
+end type
+
+type DistHPCPredictMRIPadded
+     type(DistHPCPredictMRI) :: mri
+     type(DomainPadding) :: domain_padding
+end type
+
+
 ! ************************ SegmentedHPCPredictMRI ************************
 
 character(len=26) :: SegmentedHPCPredictMRI_group_name = "segmented-hpc-predict-mri"
@@ -183,6 +194,8 @@ type DistSegmentedHPCPredictMRI
      type(DistSpacetimeMatrixFeature) :: velocity_cov
      type(DistSpacetimeScalarFeature) :: segmentation_prob
 end type
+
+
 
 contains
 
@@ -256,6 +269,14 @@ subroutine mr_io_deallocate_dist_hpcpredict_mri(mri)
     deallocate(mri%velocity_cov%array)
 
 end subroutine mr_io_deallocate_dist_hpcpredict_mri
+
+subroutine mr_io_deallocate_dist_hpcpredict_mri_padded(mri)
+
+    implicit none
+    type(DistHPCPredictMRIPadded), intent(inout) :: mri
+    call mr_io_deallocate_dist_hpcpredict_mri(mri%mri)
+
+end subroutine mr_io_deallocate_dist_hpcpredict_mri_padded
 
 subroutine mr_io_deallocate_segmentedhpcpredict_mri(mri)
 

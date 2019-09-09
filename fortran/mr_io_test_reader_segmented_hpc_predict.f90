@@ -3,10 +3,14 @@ program mr_io_test_reader_segmented_hpc_predict
     use mr_io
     use mr_protocol
 
+    use mr_io_test_arg_parser
+
     implicit none
 
-    character(len=100) :: path = "mr_io_test_segmented_hpc_predict.h5"
+!    character(len=100) :: path = "mr_io_test_segmented_hpc_predict.h5"
     type(SegmentedHPCPredictMRI) :: mri_dest
+
+    call mr_io_test_parse_args_reader()
 
     call mr_io_read_segmentedhpcpredict(path, mri_dest)
 

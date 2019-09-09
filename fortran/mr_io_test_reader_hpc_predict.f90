@@ -3,10 +3,14 @@ program mr_io_test_reader_hpc_predict
     use mr_io
     use mr_protocol
 
+    use mr_io_test_arg_parser
+
     implicit none
 
-    character(len=100) :: path = "mr_io_test_hpc_predict.h5"
+!    character(len=100) :: path = "mr_io_test_hpc_predict.h5"
     type(HPCPredictMRI) :: mri_dest
+
+    call mr_io_test_parse_args_reader()
 
     call mr_io_read_hpcpredict(path, mri_dest)
 
