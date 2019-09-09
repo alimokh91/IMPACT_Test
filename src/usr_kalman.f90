@@ -22,13 +22,13 @@
   USE usr_vars
   USE mod_lib
   USE mod_inout
-  USE mr_protocol
+  USE mr_io_protocol
 
   IMPLICIT NONE
 
   INCLUDE 'mpif.h'
 
-  TYPE(DistHPCPredictMRI) :: mri
+  TYPE(DistFlowMRI) :: mri
 
   TYPE(kalman_t), pointer :: klmn
   INTEGER :: i,j,k,ii,jj,kk

@@ -9,7 +9,7 @@ MODULE usr_vars
   USE mod_dims
   USE mod_vars
   USE ISO_C_BINDING !bbecsek
-  USE mr_protocol, only: DomainPadding 
+  USE mr_io_protocol, only: DomainPadding 
  
   IMPLICIT NONE
   
