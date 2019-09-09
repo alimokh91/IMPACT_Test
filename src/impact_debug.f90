@@ -39,19 +39,22 @@ PROGRAM impact
   USE mod_timeint
   USE HDF5
   USE usr_func
+  USE usr_vars
   
+  USE mr_protocol, only: DistHPCPredictMRIPadded
+  USE mr_io_parallel_spacetime, only: mr_io_read_parallel_hpcpredict_padded
+    
   IMPLICIT NONE
   
   INCLUDE 'mpif.h'
   
-  INTEGER :: gdb
+  character(len=200) :: mri_file_path = "./bern_experimental_dataset_hpc_predict_mri.h5"
+  type(DistHPCPredictMRIPadded) :: mri_inst
 
-  gdb = 0
-
+  INTEGER :: gdb = 0
   do while (gdb == 0)
     call sleep(2)
   end do
-  
   !----------------------------------------------------------------------------------------------------------!
   ! Annotations / TO-DO list:                                                                                !
   !  - henniger 2011: unite the four init_* (general, parallel, boundaries, limits), already intermingled    !
@@ -59,7 +62,6 @@ PROGRAM impact
   !                  usr functions, i.e. variables / fields of task 3 were not independent! May be recovered !
   !                  as part of a mod file if new fields are provided and dependence on usr functions lifted !
   !----------------------------------------------------------------------------------------------------------!
-  
   
   !===========================================================================================================
   !=== Initialization ========================================================================================
@@ -133,7 +135,37 @@ PROGRAM impact
   !--- Beta (for analysis) -----------------------------------------------------------------------------------
   CALL get_beta
   !===========================================================================================================
+
+  ! Assign domain-padding read from config file (kalman_num_data_voxels_per_process can be used to infer the
+  ! size of the data voxel grid per process)
+  mri_inst%domain_padding = kalman_domain_padding
+  CALL mr_io_read_parallel_hpcpredict_padded(MPI_COMM_WORLD, MPI_INFO_NULL, (/NB1,NB2,NB3/), &
+       mri_file_path, mri_inst) 
+  CALL h5open_f(herror) ! Required as hpc-predict-io closes HDF5 environment with h5close_f
   
+  write(0,*) "### MRI data ('local' refers to local pressure grid) ##" 
+  write(0,*) "## Number of data voxels "
+  write(0,*) "   (incl. both with  "
+  write(0,*) "   and without data) "
+  write(0,*) "   per process:  ",kalman_num_data_voxels_per_process
+  write(0,*) "## cart MPI rank:",iB(1:3,1)-(/1,1,1/)
+  write(0,*) "## MRI: intensity field ##"
+  write(0,*) "   local  shape: ",shape(mri_inst%mri%intensity%array)
+  write(0,*) "   local lbound: ",lbound(mri_inst%mri%intensity%array)
+  write(0,*) "   local ubound: ",ubound(mri_inst%mri%intensity%array)
+  write(0,*) "   MRI offset:   ",mri_inst%mri%intensity%time_offset,mri_inst%mri%intensity%offset
+
+  write(0,*) "## MRI: velocity mean field ##"
+  write(0,*) "   local  shape: ",shape(mri_inst%mri%velocity_mean%array)
+  write(0,*) "   local lbound: ",lbound(mri_inst%mri%velocity_mean%array)
+  write(0,*) "   local ubound: ",ubound(mri_inst%mri%velocity_mean%array)
+  write(0,*) "   MRI offset:   ",0,mri_inst%mri%velocity_mean%time_offset,mri_inst%mri%velocity_mean%offset
+
+  write(0,*) "## MRI: velocity covariance field ##"
+  write(0,*) "   local  shape: ",shape(mri_inst%mri%velocity_cov%array)
+  write(0,*) "   local lbound: ",lbound(mri_inst%mri%velocity_cov%array)
+  write(0,*) "   local ubound: ",ubound(mri_inst%mri%velocity_cov%array)
+  write(0,*) "   MRI offset:   ",0,0,mri_inst%mri%velocity_cov%time_offset,mri_inst%mri%velocity_cov%offset
   
   !===========================================================================================================
   !=== Main taks =============================================================================================

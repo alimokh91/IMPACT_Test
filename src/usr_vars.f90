@@ -9,7 +9,8 @@ MODULE usr_vars
   USE mod_dims
   USE mod_vars
   USE ISO_C_BINDING !bbecsek
-  
+  USE mr_protocol, only: DomainPadding 
+ 
   IMPLICIT NONE
   
   !--- specification of additional, user-defined variables ---
@@ -108,5 +109,10 @@ MODULE usr_vars
   END TYPE kalman_t
 
   TYPE(kalman_t), pointer :: kalman_first
+
+  ! MRI grid layout parameters
+  
+  INTEGER, DIMENSION(3) :: kalman_num_data_voxels_per_process = (/-1, -1, -1/)
+  TYPE(DomainPadding) :: kalman_domain_padding
 
 END MODULE usr_vars

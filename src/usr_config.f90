@@ -119,6 +119,47 @@
   
   
   !===========================================================================================================
+  !=== MRI grid = ============================================================================================
+  !===========================================================================================================
+
+  !--- MRI grid layout for Kalman filter ---
+  ! note: - num_data_voxels_per_process specifies the unidirectional number of MRI voxels (/= pressure voxels) 
+  !         with data inside
+  !       - num_padding_voxels_lhs/rhs define the number of extra MRI voxels without data inserted to the left
+  !         and right of MRI voxels with data 
+  !
+  ! kalman_num_data_voxels_per_process_1
+    IF (INDEX(text,'kalman_num_data_voxels_per_process_1' ) == 1) READ(UNIT=text,FMT=*) dummy, &
+                                                                  kalman_num_data_voxels_per_process(1)
+  ! kalman_num_padding_data_voxels_lhs_1
+    IF (INDEX(text,'kalman_num_padding_data_voxels_lhs_1' ) == 1) READ(UNIT=text,FMT=*) dummy, &
+                                                                  kalman_domain_padding%lhs(1)
+  ! kalman_num_padding_data_voxels_rhs_1
+    IF (INDEX(text,'kalman_num_padding_data_voxels_rhs_1' ) == 1) READ(UNIT=text,FMT=*) dummy, &
+                                                                  kalman_domain_padding%rhs(1)
+  
+  ! kalman_num_data_voxels_per_process_2
+    IF (INDEX(text,'kalman_num_data_voxels_per_process_2' ) == 1) READ(UNIT=text,FMT=*) dummy, &
+                                                                  kalman_num_data_voxels_per_process(2)
+  ! kalman_num_padding_data_voxels_lhs_2
+    IF (INDEX(text,'kalman_num_padding_data_voxels_lhs_2' ) == 1) READ(UNIT=text,FMT=*) dummy, &
+                                                                  kalman_domain_padding%lhs(2)
+  ! kalman_num_padding_data_voxels_rhs_2
+    IF (INDEX(text,'kalman_num_padding_data_voxels_rhs_2' ) == 1) READ(UNIT=text,FMT=*) dummy, &
+                                                                  kalman_domain_padding%rhs(2)
+
+  ! kalman_num_data_voxels_per_process_3
+    IF (INDEX(text,'kalman_num_data_voxels_per_process_3' ) == 1) READ(UNIT=text,FMT=*) dummy, &
+                                                                  kalman_num_data_voxels_per_process(3)
+  ! kalman_num_padding_data_voxels_lhs_3
+    IF (INDEX(text,'kalman_num_padding_data_voxels_lhs_3' ) == 1) READ(UNIT=text,FMT=*) dummy, &
+                                                                  kalman_domain_padding%lhs(3)
+  ! kalman_num_padding_data_voxels_rhs_3
+    IF (INDEX(text,'kalman_num_padding_data_voxels_rhs_3' ) == 1) READ(UNIT=text,FMT=*) dummy, &
+                                                                  kalman_domain_padding%rhs(3)
+    
+
+  !===========================================================================================================
   !=== non-dimensional numbers ===============================================================================
   !===========================================================================================================
 
