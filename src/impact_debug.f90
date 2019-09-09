@@ -41,12 +41,12 @@ PROGRAM impact
   USE usr_func
   USE usr_vars
   
-  USE mr_protocol, only: DistHPCPredictMRIPadded
-  USE mr_io_parallel_spacetime, only: mr_io_read_parallel_hpcpredict_padded
-    
-  IMPLICIT NONE
-  
-  INCLUDE 'mpif.h'
+  !USE mr_protocol, only: DistHPCPredictMRIPadded
+  USE mr_io_parallel_spacetime !, only: mr_io_read_parallel_hpcpredict_padded
+
+  use mpi    
+  IMPLICIT NONE  
+  !INCLUDE 'mpif.h'
   
   character(len=200) :: mri_file_path = "./bern_experimental_dataset_hpc_predict_mri.h5"
   type(DistHPCPredictMRIPadded) :: mri_inst
