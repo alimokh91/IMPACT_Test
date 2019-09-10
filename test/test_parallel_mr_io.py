@@ -3,7 +3,7 @@ import subprocess as sp
 import os
 import numpy as np
 from mr_io import SpatialMRI, SpaceTimeMRI, FlowMRI, SegmentedFlowMRI
-from test_common import spatial_hyperslab_dims_new, spatial_hyperslab_loc, validate_spatial_fort_array
+from test_common import spatial_hyperslab_dims_test, spatial_hyperslab_loc_test, validate_spatial_fort_array
 
 
 def write_hdf5_read_in_fortran(test_inst):
@@ -62,7 +62,7 @@ def validate_dist_spatial_fort_array(test_inst, mpi_rank, array, out_lines):
     fort_dims = np.fromstring(out_lines[2], dtype=int, sep=' ') 
     fort_array= np.fromstring(out_lines[3], dtype=float, sep=' ').reshape(np.flip(fort_dims)).transpose()
 
-    hyperslab_offset, hyperslab_shape = spatial_hyperslab_loc(test_cls, mpi_rank, test_inst.mpi_cart_dims, array)
+    hyperslab_offset, hyperslab_shape = spatial_hyperslab_loc_test(test_cls, mpi_rank, test_inst.mpi_cart_dims, array)
 
     test_inst.assertTrue(np.array_equal(fort_file_dims, array.shape))
     test_inst.assertTrue(np.array_equal(fort_offset, hyperslab_offset))
@@ -77,7 +77,7 @@ def validate_dist_spatial_fort_array(test_inst, mpi_rank, array, out_lines):
 def validate_dist_spacetime_fort_array(test_inst, mpi_rank, array, out_lines, transpose_dims):
     test_cls = type(test_inst)
 
-    hyperslab_offset, hyperslab_shape = spatial_hyperslab_loc(test_cls, mpi_rank, test_inst.mpi_cart_dims, array)
+    hyperslab_offset, hyperslab_shape = spatial_hyperslab_loc_test(test_cls, mpi_rank, test_inst.mpi_cart_dims, array)
       
     fort_file_dims = np.fromstring(out_lines[0], dtype=int, sep=' ') 
     fort_offset = np.fromstring(out_lines[1], dtype=int, sep=' ') 
@@ -171,7 +171,7 @@ class TestSpatialMRI(unittest.TestCase):
         # Initialize the MRI data
         voxel_feature = np.random.rand(91,31,71) # splitting on the last dim in Fortran (must be the largest in size due to grid splitting!)
         self.mri = SpatialMRI(voxel_feature)
-        self.mpi_cart_dims = spatial_hyperslab_dims_new(type(self), self.mri.voxel_feature)
+        self.mpi_cart_dims = spatial_hyperslab_dims_test(type(self), self.mri.voxel_feature)
  
     def test_communicator(self):
         # Write HDF5 from Python and read HDF5 from Fortran   
@@ -212,7 +212,7 @@ class TestSpaceTimeMRI(unittest.TestCase): # FIXME: coordinates test...
         geometry = [np.random.rand(67), np.random.rand(43), np.random.rand(29)]
         voxel_feature = np.random.rand(67,43,29,11,3)
         self.mri = SpaceTimeMRI(geometry, time, voxel_feature)
-        self.mpi_cart_dims = spatial_hyperslab_dims_new(type(self), self.mri.voxel_feature)
+        self.mpi_cart_dims = spatial_hyperslab_dims_test(type(self), self.mri.voxel_feature)
  
     def test_communicator(self):  
         # Write HDF5 from Python and read HDF5 from Fortran   
@@ -261,7 +261,7 @@ class TestFlowMRI(unittest.TestCase): # FIXME: coordinates test...
         velocity_mean = np.random.rand(67,43,29,11,3)        
         velocity_cov = np.random.rand(67,43,29,11,3,5)        
         self.mri = FlowMRI(geometry, time, intensity, velocity_mean, velocity_cov)
-        self.mpi_cart_dims = spatial_hyperslab_dims_new(type(self), self.mri.intensity)
+        self.mpi_cart_dims = spatial_hyperslab_dims_test(type(self), self.mri.intensity)
  
      
     def test_communicator(self):
@@ -313,7 +313,7 @@ class TestSegmentedFlowMRI(unittest.TestCase): # FIXME: coordinates test...
         velocity_cov = np.random.rand(67,43,29,11,3,5)        
         segmentation_prob = np.random.rand(67,43,29,11)        
         self.mri = SegmentedFlowMRI(geometry, time, intensity, velocity_mean, velocity_cov, segmentation_prob)
-        self.mpi_cart_dims = spatial_hyperslab_dims_new(type(self), self.mri.intensity)
+        self.mpi_cart_dims = spatial_hyperslab_dims_test(type(self), self.mri.intensity)
  
      
     def test_communicator(self):
@@ -369,7 +369,7 @@ class TestFlowMRIPadded(unittest.TestCase): # FIXME: coordinates test...
         velocity_cov = np.random.rand(67,43,29,11,3,5)        
         self.mri = FlowMRI(geometry, time, intensity, velocity_mean, velocity_cov)
         
-        self.mpi_cart_dims = spatial_hyperslab_dims_new(type(self), self.mri.intensity)
+        self.mpi_cart_dims = spatial_hyperslab_dims_test(type(self), self.mri.intensity)
         
         test_cls.num_vox = intensity.shape[:3]
         

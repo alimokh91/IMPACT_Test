@@ -4,7 +4,8 @@ import os
 import logging
 import numpy as np
 from mr_io import FlowMRI
-from test_common import mpi_cart_rank, spatial_hyperslab_dims_new, spatial_hyperslab_loc, validate_array
+from mr_io_domain_decomp import mpi_cart_rank
+from test_common import spatial_hyperslab_dims_test, spatial_hyperslab_loc_test, validate_array
 
 
 def write_hdf5_start_impact_fortran(test_inst):
@@ -87,7 +88,6 @@ def validate_impact_coordinates(test_inst):
             out_begin = out_lines.index(" ***** mr_io_test_impact_input output *****\n")                
                             
             num_vox_per_proc = [(len(test_inst.geometry_complement[i])-1)//test_inst.mpi_cart_dims[i] for i in range(3)]
-            
             # validate coordinates
             for i in range(3):
                 impact_num_uniaxial_pressure_grid_points = np.fromstring(out_lines[out_begin+2*i+1][:-1], dtype=int, sep=' ')[0]
@@ -105,11 +105,10 @@ def validate_impact_coordinates(test_inst):
                                impact_coord_array[::test_cls.sr[i]], 
                                test_inst.geometry_complement[i][mpi_rank_cart[i]*num_vox_per_proc[i]:(mpi_rank_cart[i]+1)*num_vox_per_proc[i]+1])
             
-            # FIXME: Uncomment when IMPACT config reader is adapted to parse extended MRI parameters
-#             for i in range(3):
-#                 validate_array(test_inst, np.fromstring(out_lines[out_begin+2*i+3][:-1], dtype=int, sep=' '), test_cls.num_vox_per_proc)  # kalman_num_data_voxels_per_process
-#                 validate_array(test_inst, np.fromstring(out_lines[out_begin+2*i+4][:-1], dtype=int, sep=' '), test_cls.num_pad_vox_lhs)  # kalman_num_padding_data_voxels_lhs
-#                 validate_array(test_inst, np.fromstring(out_lines[out_begin+2*i+5][:-1], dtype=int, sep=' '), test_cls.num_pad_vox_rhs)  # kalman_num_padding_data_voxels_rhs
+            # Validate IMPACT extended MRI grid parameters
+            validate_array(test_inst, np.fromstring(out_lines[out_begin+7 ][:-1], dtype=int, sep=' '), np.array(test_cls.num_vox_per_proc))  # kalman_num_data_voxels_per_process
+            validate_array(test_inst, np.fromstring(out_lines[out_begin+8][:-1], dtype=int, sep=' '), np.array(test_cls.num_pad_vox_lhs))  # kalman_num_padding_data_voxels_lhs
+            validate_array(test_inst, np.fromstring(out_lines[out_begin+9][:-1], dtype=int, sep=' '), np.array(test_cls.num_pad_vox_rhs))  # kalman_num_padding_data_voxels_rhs
        
 def remove_test_files(test_inst):
     test_cls = type(test_inst)
@@ -125,19 +124,19 @@ def remove_test_files(test_inst):
     
 
 class TestImpactInput(unittest.TestCase): # FIXME: coordinates test...
-    
+     
     # number of Fortran MPI processes
     mpi_proc = 2**2
-    
+     
     # Filenames
     filename_prefix = "mr_io_test_impact_input"
-
+ 
     filename_exec = filename_prefix
     filename_mri = filename_prefix + ".h5"
     filename_out_rank = filename_prefix + "_%s.out"
     filename_err_rank = filename_prefix + "_%s.err"
     impact_noise = ["test_beta.txt", "test_multigrid_properties.txt"] # IMPACT files that are written without asking
-
+ 
     # python python/mr_io_impact_config.py --mri mr_io_test_space_time.h5 --sr 2 2 2 --tr 10 --config python/config.txt.j2 --output python/config.txt --np 8
     num_vox = (2**4, 2**5, 2**3)   # should be divisible by domain decomposition computed in this test
     domain_origin = (1., 4., 5.)
@@ -146,9 +145,9 @@ class TestImpactInput(unittest.TestCase): # FIXME: coordinates test...
     tr = 10
     config_template = 'python/config.txt.j2'
     config_output = 'config.txt'
-
+ 
     padding = (0., 0., 0.)
-
+ 
     def setUp(self):
         test_cls = type(self)
         # Initialize the MRI data
@@ -156,7 +155,7 @@ class TestImpactInput(unittest.TestCase): # FIXME: coordinates test...
         intensity = np.random.rand(*TestImpactInput.num_vox,11)
         velocity_mean = np.random.rand(*TestImpactInput.num_vox,11,3)
         velocity_cov = np.random.rand(*TestImpactInput.num_vox,11,3,3)
-
+ 
         geometry = [TestImpactInput.domain_origin[i] + \
                     np.linspace(0.,TestImpactInput.domain_length[i],
                                    2*TestImpactInput.num_vox[i]+1)[1:-1:2] for i in range(3)]
@@ -164,22 +163,22 @@ class TestImpactInput(unittest.TestCase): # FIXME: coordinates test...
                    [TestImpactInput.domain_origin[i] + \
                     np.linspace(0.,TestImpactInput.domain_length[i],
                                    2*TestImpactInput.num_vox[i]+1)[::2] for i in range(3)]
-
+ 
         self.mri = FlowMRI(geometry, time, intensity, velocity_mean, velocity_cov)
-        self.mpi_cart_dims = spatial_hyperslab_dims_new(type(self), self.mri.intensity)
-
+        self.mpi_cart_dims = spatial_hyperslab_dims_test(type(self), self.mri.intensity)
+ 
         test_cls.num_pad_vox_lhs = [0]*3
         test_cls.num_pad_vox_rhs = [0]*3
         test_cls.num_vox_per_proc = [test_cls.num_vox[i]//self.mpi_cart_dims[i] for i in range(3)]
-
+ 
         print("MPI cartesian dims: {}\nMRI voxels: {}\nDesired padding voxels: {}\nExtended MRI voxels: {}\nComputed padding voxels: {} {}".format(\
               self.mpi_cart_dims, test_cls.num_vox, [0]*3, test_cls.num_vox, test_cls.num_pad_vox_lhs, test_cls.num_pad_vox_rhs))
-                
+                 
     def test_communicator(self):
         write_hdf5_start_impact_fortran(self)        
         validate_impact_coordinates(self)
         # further checks can be added as required... (MRI reader testing not done here as already tested elsewhere)
-    
+     
     def tearDown(self):
         remove_test_files(self)
             
@@ -187,7 +186,7 @@ class TestImpactInput(unittest.TestCase): # FIXME: coordinates test...
 class TestImpactInputPadding(unittest.TestCase): # FIXME: coordinates test...
     
     # number of Fortran MPI processes
-    mpi_proc = 2**3
+    mpi_proc = 7
     
     # Filenames
     filename_prefix = "mr_io_test_impact_input"
@@ -198,7 +197,7 @@ class TestImpactInputPadding(unittest.TestCase): # FIXME: coordinates test...
     filename_err_rank = filename_prefix + "_%s.err"
     impact_noise = ["test_beta.txt", "test_multigrid_properties.txt"] # IMPACT files that are written without asking
 
-    num_vox = (7, 13, 11)   # should be divisible by domain decomposition computed in this test
+    num_vox = (95, 65, 55)   # should be divisible by domain decomposition computed in this test
     domain_origin = (1., 4., 5.)
     domain_length = (3., 1.5, 2.)
     sr = [2, 2, 2]
@@ -217,7 +216,7 @@ class TestImpactInputPadding(unittest.TestCase): # FIXME: coordinates test...
         velocity_mean = np.random.rand(*test_cls.num_vox,11,3)
         velocity_cov = np.random.rand(*test_cls.num_vox,11,3,3)
 
-        self.mpi_cart_dims = spatial_hyperslab_dims_new(type(self), intensity)
+        self.mpi_cart_dims = spatial_hyperslab_dims_test(type(self), intensity)
         
         num_pad_vox = [int(np.ceil(2.*test_cls.padding[i]*test_cls.num_vox[i])) for i in range(3)]
         

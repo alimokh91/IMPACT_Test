@@ -47,6 +47,9 @@ program mr_io_test_impact_input
 !  write(*,*) "*********************************"
 
 ! !TODO: Test MRI padding parameters for Kalman filter
+  write(*,*) kalman_num_data_voxels_per_process
+  write(*,*) kalman_domain_padding%lhs
+  write(*,*) kalman_domain_padding%rhs
 
    ! This is for interactive testing...
 !  CALL MPI_COMM_RANK(MPI_COMM_WORLD,mr_io_test_mpi_rank,merror)

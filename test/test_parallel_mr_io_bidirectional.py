@@ -3,7 +3,7 @@ import subprocess as sp
 import os
 import numpy as np
 from mr_io import SpatialMRI, SpaceTimeMRI, FlowMRI, SegmentedFlowMRI
-from test_common import spatial_hyperslab_dims_new, validate_group_name, validate_array
+from test_common import spatial_hyperslab_dims_test, validate_group_name, validate_array
 
 def write_hdf5_exec_fortran(test_inst):
     test_cls = type(test_inst)
@@ -80,7 +80,7 @@ class TestSpatialMRIBidirectional(unittest.TestCase):
         voxel_feature = np.random.rand(91,31,71) # splitting on the last dim in Fortran (must be the largest in size due to grid splitting!)
         #voxel_feature = np.reshape(np.array((9*[0]) + (9*[1])), (2,3,3))
         self.mri = SpatialMRI(voxel_feature)
-        self.mpi_cart_dims = spatial_hyperslab_dims_new(type(self), self.mri.voxel_feature)
+        self.mpi_cart_dims = spatial_hyperslab_dims_test(type(self), self.mri.voxel_feature)
            
     def test_communicator(self):
         # Write HDF5 from Python and read HDF5 from Fortran   
@@ -118,7 +118,7 @@ class TestSpaceTimeMRIBidirectional(unittest.TestCase): # FIXME: coordinates tes
         geometry = [np.random.rand(67), np.random.rand(43), np.random.rand(29)]
         voxel_feature = np.random.rand(67,43,29,11,3)
         self.mri = SpaceTimeMRI(geometry, time, voxel_feature)
-        self.mpi_cart_dims = spatial_hyperslab_dims_new(type(self), self.mri.voxel_feature)
+        self.mpi_cart_dims = spatial_hyperslab_dims_test(type(self), self.mri.voxel_feature)
    
     def test_communicator(self):
         # Write HDF5 from Python and read HDF5 from Fortran   
@@ -161,7 +161,7 @@ class TestFlowMRIBidirectional(unittest.TestCase): # FIXME: coordinates test...
         velocity_mean = np.random.rand(67,43,29,11,3)        
         velocity_cov = np.random.rand(67,43,29,11,3,5)        
         self.mri = FlowMRI(geometry, time, intensity, velocity_mean, velocity_cov)
-        self.mpi_cart_dims = spatial_hyperslab_dims_new(type(self), self.mri.intensity)
+        self.mpi_cart_dims = spatial_hyperslab_dims_test(type(self), self.mri.intensity)
    
     def test_communicator(self):
         # Write HDF5 from Python and read HDF5 from Fortran   
@@ -206,7 +206,7 @@ class TestSegmentedFlowMRIBidirectional(unittest.TestCase): # FIXME: coordinates
         velocity_cov = np.random.rand(67,43,29,11,3,5)        
         segmentation_prob = np.random.rand(67,43,29,11)        
         self.mri = SegmentedFlowMRI(geometry, time, intensity, velocity_mean, velocity_cov, segmentation_prob)
-        self.mpi_cart_dims = spatial_hyperslab_dims_new(type(self), self.mri.intensity)
+        self.mpi_cart_dims = spatial_hyperslab_dims_test(type(self), self.mri.intensity)
   
     def test_communicator(self):
         # Write HDF5 from Python and read HDF5 from Fortran   
@@ -254,7 +254,7 @@ class TestFlowMRIPaddedBidirectional(unittest.TestCase): # FIXME: coordinates te
         velocity_cov = np.random.rand(67,43,29,11,3,5)        
         self.mri = FlowMRI(geometry, time, intensity, velocity_mean, velocity_cov)
         
-        self.mpi_cart_dims = spatial_hyperslab_dims_new(type(self), self.mri.intensity)
+        self.mpi_cart_dims = spatial_hyperslab_dims_test(type(self), self.mri.intensity)
         
         test_cls.num_vox = intensity.shape[:3]
         

@@ -1,21 +1,10 @@
 import os
 from mr_io import FlowMRI
+from mr_io_domain_decomp import spatial_hyperslab_dims
 from jinja2 import Environment, FileSystemLoader
 import numpy as np
 import argparse
 
-# FIXME: replace with new version from test_common
-def spatial_hyperslab_dims(mpi_size, voxel_feature_shape): 
-    #import pdb; pdb.set_trace()
-    dims_mem = np.array(voxel_feature_shape)
-    block_dims = np.array((1,1,1))
-    while (mpi_size > 1):
-        refinement_axis = np.argmax(dims_mem)
-        block_dims[refinement_axis] *= 2
-        dims_mem[refinement_axis] = (dims_mem[refinement_axis] + 2 - 1)// 2
-        mpi_size //= 2
-    dims_mem_boundary = np.array([ coord_shape % dims_mem[i] if coord_shape % dims_mem[i] != 0 else dims_mem[i] for i,coord_shape in enumerate(voxel_feature_shape) ]) 
-    return block_dims, dims_mem, dims_mem_boundary
 
 def main():
     # parse arguments
@@ -35,12 +24,23 @@ def main():
     parser.add_argument('--np', type=int, help='Number of MPI processes')
     args = parser.parse_args()
 
+    # Read MRI
     mri = FlowMRI.read_hdf5(args.mri)
     
-    block_dims, dims_mem, dims_mem_boundary = spatial_hyperslab_dims(args.np, [len(axis) for axis in mri.geometry])
+    for i in range(3):
+        if len(mri.geometry[i]) == 1:
+            raise(ValueError("MRI grid must have more than one voxel along each axis (has %d along %d-th)" % (len(mri.geometry[i]),i)))
     
-    # This will fail
-    #assert((dims_mem == dims_mem_boundary).all())
+    # Compute number of processes along each direction
+    num_mri_voxels = [len(mri.geometry[i]) for i in range(3)]
+    
+    block_dims = spatial_hyperslab_dims(args.np, [num_mri_voxels[i] for i in range(3)])
+
+    # FIXME: could be included in hyperslab dimension computation, but that requires this change to the test as well
+    num_padding_voxels = [int(np.ceil(2.*args.padding[i]*num_mri_voxels[i])) for i in range(3)]
+    num_ext_mri_voxels = [((num_mri_voxels[i] + num_padding_voxels[i] + block_dims[i] -1) // block_dims[i]) * block_dims[i] for i in range(3)]
+    num_padding_voxels_lhs = [(num_ext_mri_voxels[i] - num_mri_voxels[i])//2 for i in range(3)]
+    num_padding_voxels_rhs = [(num_ext_mri_voxels[i] - num_mri_voxels[i] + 1)//2 for i in range(3)]
     
     template_args = dict()
     for i in range(3):
@@ -65,21 +65,21 @@ def main():
 #         else: # need to add one pressure grid point per block to make per-process number odd
 #             num_pressure_grid_points = (N_i_minus_one+1)*block_dims[i]+1 # the +1 at the end is to convert number of voxels to number of grid points
 
-        num_mri_voxels = len(mri.geometry[i])
-        num_padding_voxels = int(np.ceil(2.*args.padding[i]*num_mri_voxels))
-        
-        # Extend MRI voxel grid to allow for uniform decomposition among MPI processes
-        num_ext_mri_voxels = ((num_mri_voxels + num_padding_voxels + block_dims[i] -1) // block_dims[i]) * block_dims[i]
-        # TODO: With extra added padding (relative to MRI voxel grid size)
-        #num_ext_mri_voxels = (( np.ceil((padding+1.0)*num_mri_voxels) + block_dims[i] -1) // block_dims[i]) * block_dims[i]
-                
-        num_padding_voxels_lhs = (num_ext_mri_voxels - num_mri_voxels)//2
-        num_padding_voxels_rhs = (num_ext_mri_voxels - num_mri_voxels + 1)//2
+#         num_mri_voxels = len(mri.geometry[i])
+#         num_padding_voxels = int(np.ceil(2.*args.padding[i]*num_mri_voxels))
+#         
+#         # Extend MRI voxel grid to allow for uniform decomposition among MPI processes
+#         num_ext_mri_voxels = ((num_mri_voxels[i] + num_padding_voxels[i] + block_dims[i] -1) // block_dims[i]) * block_dims[i]
+#         # TODO: With extra added padding (relative to MRI voxel grid size)
+#         #num_ext_mri_voxels = (( np.ceil((padding+1.0)*num_mri_voxels) + block_dims[i] -1) // block_dims[i]) * block_dims[i]
+#                 
+#         num_padding_voxels_lhs = (num_ext_mri_voxels - num_mri_voxels[i])//2
+#         num_padding_voxels_rhs = (num_ext_mri_voxels - num_mri_voxels[i] + 1)//2
  
         # Make sure number of pressure grid points per process is odd (number of (extended refined) MRI voxels must be even)
-        if ( (args.sr[i]*num_ext_mri_voxels // block_dims[i]) % 2 != 0): # This will never be triggered by the above criterion
+        if ( (args.sr[i]*num_ext_mri_voxels[i] // block_dims[i]) % 2 != 0): # This will never be triggered by the above criterion
             args.sr[i] += 1
-        num_refined_ext_mri_voxels = args.sr[i]*num_ext_mri_voxels
+        num_refined_ext_mri_voxels = args.sr[i]*num_ext_mri_voxels[i]
         
 #         if ( (num_refined_ext_mri_voxels // block_dims[i]) % 2 != 0): # This will never be triggered by the above criterion
 #             num_refined_ext_mri_voxels += block_dims[i]    
@@ -93,14 +93,14 @@ def main():
         # second line converts MRI point grid extent to MRI voxel grid extent,
         # third line, which is commented out, would convert pressure voxel grid extent to pressure point grid extent
         mri_voxel_width = (mri.geometry[i][-1]-mri.geometry[i][0])/(len(mri.geometry[i])-1.)
-        template_args['L%d' % (i+1)]  = mri_voxel_width*num_ext_mri_voxels
+        template_args['L%d' % (i+1)]  = mri_voxel_width*num_ext_mri_voxels[i]
         template_args['NB%d' % (i+1)] = block_dims[i] # Number of processes along this dimension
-        template_args['y%d_origin' % (i+1)] = -1.*(mri.geometry[i][0] - mri_voxel_width/2. - mri_voxel_width*num_padding_voxels_lhs)
+        template_args['y%d_origin' % (i+1)] = -1.*(mri.geometry[i][0] - mri_voxel_width/2. - mri_voxel_width*num_padding_voxels_lhs[i])
 
 
-        template_args['kalman_num_data_voxels_per_process_%d' % (i+1)]  = num_ext_mri_voxels//block_dims[i]
-        template_args['kalman_num_padding_data_voxels_lhs_%d' % (i+1)]  = num_padding_voxels_lhs
-        template_args['kalman_num_padding_data_voxels_rhs_%d' % (i+1)]  = num_padding_voxels_rhs
+        template_args['kalman_num_data_voxels_per_process_%d' % (i+1)]  = num_ext_mri_voxels[i]//block_dims[i]
+        template_args['kalman_num_padding_data_voxels_lhs_%d' % (i+1)]  = num_padding_voxels_lhs[i]
+        template_args['kalman_num_padding_data_voxels_rhs_%d' % (i+1)]  = num_padding_voxels_rhs[i]
     
 
     template_args['time_start'] = mri.time[0]   # 0.
