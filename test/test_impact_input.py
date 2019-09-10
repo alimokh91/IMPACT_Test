@@ -48,7 +48,7 @@ def write_hdf5_start_impact_fortran(test_inst):
         print("IMPACT config generator returned err:")
         print(f.read())
 
-#         fort_command = "xterm -geometry 73x31+$(( 100 + 600*(${PMI_RANK}/%d/%d) ))+$(( 100 + 1500*((${PMI_RANK}/%d) %% %d) + 600*(${PMI_RANK} %% %d) )) -e gdb fortran/mr_io_test_impact_input %s  1> %s 2> %s" % \
+#         fort_command = "xterm -geometry 73x31+$(( 100 + 600*(${PMI_RANK}/%d/%d) ))+$(( 100 + 1500*((${PMI_RANK}/%d) %% %d) + 600*(${PMI_RANK} %% %d) )) -e gdb fortran/test/mr_io_test_impact_input %s  1> %s 2> %s" % \
 #                                (block_dims[1],block_dims[2],
 #                                 block_dims[2],
 #                                 block_dims[1],
@@ -57,7 +57,7 @@ def write_hdf5_start_impact_fortran(test_inst):
 #                                 test_cls.filename_out_rank % ("${PMI_RANK}"),
 #                                 test_cls.filename_err_rank % ("${PMI_RANK}"))
     # FIXME: the command line parameters here are currently unused!
-    fort_command = "fortran/mr_io_test_impact_input %s %s  1> %s 2> %s" % \
+    fort_command = "fortran/test/mr_io_test_impact_input %s %s  1> %s 2> %s" % \
                            (test_cls.config_output,
                             test_cls.filename_mri,
                             test_cls.filename_out_rank % ("${PMI_RANK}"),

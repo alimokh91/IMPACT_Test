@@ -14,7 +14,7 @@ def write_hdf5_exec_fortran(test_inst):
     
     # Read HDF5 from Fortran
     # Run test
-    fort = sp.run(["bash", "-c", "fortran/%s %s %s 1> %s 2> %s" %
+    fort = sp.run(["bash", "-c", "fortran/test/%s %s %s 1> %s 2> %s" %
                   (test_cls.filename_exec, 
                    test_cls.filename_mri_in, 
                    test_cls.filename_mri_out,
@@ -22,7 +22,7 @@ def write_hdf5_exec_fortran(test_inst):
                    test_cls.filename_err)], 
                   stdout=sp.PIPE, stderr=sp.PIPE, check=True)
     # Debug test
-#     fort = sp.run(["xterm","-e","gdb", "--args", *("fortran/%s %s %s" %
+#     fort = sp.run(["xterm","-e","gdb", "--args", *("fortran/test/%s %s %s" %
 #                   (test_cls.filename_exec, test_cls.filename_mri_in, test_cls.filename_mri_out)).split(" ")], 
 #                   stdout=sp.PIPE, stderr=sp.PIPE, check=True)
     print("Shell command returned out/err:")

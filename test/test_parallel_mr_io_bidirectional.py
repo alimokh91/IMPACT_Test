@@ -14,7 +14,7 @@ def write_hdf5_exec_fortran(test_inst):
 
     ## Read HDF5 from Fortran in parallel
 #   Run test
-    fort_command = "fortran/%s %d %d %d %s %s " % \
+    fort_command = "fortran/test/%s %d %d %d %s %s " % \
                            (test_cls.filename_exec,
                             *test_inst.mpi_cart_dims,
                             test_cls.filename_mri_in,
@@ -28,7 +28,7 @@ def write_hdf5_exec_fortran(test_inst):
                    stdout=sp.PIPE, stderr=sp.PIPE, check=True)
     
 #     # Debug test
-#     fort_command = "fortran/%s %d %d %d %s %s" % \
+#     fort_command = "fortran/test/%s %d %d %d %s %s" % \
 #                            (test_cls.filename_exec,
 #                             *test_inst.mpi_cart_dims,
 #                             test_cls.filename_mri_in,
