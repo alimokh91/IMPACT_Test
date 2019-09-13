@@ -40,8 +40,8 @@ MODULE mod_setup
   INTEGER                ::  b, g, m
   INTEGER                ::  stride(1:3)
   INTEGER                ::  MM(1:3,1:n_grids_max)
-  
-  
+  INTEGER                ::  n_grids_prev = 1
+  INTEGER                ::  n_grids_before_failure
   !----------------------------------------------------------------------------------------------------------!
   ! Anmerkungen: - Da bei den Helmholtz-Problemen für die Geschwindigkeiten auf dem feinsten Gitter          !
   !                mindestens soviele Punkte in Wand-normaler Richtung vorhanden sind wie bei dem Poisson-   !
@@ -95,14 +95,18 @@ MODULE mod_setup
   n_grids  = 1
   n_gather = 1
   stride   = 1
-  
+  n_grids_before_failure = n_grids_max
+
   ! (alte Version geloescht am 24.01.2010)
   DO g = 2, n_grids_max
      DO m = 1, 3
         !--- global number of grid points ---
         IF (MOD(MM(m,g-1)-1,2) == 0 .AND. MM(m,g-1) .GE. 5) THEN ! 5=2*(Nmin-1)+1, Nmin=3 for Laplacian
            MM(m,g) = (MM(m,g-1)-1) / 2 + 1
-           n_grids = g
+           if(n_grids < g) then
+               n_grids_prev = n_grids
+               n_grids = g
+           end if
         ELSE
            MM(m,g) = MM(m,g-1)
         END IF
@@ -125,10 +129,14 @@ MODULE mod_setup
         
         !--- local grid size ---
         NN(m,g) = (MM(m,g)-1)/NB(m,g)+1
+        if ( NN(m,g) > NN(m,1) .and. n_grids_before_failure == n_grids_max) then
+            n_grids_before_failure = n_grids_prev
+            write(0,*)"Warning: On level ",g," along ",m,"-th direction NN(",m,",",g,") = ",NN(m,g)," > ",NN(m,1)," = N(",m,",1), which would cause Laplacian to fail. Restricting number of grids to ",n_grids_before_failure,", therefore (IMPACT was not previously tested under this configuration)."
+        end if
      END DO
-     
   END DO
-  
+
+  n_grids = min(n_grids, n_grids_before_failure)
   
   IF (n_grids .GT. n_grids_limit) n_grids = n_grids_limit
   
