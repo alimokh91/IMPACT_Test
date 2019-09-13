@@ -13,6 +13,22 @@
 ! !pgi$r unroll = n:8
 ! !pgi$l unroll = n:8
 
+  SUBROUTINE validate_input_kalman()
+  
+  USE mod_vars, only: refine_2dir_yes
+  IMPLICIT NONE
+
+  IF(refine_2dir_yes .NEQV. .FALSE.) THEN
+    write(0,*) "refine_2dir_yes = TRUE causes 2D-coordinates that are not aligned with MRI voxels. Exiting..."
+    CALL backtrace
+    CALL flush()
+    CALL abort
+  END IF  
+  
+  END SUBROUTINE validate_input_kalman
+  
+
+
   SUBROUTINE open_kalman
   ! (basic subroutine)
   
@@ -45,6 +61,8 @@
   CHARACTER(LEN=3) ::  M2_char
   CHARACTER(LEN=3) ::  M3_char
   CHARACTER(LEN=50) :: read_dir,write_dir
+
+  CALL validate_input_kalman
 
   ALLOCATE(mean_gbl(1:intervals,b1L:(N1+b1U),b2L:(N2+b2U),b3L:(N3+b3U),1:3)); mean_gbl = 0.
 	ALLOCATE(dtime_kalm_phases(1:intervals)); dtime_kalm_phases = 0.
