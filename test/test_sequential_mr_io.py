@@ -13,7 +13,7 @@ def write_hdf5_read_in_fortran(test_inst):
     
     # Read HDF5 from Fortran
     # Run test
-    fort = sp.run(["bash", "-c", "fortran/test/%s %s  1> %s 2> %s" %
+    fort = sp.run(["bash", "-c", "%s %s  1> %s 2> %s" %
                   (test_cls.filename_exec, 
                    test_cls.filename_mri,
                    test_cls.filename_out, 
@@ -42,7 +42,7 @@ def remove_test_files(test_inst):
 class TestSpatialMRI(unittest.TestCase):
   
     # Filenames
-    filename_prefix = "mr_io_test_reader"
+    filename_prefix = os.environ['FORTRAN_TEST_BINARY_PATH'] + "mr_io_test_reader"
      
     filename_exec = filename_prefix
     filename_mri = filename_prefix + ".h5"
@@ -74,7 +74,7 @@ class TestSpatialMRI(unittest.TestCase):
 class TestSpaceTimeMRI(unittest.TestCase):
       
     # Filenames
-    filename_prefix = "mr_io_test_reader_space_time"
+    filename_prefix = os.environ['FORTRAN_TEST_BINARY_PATH'] + "mr_io_test_reader_space_time"
       
     filename_exec = filename_prefix
     filename_mri = filename_prefix + ".h5"
@@ -113,7 +113,7 @@ class TestSpaceTimeMRI(unittest.TestCase):
 class TestFlowMRI(unittest.TestCase):
   
     # Filenames
-    filename_prefix = "mr_io_test_reader_flow"
+    filename_prefix = os.environ['FORTRAN_TEST_BINARY_PATH'] + "mr_io_test_reader_flow"
      
     filename_exec = filename_prefix
     filename_mri = filename_prefix + ".h5"
@@ -156,7 +156,7 @@ class TestFlowMRI(unittest.TestCase):
 class TestSegmentedFlowMRI(unittest.TestCase):
  
     # Filenames
-    filename_prefix = "mr_io_test_reader_segmented_flow"
+    filename_prefix = os.environ['FORTRAN_TEST_BINARY_PATH'] + "mr_io_test_reader_segmented_flow"
       
     filename_exec = filename_prefix
     filename_mri = filename_prefix + ".h5"

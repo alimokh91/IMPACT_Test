@@ -15,18 +15,23 @@ add_subdirectory(fortran)
 
 enable_testing()
 add_test(NAME sequential COMMAND ${CMAKE_COMMAND} -E env
+    FORTRAN_TEST_BINARY_PATH=${CMAKE_INSTALL_PREFIX}/bin/test/
     PYTHONPATH=${CMAKE_CURRENT_SOURCE_DIR}/python
     python ${CMAKE_CURRENT_SOURCE_DIR}/test/test_sequential_mr_io.py)
 add_test(NAME sequential_bidirectional COMMAND ${CMAKE_COMMAND} -E env
+    FORTRAN_TEST_BINARY_PATH=${CMAKE_INSTALL_PREFIX}/bin/test/
     PYTHONPATH=${CMAKE_CURRENT_SOURCE_DIR}/python
     python ${CMAKE_CURRENT_SOURCE_DIR}/test/test_sequential_mr_io_bidirectional.py)
 add_test(NAME parallel COMMAND ${CMAKE_COMMAND} -E env
+    FORTRAN_TEST_BINARY_PATH=${CMAKE_INSTALL_PREFIX}/bin/test/
     PYTHONPATH=${CMAKE_CURRENT_SOURCE_DIR}/python
     python ${CMAKE_CURRENT_SOURCE_DIR}/test/test_parallel_mr_io.py)
 add_test(NAME parallel_bidirectional COMMAND ${CMAKE_COMMAND} -E env
+    FORTRAN_TEST_BINARY_PATH=${CMAKE_INSTALL_PREFIX}/bin/test/
     PYTHONPATH=${CMAKE_CURRENT_SOURCE_DIR}/python
     python ${CMAKE_CURRENT_SOURCE_DIR}/test/test_parallel_mr_io_bidirectional.py)
-add_test(NAME impact_input WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} COMMAND ${CMAKE_COMMAND} -E env
+add_test(NAME impact_input WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} COMMAND ${CMAKE_COMMAND} -E env
+    FORTRAN_TEST_BINARY_PATH=${CMAKE_INSTALL_PREFIX}/bin/test/
     PYTHONPATH=${CMAKE_CURRENT_SOURCE_DIR}/python
     python ${CMAKE_CURRENT_SOURCE_DIR}/test/test_impact_input.py)
 

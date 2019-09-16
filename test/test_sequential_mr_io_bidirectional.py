@@ -14,7 +14,7 @@ def write_hdf5_exec_fortran(test_inst):
     
     # Read HDF5 from Fortran
     # Run test
-    fort = sp.run(["bash", "-c", "fortran/test/%s %s %s 1> %s 2> %s" %
+    fort = sp.run(["bash", "-c", "%s %s %s 1> %s 2> %s" %
                   (test_cls.filename_exec, 
                    test_cls.filename_mri_in, 
                    test_cls.filename_mri_out,
@@ -45,7 +45,7 @@ def remove_test_files(test_inst):
 class TestSpatialMRIBidirectional(unittest.TestCase):
 
     # Filenames
-    filename_prefix = "mr_io_test_reader_writer"
+    filename_prefix = os.environ['FORTRAN_TEST_BINARY_PATH'] + "mr_io_test_reader_writer"
     
     filename_exec = filename_prefix
     filename_mri_in = filename_prefix + "_in.h5"
@@ -76,7 +76,7 @@ class TestSpatialMRIBidirectional(unittest.TestCase):
 class TestSpaceTimeMRIBidirectional(unittest.TestCase):
  
     # Filenames
-    filename_prefix = "mr_io_test_reader_writer_space_time"
+    filename_prefix = os.environ['FORTRAN_TEST_BINARY_PATH'] + "mr_io_test_reader_writer_space_time"
     
     filename_exec = filename_prefix
     filename_mri_in = filename_prefix + "_in.h5"
@@ -112,7 +112,7 @@ class TestSpaceTimeMRIBidirectional(unittest.TestCase):
 class TestFlowMRIBidirectional(unittest.TestCase):
  
     # Filenames
-    filename_prefix = "mr_io_test_reader_writer_flow"
+    filename_prefix = os.environ['FORTRAN_TEST_BINARY_PATH'] + "mr_io_test_reader_writer_flow"
     
     filename_exec = filename_prefix
     filename_mri_in = filename_prefix + "_in.h5"
@@ -151,7 +151,7 @@ class TestFlowMRIBidirectional(unittest.TestCase):
 class TestSegmentedFlowMRIBidirectional(unittest.TestCase):
  
     # Filenames
-    filename_prefix = "mr_io_test_reader_writer_segmented_flow"
+    filename_prefix = os.environ['FORTRAN_TEST_BINARY_PATH'] + "mr_io_test_reader_writer_segmented_flow"
     
     filename_exec = filename_prefix
     filename_mri_in = filename_prefix + "_in.h5"

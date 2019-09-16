@@ -14,7 +14,7 @@ def write_hdf5_exec_fortran(test_inst):
 
     ## Read HDF5 from Fortran in parallel
 #   Run test
-    fort_command = "fortran/test/%s %d %d %d %s %s " % \
+    fort_command = "%s %d %d %d %s %s " % \
                            (test_cls.filename_exec,
                             *test_inst.mpi_cart_dims,
                             test_cls.filename_mri_in,
@@ -65,7 +65,7 @@ class TestSpatialMRIBidirectional(unittest.TestCase):
     mpi_proc = 2**3
      
     # Filenames
-    filename_prefix = "mr_io_test_parallel_reader_writer"
+    filename_prefix = os.environ['FORTRAN_TEST_BINARY_PATH'] + "mr_io_test_parallel_reader_writer"
    
     filename_exec = filename_prefix
     filename_mri_in = filename_prefix + "_in.h5"
@@ -101,7 +101,7 @@ class TestSpaceTimeMRIBidirectional(unittest.TestCase): # FIXME: coordinates tes
     mpi_proc = 2**3
     
     # Filenames
-    filename_prefix = "mr_io_test_parallel_reader_writer_space_time"
+    filename_prefix = os.environ['FORTRAN_TEST_BINARY_PATH'] + "mr_io_test_parallel_reader_writer_space_time"
    
     filename_exec = filename_prefix
     filename_mri_in = filename_prefix + "_in.h5"
@@ -142,7 +142,7 @@ class TestFlowMRIBidirectional(unittest.TestCase): # FIXME: coordinates test...
     mpi_proc = 2**3
     
     # Filenames
-    filename_prefix = "mr_io_test_parallel_reader_writer_flow"
+    filename_prefix = os.environ['FORTRAN_TEST_BINARY_PATH'] + "mr_io_test_parallel_reader_writer_flow"
    
     filename_exec = filename_prefix
     filename_mri_in = filename_prefix + "_in.h5"
@@ -186,7 +186,7 @@ class TestSegmentedFlowMRIBidirectional(unittest.TestCase): # FIXME: coordinates
     mpi_proc = 2**3
     
     # Filenames
-    filename_prefix = "mr_io_test_parallel_reader_writer_segmented_flow"
+    filename_prefix = os.environ['FORTRAN_TEST_BINARY_PATH'] + "mr_io_test_parallel_reader_writer_segmented_flow"
   
     filename_exec = filename_prefix
     filename_mri_in = filename_prefix + "_in.h5"
@@ -231,7 +231,7 @@ class TestFlowMRIPaddedBidirectional(unittest.TestCase): # FIXME: coordinates te
     mpi_proc = 2**3
   
     # Filenames
-    filename_prefix = "mr_io_test_parallel_reader_writer_flow_padded"
+    filename_prefix = os.environ['FORTRAN_TEST_BINARY_PATH'] + "mr_io_test_parallel_reader_writer_flow_padded"
 
     filename_exec = filename_prefix
     filename_mri_in = filename_prefix + "_in.h5"

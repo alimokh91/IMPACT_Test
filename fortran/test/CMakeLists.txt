@@ -8,8 +8,9 @@ foreach(file
   add_executable(${file} ${file}.f90)
   target_compile_options(${file} PUBLIC -cpp -g -fbacktrace)
   target_link_libraries(${file} hpc-predict-io)
+  set_target_properties(${file} PROPERTIES INSTALL_RPATH_USE_LINK_PATH TRUE)
   install(TARGETS ${file}
-          RUNTIME DESTINATION bin)
+          RUNTIME DESTINATION bin/examples)
 endforeach()
 
 
@@ -36,8 +37,9 @@ foreach(file
   add_executable(${file} ${file}.f90 mr_io_test_arg_parser.f90)
   target_compile_options(${file} PUBLIC -cpp -g -fbacktrace)
   target_link_libraries(${file} hpc-predict-io)
+  set_target_properties(${file} PROPERTIES INSTALL_RPATH_USE_LINK_PATH TRUE)
   install(TARGETS ${file}
-          RUNTIME DESTINATION bin)
+          RUNTIME DESTINATION bin/test)
 endforeach()
 
 
@@ -56,9 +58,9 @@ if (EXISTS $ENV{IMPACT_DIR})
 	target_include_directories(mr_io_test_impact_input PRIVATE $ENV{IMPACT_DIR} )
 	target_link_libraries(mr_io_test_impact_input PRIVATE -L/home/lukasd/src/build_whale/opt_scientific/libs/petsc/lib )
 	target_include_directories(mr_io_test_impact_input PRIVATE /home/lukasd/src/build_whale/opt_scientific/libs/petsc/include )
-	
+        set_target_properties(mr_io_test_impact_input PROPERTIES INSTALL_RPATH_USE_LINK_PATH TRUE)	
 	install(TARGETS mr_io_test_impact_input
-	        RUNTIME DESTINATION bin)
+	        RUNTIME DESTINATION bin/test)
 else ()
     message("Could not find IMPACT... skipping IMPACT startup tests.")
 endif ()

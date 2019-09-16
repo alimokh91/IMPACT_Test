@@ -19,6 +19,8 @@ virtualenv -p python3 venv
 pip install -r requirements.txt
 ```
 
+To activate the Python virtual environment you can then use `source python/venv/bin/activate` and `deactivate` again when you want to leave it.
+
 To build the Fortran library and install it, run 
 
 ```
@@ -35,9 +37,17 @@ For usage in IMPACT set the HPC_PREDICT_IO_DIR environment variable to /path/to/
 
 ### Tests
 
-To run Python-to-Fortran and round trip tests for hpc-predict-io execute
+To run Python-to-Fortran and round trip tests for hpc-predict-io activate the Python virtual environment, i.e. execute
 
 ```
 source python/venv/bin/activate
-./test.sh
 ```
+
+and then either run `test.sh` or 
+
+```
+CTEST_OUTPUT_ON_FAILURE=1 make test ..
+``` 
+
+from within your build directory.
+

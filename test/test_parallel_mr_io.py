@@ -14,7 +14,7 @@ def write_hdf5_read_in_fortran(test_inst):
 
     ## Read HDF5 from Fortran in parallel
 #   Run test
-    fort_command = "fortran/test/%s %d %d %d %s " % \
+    fort_command = "%s %d %d %d %s " % \
                            (test_cls.filename_exec,
                             *test_inst.mpi_cart_dims,
                             test_cls.filename_mri) + \
@@ -158,7 +158,7 @@ class TestSpatialMRI(unittest.TestCase):
     mpi_proc = 2**4
    
     # Filenames
-    filename_prefix = "mr_io_test_parallel_reader"
+    filename_prefix = os.environ['FORTRAN_TEST_BINARY_PATH'] + "mr_io_test_parallel_reader"
  
     filename_exec = filename_prefix
     filename_mri = filename_prefix + ".h5"
@@ -197,7 +197,7 @@ class TestSpaceTimeMRI(unittest.TestCase): # FIXME: coordinates test...
     mpi_proc = 2**3
    
     # Filenames
-    filename_prefix = "mr_io_test_parallel_reader_space_time"
+    filename_prefix = os.environ['FORTRAN_TEST_BINARY_PATH'] + "mr_io_test_parallel_reader_space_time"
  
     filename_exec = filename_prefix
     filename_mri = filename_prefix + ".h5"
@@ -243,7 +243,7 @@ class TestFlowMRI(unittest.TestCase): # FIXME: coordinates test...
     mpi_proc = 2**3
    
     # Filenames
-    filename_prefix = "mr_io_test_parallel_reader_flow"
+    filename_prefix = os.environ['FORTRAN_TEST_BINARY_PATH'] + "mr_io_test_parallel_reader_flow"
  
     filename_exec = filename_prefix
     filename_mri = filename_prefix + ".h5"
@@ -294,7 +294,7 @@ class TestSegmentedFlowMRI(unittest.TestCase): # FIXME: coordinates test...
     mpi_proc = 2**3
    
     # Filenames
-    filename_prefix = "mr_io_test_parallel_reader_segmented_flow"
+    filename_prefix = os.environ['FORTRAN_TEST_BINARY_PATH'] + "mr_io_test_parallel_reader_segmented_flow"
  
     filename_exec = filename_prefix
     filename_mri = filename_prefix + ".h5"
@@ -347,7 +347,7 @@ class TestFlowMRIPadded(unittest.TestCase): # FIXME: coordinates test...
     mpi_proc = 2**3
   
     # Filenames
-    filename_prefix = "mr_io_test_parallel_reader_flow_padded"
+    filename_prefix = os.environ['FORTRAN_TEST_BINARY_PATH'] + "mr_io_test_parallel_reader_flow_padded"
 
     filename_exec = filename_prefix
     filename_mri = filename_prefix + ".h5"
