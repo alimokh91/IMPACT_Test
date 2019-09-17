@@ -42,6 +42,7 @@ endif
 #       M15 mod_geometry:   mod_dims, mod_vars
 #       M16 mod_rhs:        mod_dims, mod_vars, mod_diff
 #       M17 mod_timeint:    mod_dims, mod_vars, mod_exchange, mod_diff     , mod_inout    , mod_coeffs , mod_lib  , mod_rhs, mod_solvers, mod_ibm
+#       M18 mod_impact_core:          mod_vars,                                             mod_coeffs, mod_geometry, mod_setup, mod_test, mod_lib
 #       M14 mod_ibm:        mod_dims, mod_vars,                                                          mod_lib 
 #
 #	U1  usr_vars:       mod_*
@@ -82,11 +83,12 @@ MOD13 = mod_solvers
 MOD15 = mod_geometry
 MOD16 = mod_rhs
 MOD17 = mod_timeint
+MOD18 = mod_impact_core
 SUB1  = sub_other
 
 MOD   = $(DST)/$(MOD1).o  $(DST)/$(MOD2).o  $(DST)/$(MOD3).o  $(DST)/$(MOD4).o  $(DST)/$(MOD5).o  $(DST)/$(MOD6).o  \
         $(DST)/$(MOD7).o  $(DST)/$(MOD8).o  $(DST)/$(MOD9).o  $(DST)/$(MOD10).o $(DST)/$(MOD11).o  \
-        $(DST)/$(MOD13).o  $(DST)/$(MOD15).o $(DST)/$(MOD16).o $(DST)/$(MOD17).o $(DST)/$(SUB1).o
+        $(DST)/$(MOD13).o  $(DST)/$(MOD15).o $(DST)/$(MOD16).o $(DST)/$(MOD17).o $(DST)/$(MOD18).o $(DST)/$(SUB1).o
 
 USR1  = usr_vars
 USR2  = usr_func
@@ -100,7 +102,7 @@ USR9  = usr_post
 USR10 = usr_kalman
 
 USR   = $(DST)/$(USR1).o  $(DST)/$(USR2).o  $(DST)/$(USR3).o  $(DST)/$(USR4).o  $(DST)/$(USR5).o  $(DST)/$(USR6).o  \
-        $(DST)/$(USR7).o  $(DST)/$(USR8).o  $(DST)/$(USR9).o  $(DST)/$(USR10).o
+        $(DST)/$(USR7).o  $(DST)/$(USR8).o  $(DST)/$(USR9).o  $(DST)/$(USR10).o 
 
 
 ##############################################################################################################
@@ -172,6 +174,9 @@ $(DST)/$(MOD16).o: $(DST)/$(MOD1).o $(DST)/$(MOD2).o $(DST)/$(MOD4).o $(MOD16).f
 
 $(DST)/$(MOD17).o: $(DST)/$(MOD1).o $(DST)/$(MOD2).o $(DST)/$(MOD3).o $(DST)/$(MOD4).o $(DST)/$(MOD5).o $(DST)/$(MOD8).o $(DST)/$(MOD10).o $(DST)/$(MOD11).o $(DST)/$(MOD13).o $(DST)/$(MOD16).o $(MOD17).f90
 	$(COMP) -o $(DST)/$(MOD17).o $(FLAG2) -c $(MOD17).f90
+
+$(DST)/$(MOD18).o: $(DST)/$(MOD2).o $(DST)/$(MOD5).o $(DST)/$(MOD15).o $(DST)/$(MOD9).o $(DST)/$(MOD11).o $(DST)/$(MOD8).o
+	$(COMP) -o $(DST)/$(MOD18).o $(FLAG2) -c $(MOD18).f90
 
 $(DST)/$(SUB1).o: $(SUB1).f90
 	$(COMP) -o $(DST)/$(SUB1).o $(FLAG2) -c $(SUB1).f90
@@ -259,7 +264,7 @@ $(DST)/$(USR9).o: $(DST)/$(USR1).o $(DST)/$(USR2).o $(DST)/$(USR8).o $(USR9).f90
 
 $(DST)/$(USR10).o: $(DST)/$(USR1).o $(DST)/$(USR2).o $(DST)/$(USR10).o
 	$(COMP) -o $(DST)/$(USR10).o $(FLAG2) -c $(USR10).f90
-
+	
 endif
 
 ##############################################################################################################
@@ -279,13 +284,13 @@ DIREXT = f2py/ext_mod
 DIRBLD = f2py/build
 EXCL   = $(DIRPRE)/$(MOD4).f90 $(DIRPRE)/$(MOD5).f90 $(DIRPRE)/$(MOD6).f90 $(DIRPRE)/$(MOD7).f90 $(DIRPRE)/$(MOD8).f90 \
 	 $(DIRPRE)/$(MOD9).f90 $(DIRPRE)/$(MOD10).f90 $(DIRPRE)/$(MOD11).f90 $(DIRPRE)/$(MOD13).f90 \
-	 $(DIRPRE)/$(MOD15).f90 $(DIRPRE)/$(MOD16).f90 $(DIRPRE)/$(MOD17).f90 $(DIRPRE)/$(USR1).f90 \
+	 $(DIRPRE)/$(MOD15).f90 $(DIRPRE)/$(MOD16).f90 $(DIRPRE)/$(MOD17).f90 $(DIRPRE)/$(MOD18).f90 $(DIRPRE)/$(USR1).f90 \
 	 $(DIRPRE)/$(USR2).f90 $(DIRPRE)/$(USR3).f90 $(DIRPRE)/$(USR4).f90 $(DIRPRE)/$(USR5).f90 $(DIRPRE)/$(USR6).f90 \
-	 $(DIRPRE)/$(USR7).f90 $(DIRPRE)/$(USR8).f90 $(DIRPRE)/$(USR9).f90
+	 $(DIRPRE)/$(USR7).f90 $(DIRPRE)/$(USR8).f90 $(DIRPRE)/$(USR9).f90 
 INTERF = $(DIRPRE)/$(MOD1).f90 $(DIRPRE)/$(MOD2).f90 $(DIRPRE)/$(MOD3).f90 $(DIRPRE)/$(MOD4).f90 $(DIRPRE)/$(MOD5).f90 $(DIRPRE)/$(MOD8).f90 \
 	 $(DIRPRE)/$(MOD9).f90 $(DIRPRE)/$(MOD10).f90 $(DIRPRE)/$(MOD11).f90 $(DIRPRE)/$(MOD13).f90 \
-	 $(DIRPRE)/$(MOD15).f90 $(DIRPRE)/$(MOD16).f90 $(DIRPRE)/$(MOD17).f90 $(DIRPRE)/$(USR1).f90 \
-	 $(DIRPRE)/$(USR2).f90 $(DIRPRE)/$(USR3).f90 $(DIRPRE)/$(USR7).f90 $(DIRPRE)/$(USR8).f90 $(DIRPRE)/$(USR9).f90
+	 $(DIRPRE)/$(MOD15).f90 $(DIRPRE)/$(MOD16).f90 $(DIRPRE)/$(MOD17).f90 $(DIRPRE)/$(MOD18).f90 $(DIRPRE)/$(USR1).f90 \
+	 $(DIRPRE)/$(USR2).f90 $(DIRPRE)/$(USR3).f90 $(DIRPRE)/$(USR7).f90 $(DIRPRE)/$(USR8).f90 $(DIRPRE)/$(USR9).f90  
 FSRC = $(filter-out $(DIRPRE)/alloc.f90, $(wildcard $(DIRPRE)/*.f90))
 #FSRC = $(DIRPRE)/$(MOD1).f90 $(DIRPRE)/$(MOD2).f90 $(DIRPRE)/$(MOD3).f90 $(DIRPRE)/$(MOD4).f90 $(DIRPRE)/$(MOD5).f90 $(DIRPRE)/$(MOD6).f90 \
 #	$(DIRPRE)/$(MOD7).f90 $(DIRPRE)/$(MOD8).f90 $(DIRPRE)/$(MOD9).f90 $(DIRPRE)/$(MOD10).f90 $(DIRPRE)/$(MOD4).f90
@@ -305,6 +310,7 @@ preprocess:
 	$(COMP) -o $(DIRPRE)/$(MOD15).f90 -E $(PRE) $(SRC)/$(MOD15).f90 -cpp
 	$(COMP) -o $(DIRPRE)/$(MOD16).f90 -E $(PRE) $(SRC)/$(MOD16).f90 -cpp
 	$(COMP) -o $(DIRPRE)/$(MOD17).f90 -E $(PRE) $(SRC)/$(MOD17).f90 -cpp
+	$(COMP) -o $(DIRPRE)/$(MOD18).f90 -E $(PRE) $(SRC)/$(MOD18).f90 -cpp
 	$(COMP) -o $(DIRPRE)/$(SUB1).f90  -E $(PRE) $(SRC)/$(SUB1).f90 -cpp
 	$(COMP) -o $(DIRPRE)/$(USR1).f90  -E $(PRE) $(SRC)/$(USR1).f90 -cpp
 	$(COMP) -o $(DIRPRE)/$(USR2).f90  -E $(PRE) $(SRC)/$(USR2).f90 -cpp
