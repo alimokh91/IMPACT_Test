@@ -27,17 +27,21 @@ esac
 
 set -euxo pipefail
 
-MPI_HOSTS=(localhost)
+# Use proper username as well for SSH login
+MPI_MASTER_HOST=(localhost)
+MPI_WORKER_HOSTS=(localhost)
 
 echo "Checking if all MPI hosts are reachable via SSH..."
-for h in "${MPI_HOSTS[@]}"; do
-  ssh localhost exit
+ssh ${MPI_MASTER_HOST} exit
+for h in "${MPI_WORKER_HOSTS[@]}"; do
+  ssh ${h} exit
 done
 
 IMPACT_DEBUG_INFO_DIR=/tmp/impact_debug_info
 NUM_MPI_PROCESSES_PER_HOST=4
 NUM_CSSH_XTERM_ROWS=2
 
+# TODO: run the kill commands through ssh on MPI_WORKER_HOSTS/MPI_MASTER_HOST
 function cleanup {
   echo "Cleaning up - killing previously started MPI processes (incl. master process)"
   while IFS=' ' read -r key value; do
@@ -49,6 +53,7 @@ function cleanup {
 
 trap cleanup EXIT
 
+# TODO: run this on the MPI_WORKER_HOSTS
 mkdir -p ${IMPACT_DEBUG_INFO_DIR}
 rm -r ${IMPACT_DEBUG_INFO_DIR}/mpi_processes || true
 rm -r ${IMPACT_DEBUG_INFO_DIR}/xterm_processes || true
@@ -56,12 +61,13 @@ mkdir -p ${IMPACT_DEBUG_INFO_DIR}/xterm_processes
 mkdir -p ${IMPACT_DEBUG_INFO_DIR}/mpi_processes
 
 
+# TODO: start MPI on MPI_MASTER_HOST
 echo "Starting IMPACT debugger version over MPI..."
 # Run mpiexec async without waiting for its completion
 # Write PIDs and MPI ranks to file that is read again by cssh
 #mpiexec -np $(( ${#MPI_HOSTS[@]}*${NUM_MPI_PROCESSES_PER_HOST} )) bash -c "echo \"Hello from MPI rank \${${MPI_RANK}} on \$(hostname) with PID \$(echo \$\$)!\"; flock -x -w 5 ${IMPACT_DEBUG_INFO_DIR}/mpi_processes echo \"\${${MPI_RANK}} \$(echo \$\$)\" >> ${IMPACT_DEBUG_INFO_DIR}/mpi_processes; cd ../prog; export LD_LIBRARY_PATH=${HDF5_DIR}/lib; exec ./impact_debug.exe" & 
 
-mpiexec -np $(( ${#MPI_HOSTS[@]}*${NUM_MPI_PROCESSES_PER_HOST} )) bash -c "echo \"Hello from MPI rank \${${MPI_RANK}} on \$(hostname) with PID \$(echo \$\$)!\"; echo \"\${${MPI_RANK}} \$(echo \$\$)\" >> ${IMPACT_DEBUG_INFO_DIR}/mpi_processes/\${${MPI_RANK}}; cd ../prog; export LD_LIBRARY_PATH=${HDF5_DIR}/lib; exec ./impact_debug.exe" &
+mpiexec -np $(( ${#MPI_WORKER_HOSTS[@]}*${NUM_MPI_PROCESSES_PER_HOST} )) bash -c "echo \"Hello from MPI rank \${${MPI_RANK}} on \$(hostname) with PID \$(echo \$\$)!\"; echo \"\${${MPI_RANK}} \$(echo \$\$)\" >> ${IMPACT_DEBUG_INFO_DIR}/mpi_processes/\${${MPI_RANK}}; cd ../prog; export LD_LIBRARY_PATH=${HDF5_DIR}/lib; exec ./impact_debug.exe" &
 IMPACT_MPI_MASTER_PID=$!
 
 # Not needed for mpi_processes an associative array
@@ -69,14 +75,15 @@ IMPACT_MPI_MASTER_PID=$!
 
 xterm_hosts=()
 
-for h in "${MPI_HOSTS[@]}"; do
+for h in "${MPI_WORKER_HOSTS[@]}"; do
   for i in $(seq 1 ${NUM_MPI_PROCESSES_PER_HOST}); do
     echo "Adding ( ${h} )"
     xterm_hosts+=( "${h}" )
   done
 done
 
-echo "MPI_HOSTS=${MPI_HOSTS[@]}"
+echo "MPI_MASTER_HOST=${MPI_MASTER_HOST}"
+echo "MPI_WORKER_HOSTS=${MPI_WORKER_HOSTS[@]}"
 echo "NUM_MPI_PROCESSES_PER_HOST=${NUM_MPI_PROCESSES_PER_HOST}"
 echo "xterm_hosts is ${xterm_hosts[@]}"
 
