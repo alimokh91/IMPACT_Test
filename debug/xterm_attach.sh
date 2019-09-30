@@ -1,24 +1,24 @@
 IMPACT_DEBUG_INFO_DIR=/tmp/impact_debug_info
 
-echo $$ >> ${IMPACT_DEBUG_INFO_DIR}/xterm_processes/$$
+echo $$ >> ${IMPACT_DEBUG_INFO_DIR}/$(hostname)/xterm_processes/$$
 
 sleep 0.5
 
 unset xterm_processes
 unset mpi_processes
-#readarray xterm_processes < ${IMPACT_DEBUG_INFO_DIR}/xterm_processes
+#readarray xterm_processes < ${IMPACT_DEBUG_INFO_DIR}/$(hostname)/xterm_processes
 
 xterm_processes=()
 while IFS=' ' read -r value; do
     xterm_processes+=( $(echo ${value} | tr -d '\n') )
-done < <(cat ${IMPACT_DEBUG_INFO_DIR}/xterm_processes/*)
-#done < ${IMPACT_DEBUG_INFO_DIR}/xterm_processes
+done < <(cat ${IMPACT_DEBUG_INFO_DIR}/$(hostname)/xterm_processes/*)
+#done < ${IMPACT_DEBUG_INFO_DIR}/$(hostname)/xterm_processes
 
 declare -A mpi_processes
 
 while IFS=' ' read -r key value; do
     mpi_processes[$key]=$(echo ${value} | tr -d '\n')
-done < <(cat ${IMPACT_DEBUG_INFO_DIR}/mpi_processes/*)
+done < <(cat ${IMPACT_DEBUG_INFO_DIR}/$(hostname)/mpi_processes/*)
 
 for i in "${!mpi_processes[@]}"; do printf "\"%s\":\"%s\"\n" "$i" "${mpi_processes[$i]}";done
 
