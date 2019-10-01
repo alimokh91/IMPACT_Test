@@ -26,6 +26,8 @@ fortran/mr_io_test_parallel_reader_writer_segmented_flow
 fortran/mr_io_test_reader_segmented_flow
 fortran/mr_io_test_reader_writer_segmented_flow
 fortran/mr_io_test_impact_input
+fortran/test/*.o
+fortran/test/*.mod
 fortran/*.h5
 *.h5
 .project
