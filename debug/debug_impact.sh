@@ -5,13 +5,17 @@ if [[ -z "${HPC_PREDICT_IO_DIR}" ]]; then echo "Error: Environment variable HPC_
 if [[ -z "${HDF5_DIR}" ]]; then echo "Error: Environment variable HDF5_DIR is not set"; exit 1; fi
 if [[ -z "${MPI_MASTER_IMPACT_DIR}" ]]; then echo "Error: Environment variable MPI_MASTER_IMPACT_DIR is not set"; exit 1; fi
 
+# Use proper username as well for SSH login
+MPI_MASTER_HOST=(localhost)
+MPI_WORKER_HOSTS=(localhost)
+#MPI_MASTER_IMPACT_DIR="$(pwd)/.."
 
 # Set MPI environment variable names specific to MPI version
-if mpiexec --version | grep -i openmpi > /dev/null; then
+if ssh ${MPI_MASTER_HOST} mpiexec --version | grep -i openmpi > /dev/null; then
   echo "Using OpenMPI..."
   MPI_RANK=PMIX_RANK
   MPI_SIZE=PMIX_SIZE
-elif mpiexec --version | grep -i mpich > /dev/null; then
+elif ssh ${MPI_MASTER_HOST} mpiexec --version | grep -i mpich > /dev/null; then
   echo "Using MPICH..." 
   MPI_RANK=PMI_RANK
   MPI_SIZE=PMI_SIZE
@@ -29,10 +33,6 @@ esac
 
 set -euxo pipefail
 
-# Use proper username as well for SSH login
-MPI_MASTER_HOST=(localhost)
-MPI_WORKER_HOSTS=(localhost)
-#MPI_MASTER_IMPACT_DIR="$(pwd)/.."
 
 echo "Checking if all MPI hosts are reachable via SSH..."
 ssh ${MPI_MASTER_HOST} exit
