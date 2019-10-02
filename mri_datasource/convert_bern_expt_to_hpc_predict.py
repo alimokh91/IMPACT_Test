@@ -6,6 +6,7 @@ import argparse
 import logging
 import functools
 from mr_io import FlowMRI # Requires adding ../python to PYTHONPATH
+import json
 
 # Parse data input and output directories
 def parse_args():
@@ -32,11 +33,17 @@ if not os.path.exists(args.output):
     os.makedirs(args.output)
 
 # Define time slices (TODO: should be read from a metainformation file e.g. in JSON)
-time_slices = [{"time": 0., "files": glob.glob(args.input + '/*masked.npy')}]
-# time_slices = [{"time": 0.05, "files": glob.glob(args.input + '/*masked.npy')},
-#                {"time": 0.06, "files": glob.glob(args.input + '/*masked.npy')}]
+#time_slices = [{"time": 0., "files": glob.glob(args.input + '/*masked.npy')}]
+#time_slices = [{"time": 0.05, "files": glob.glob(args.input + '/time=0.05/*masked.npy')},
+#{"time": 0.06, "files": glob.glob(args.input + '/time=0.06/*masked.npy')}]
+#exp_protocol={"time_slices":time_slices, "period":0.7}
 
+with open("exp_protocol.json",'r') as exp_protocol_file:
+    exp_protocol = json.load(exp_protocol_file)
 
+time_slices = exp_protocol["time_slices"]
+period = exp_protocol["period"]	
+    
 def read_velocity_time_slice(flist):
     # file list is the list of the n files representing the n repetitions of a specific phase.
 
