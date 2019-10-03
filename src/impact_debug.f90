@@ -32,7 +32,7 @@ PROGRAM impact_debug
 
   IMPLICIT NONE
   
-  character(len=200) :: mri_file_path = "./bern_experimental_dataset_flow_mri.h5"
+!  character(len=200) :: mri_file_path = "./bern_experimental_dataset_flow_mri.h5"
   type(DistFlowMRIPadded) :: mri_inst
 
   INTEGER :: gdb = 0
@@ -45,11 +45,13 @@ PROGRAM impact_debug
 
   CALL impact_core_init
 
+  write(0,*) "Finished initialization. Reading MRI from ",kalman_mri_file_path,"..."
+
   ! Assign domain-padding read from config file (kalman_num_data_voxels_per_process can be used to infer the
   ! size of the data voxel grid per process)
   mri_inst%domain_padding = kalman_domain_padding
   CALL mr_io_read_parallel_flow_padded(MPI_COMM_WORLD, MPI_INFO_NULL, (/NB1,NB2,NB3/), &
-       mri_file_path, mri_inst) 
+       kalman_mri_file_path, mri_inst)
   CALL h5open_f(herror) ! Required as hpc-predict-io closes HDF5 environment with h5close_f
  
   ! The indices in distributed arrays of mri_inst are aligned with the pressure grid x1p/x2p/x3p.

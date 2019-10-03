@@ -111,7 +111,7 @@ MODULE usr_vars
   TYPE(kalman_t), pointer :: kalman_first
 
   ! MRI grid layout parameters
-  
+  character(len=300) :: kalman_mri_file_path
   INTEGER, DIMENSION(3) :: kalman_num_data_voxels_per_process = (/-1, -1, -1/)
   TYPE(DomainPadding) :: kalman_domain_padding
 

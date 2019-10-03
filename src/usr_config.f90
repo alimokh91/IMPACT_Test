@@ -27,8 +27,8 @@
   IMPLICIT NONE
   
   !bbecsek
-  CHARACTER(len=80)        ::  text
-  CHARACTER(len=80)        ::  dummy
+  CHARACTER(len=300)        ::  text
+  CHARACTER(len=300)        ::  dummy
   INTEGER                  ::  ios
 
   !************************** READ config.txt FILE **********************************************************!
@@ -157,7 +157,12 @@
   ! kalman_num_padding_data_voxels_rhs_3
     IF (INDEX(text,'kalman_num_padding_data_voxels_rhs_3' ) == 1) READ(UNIT=text,FMT=*) dummy, &
                                                                   kalman_domain_padding%rhs(3)
-    
+
+  ! kalman_mri_file_path
+    IF (INDEX(text,'kalman_mri_file_path' ) == 1) then
+      kalman_mri_file_path = trim(text(INDEX(text,'/' ):))
+      print *, "Using MRI file ",kalman_mri_file_path," for Kalman filter."
+    end if
 
   !===========================================================================================================
   !=== non-dimensional numbers ===============================================================================
