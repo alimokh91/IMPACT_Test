@@ -114,6 +114,8 @@ def main():
     template_args['dtime_out_kalm'] = '0.2' # Delta time for Kalman-filtered sim.
     template_args['vel_initcond_file_yes'] = 'F' # for DNS set to true, for Kalman-filtered sim. to false
     
+    template_args['kalman_mri_file_path'] = os.path.realpath(args.mri)
+    
     # Load config.txt termplate and instantiate variables
     env = Environment(loader=FileSystemLoader(searchpath=os.path.dirname(args.config)))
     template = env.get_template(os.path.basename(args.config))

@@ -21,7 +21,8 @@ NB1         {{ NB1 }}
 NB2         {{ NB2 }}
 NB3         {{ NB3 }}
 
-# Kalman filtering: dimensions of extended data voxel grid and location of available data to assimilate to
+## Kalman filtering
+# dimensions of extended data voxel grid and location of available data to assimilate to
 # (data voxel grid is conforming with process & "pressure voxel" grid)
 kalman_num_data_voxels_per_process_1  {{ kalman_num_data_voxels_per_process_1 }}
 kalman_num_padding_data_voxels_lhs_1  {{ kalman_num_padding_data_voxels_lhs_1 }}
@@ -32,6 +33,8 @@ kalman_num_padding_data_voxels_rhs_2  {{ kalman_num_padding_data_voxels_rhs_2 }}
 kalman_num_data_voxels_per_process_3  {{ kalman_num_data_voxels_per_process_3 }}
 kalman_num_padding_data_voxels_lhs_3  {{ kalman_num_padding_data_voxels_lhs_3 }}
 kalman_num_padding_data_voxels_rhs_3  {{ kalman_num_padding_data_voxels_rhs_3 }}
+# hpc-predict-io MRI file path
+kalman_mri_file_path                   {{ kalman_mri_file_path }}
 
 Re			3300.
 
