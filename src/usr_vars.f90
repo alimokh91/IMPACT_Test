@@ -110,9 +110,17 @@ MODULE usr_vars
 
   TYPE(kalman_t), pointer :: kalman_first
 
+  ! MRI file paths
+  character(len=300) :: kalman_mri_input_file_path
+  character(len=300) :: kalman_mri_output_file_path
+
+  ! Attributes of input MRI (currently supplied through config due to compiler error in hpc-predict-io)
+  REAL*8 :: kalman_mri_input_attr_t_heart_cycle_period
+
   ! MRI grid layout parameters
-  character(len=300) :: kalman_mri_file_path
   INTEGER, DIMENSION(3) :: kalman_num_data_voxels_per_process = (/-1, -1, -1/)
+  INTEGER :: kalman_num_time_refinements = -1
+  INTEGER, DIMENSION(3) :: kalman_num_spatial_refinements = (/-1, -1, -1/)
   TYPE(DomainPadding) :: kalman_domain_padding
 
 END MODULE usr_vars

@@ -158,10 +158,28 @@
     IF (INDEX(text,'kalman_num_padding_data_voxels_rhs_3' ) == 1) READ(UNIT=text,FMT=*) dummy, &
                                                                   kalman_domain_padding%rhs(3)
 
-  ! kalman_mri_file_path
-    IF (INDEX(text,'kalman_mri_file_path' ) == 1) then
-      kalman_mri_file_path = trim(text(INDEX(text,'/' ):))
-      print *, "Using MRI file ",kalman_mri_file_path," for Kalman filter."
+    IF (INDEX(text,'kalman_num_time_refinements' ) == 1) READ(UNIT=text,FMT=*) dummy, &
+                                                                  kalman_num_time_refinements
+
+    IF (INDEX(text,'kalman_num_spatial_refinements' ) == 1) READ(UNIT=text,FMT=*) dummy, &
+                                                                  kalman_num_spatial_refinements(1), &
+                                                                  kalman_num_spatial_refinements(2), &
+                                                                  kalman_num_spatial_refinements(3)
+
+  ! kalman_mri_input_file_path
+    IF (INDEX(text,'kalman_mri_input_file_path' ) == 1) then
+      kalman_mri_input_file_path = trim(text(INDEX(text,'/' ):))
+      print *, "Using MRI input file ",kalman_mri_input_file_path," for Kalman filter."
+    end if
+
+  ! kalman_mri_output_file_path
+    IF (INDEX(text,'kalman_mri_output_file_path' ) == 1) then
+      kalman_mri_output_file_path = trim(text(INDEX(text,'/' ):))
+      print *, "Using MRI output file ",kalman_mri_output_file_path," for Kalman filter."
+    end if
+
+    IF (INDEX(text,'kalman_mri_input_attr_t_heart_cycle_period' ) == 1) then
+      READ(UNIT=text,FMT=*) dummy, kalman_mri_input_attr_t_heart_cycle_period
     end if
 
   !===========================================================================================================
