@@ -125,11 +125,12 @@ class TestFlowMRI(unittest.TestCase):
     def setUp(self):
         # Initialize the MRI data
         time = np.random.rand(17)
+        time_heart_cycle_period = np.max(time)
         geometry = [np.random.rand(23), np.random.rand(13), np.random.rand(19)]
         intensity = np.random.rand(23,13,19,17)
         velocity_mean = np.random.rand(23,13,19,17,3)
         velocity_cov = np.random.rand(23,13,19,17,3,5)
-        self.mri = FlowMRI(geometry, time, intensity, velocity_mean, velocity_cov)
+        self.mri = FlowMRI(geometry, time, time_heart_cycle_period, intensity, velocity_mean, velocity_cov)
   
     def test_communicator(self):
         # Write HDF5 from Python and read HDF5 from Fortran   
@@ -168,12 +169,13 @@ class TestSegmentedFlowMRI(unittest.TestCase):
     def setUp(self):
         # Initialize the MRI data
         time = np.random.rand(17)
+        time_heart_cycle_period = np.max(time)
         geometry = [np.random.rand(23), np.random.rand(13), np.random.rand(19)]
         intensity = np.random.rand(23,13,19,17)
         velocity_mean = np.random.rand(23,13,19,17,3)
         velocity_cov = np.random.rand(23,13,19,17,3,5)
         segmentation_prob = np.random.rand(23,13,19,17)
-        self.mri = SegmentedFlowMRI(geometry, time, intensity, velocity_mean, 
+        self.mri = SegmentedFlowMRI(geometry, time, time_heart_cycle_period, intensity, velocity_mean, 
                                           velocity_cov, segmentation_prob)
   
     def test_communicator(self):

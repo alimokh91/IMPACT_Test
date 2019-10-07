@@ -46,10 +46,17 @@ program mr_io_test_impact_input
   write(*,*) x3p(1:impact_shape(3)) ! corresponds to M3
 !  write(*,*) "*********************************"
 
-! !TODO: Test MRI padding parameters for Kalman filter
+! Test MRI padding parameters for Kalman filter
   write(*,*) kalman_num_data_voxels_per_process
   write(*,*) kalman_domain_padding%lhs
   write(*,*) kalman_domain_padding%rhs
+
+! Test MRI meta information (including attributes)
+  write(*,*) kalman_mri_input_file_path
+  write(*,*) kalman_mri_output_file_path
+  write(*,*) kalman_num_time_refinements
+  write(*,*) kalman_num_spatial_refinements
+  write(*,*) kalman_mri_input_attr_t_heart_cycle_period
 
    ! This is for interactive testing...
 !  CALL MPI_COMM_RANK(MPI_COMM_WORLD,mr_io_test_mpi_rank,merror)

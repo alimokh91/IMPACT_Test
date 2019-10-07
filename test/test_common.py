@@ -4,6 +4,9 @@ from mr_io_domain_decomp import spatial_hyperslab_dims, spatial_hyperslab_loc, D
 def validate_group_name(test_inst, fort_group_name):
     test_inst.assertEqual(fort_group_name, type(test_inst).mri_group_name)        
 
+def validate_file_path(test_inst, file_path, out_file_path):
+    test_inst.assertEqual(file_path, out_file_path)
+
 # For bidirectional test cases only    
 def validate_array(test_inst, array, out_array):
     test_inst.assertTrue(np.array_equal(out_array.shape, array.shape))        

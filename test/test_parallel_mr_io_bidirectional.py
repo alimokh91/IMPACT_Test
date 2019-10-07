@@ -21,6 +21,8 @@ def write_hdf5_exec_fortran(test_inst):
                             test_cls.filename_mri_out) + \
                             (" %d %d %d %d %d %d " % (*test_cls.num_pad_vox_lhs, *test_cls.num_pad_vox_rhs) \
                              if hasattr(test_cls, "num_pad_vox_lhs") else "") + \
+                            (" %d %d %d %d " % (test_cls.num_time_refinements, *test_cls.num_spatial_refinements) \
+                             if hasattr(test_cls, "num_time_refinements") else "") + \
                             " 1> %s 2> %s " % (test_cls.filename_out_rank % ("${PMI_RANK}"),
                             test_cls.filename_err_rank % ("${PMI_RANK}"))
     fort = sp.run(["mpiexec","-np", "%d" % (test_cls.mpi_proc), \
@@ -156,11 +158,12 @@ class TestFlowMRIBidirectional(unittest.TestCase): # FIXME: coordinates test...
         # Initialize the MRI data
         #geometry = [np.random.rand(4), np.random.rand(2), np.random.rand(7)] 
         time = np.random.rand(11)
+        time_heart_cycle_period = np.max(time)
         geometry = [np.random.rand(67), np.random.rand(43), np.random.rand(29)]
         intensity = np.random.rand(67,43,29,11)        
         velocity_mean = np.random.rand(67,43,29,11,3)        
         velocity_cov = np.random.rand(67,43,29,11,3,5)        
-        self.mri = FlowMRI(geometry, time, intensity, velocity_mean, velocity_cov)
+        self.mri = FlowMRI(geometry, time, time_heart_cycle_period, intensity, velocity_mean, velocity_cov)
         self.mpi_cart_dims = spatial_hyperslab_dims_test(type(self), self.mri.intensity)
    
     def test_communicator(self):
@@ -200,12 +203,13 @@ class TestSegmentedFlowMRIBidirectional(unittest.TestCase): # FIXME: coordinates
         # Initialize the MRI data
         # geometry = [np.random.rand(4), np.random.rand(2), np.random.rand(7)] 
         time = np.random.rand(11)
+        time_heart_cycle_period = np.max(time)
         geometry = [np.random.rand(67), np.random.rand(43), np.random.rand(29)]
         intensity = np.random.rand(67,43,29,11)        
         velocity_mean = np.random.rand(67,43,29,11,3)        
         velocity_cov = np.random.rand(67,43,29,11,3,5)        
         segmentation_prob = np.random.rand(67,43,29,11)        
-        self.mri = SegmentedFlowMRI(geometry, time, intensity, velocity_mean, velocity_cov, segmentation_prob)
+        self.mri = SegmentedFlowMRI(geometry, time, time_heart_cycle_period, intensity, velocity_mean, velocity_cov, segmentation_prob)
         self.mpi_cart_dims = spatial_hyperslab_dims_test(type(self), self.mri.intensity)
   
     def test_communicator(self):
@@ -248,11 +252,12 @@ class TestFlowMRIPaddedBidirectional(unittest.TestCase): # FIXME: coordinates te
         
         # Initialize the MRI data
         time = np.random.rand(11)
+        time_heart_cycle_period = np.max(time)
         geometry = [np.random.rand(67), np.random.rand(43), np.random.rand(29)]
         intensity = np.random.rand(67,43,29,11)        
         velocity_mean = np.random.rand(67,43,29,11,3)        
         velocity_cov = np.random.rand(67,43,29,11,3,5)        
-        self.mri = FlowMRI(geometry, time, intensity, velocity_mean, velocity_cov)
+        self.mri = FlowMRI(geometry, time, time_heart_cycle_period, intensity, velocity_mean, velocity_cov)
         
         self.mpi_cart_dims = spatial_hyperslab_dims_test(type(self), self.mri.intensity)
         
@@ -279,6 +284,76 @@ class TestFlowMRIPaddedBidirectional(unittest.TestCase): # FIXME: coordinates te
         validate_array(self, self.mri.intensity, out_mri.intensity)
         validate_array(self, self.mri.velocity_mean, out_mri.velocity_mean)
         validate_array(self, self.mri.velocity_cov, out_mri.velocity_cov)
+      
+    def tearDown(self):
+        remove_test_files(self)
+
+class TestFlowMRIPaddedToSpaceTimeBidirectional(unittest.TestCase): # FIXME: coordinates test...
+    # number of Fortran MPI processes
+    mpi_proc = 2**3
+  
+    # Filenames
+    filename_prefix = os.environ['FORTRAN_TEST_BINARY_PATH'] + "mr_io_test_parallel_reader_writer_flow_padded_to_space_time"
+
+    filename_exec = filename_prefix
+    filename_mri_in = filename_prefix + "_in.h5"
+    filename_mri_out = filename_prefix + "_out.h5"
+    filename_out_rank = filename_prefix + "_%s.out"
+    filename_err_rank = filename_prefix + "_%s.err"
+  
+    mri_group_name = "flow-mri"
+    
+    padding = (0.5, 0.4, 0.7)
+  
+    def setUp(self):
+        test_cls = type(self)
+        
+        # Initialize the MRI data
+        time = np.random.rand(11)
+        time_heart_cycle_period = np.max(time)
+        geometry = [np.random.rand(67), np.random.rand(43), np.random.rand(29)]
+        intensity = np.random.rand(67,43,29,11)        
+        velocity_mean = np.random.rand(67,43,29,11,3)        
+        velocity_cov = np.random.rand(67,43,29,11,3,5)        
+        self.mri = FlowMRI(geometry, time, time_heart_cycle_period, intensity, velocity_mean, velocity_cov)
+        
+        self.mpi_cart_dims = spatial_hyperslab_dims_test(type(self), self.mri.intensity)
+        
+        test_cls.num_vox = intensity.shape[:3]
+        
+        num_pad_vox = [int(np.ceil(2.*test_cls.padding[i]*test_cls.num_vox[i])) for i in range(3)]
+        
+        num_ext_vox = [((test_cls.num_vox[i] + num_pad_vox[i] + self.mpi_cart_dims[i] -1) // self.mpi_cart_dims[i]) \
+                       * self.mpi_cart_dims[i] for i in range(3)]
+        test_cls.num_pad_vox_lhs = [(num_ext_vox[i]-test_cls.num_vox[i])//2 for i in range(3)]
+        test_cls.num_pad_vox_rhs = [(num_ext_vox[i]-test_cls.num_vox[i]+1)//2 for i in range(3)]
+        test_cls.num_vox_per_proc = [num_ext_vox[i]//self.mpi_cart_dims[i] for i in range(3)]
+        
+        test_cls.num_time_refinements = 3
+        test_cls.num_spatial_refinements= (2,3,3)
+      
+      
+    def test_communicator(self):
+        test_cls = type(self)
+
+        # Write HDF5 from Python and read HDF5 from Fortran   
+        write_hdf5_exec_fortran(self) 
+        
+        out_mri = SpaceTimeMRI.read_hdf5(type(self).filename_mri_out)
+ 
+        for i in range(3):
+            validate_array(self, self.mri.geometry[i], out_mri.geometry[i][::test_cls.num_spatial_refinements[i]])        
+        validate_array(self, self.mri.time, out_mri.time[::test_cls.num_time_refinements])
+        for ix in range(test_cls.num_spatial_refinements[0]):
+            for iy in range(test_cls.num_spatial_refinements[1]):
+                for iz in range(test_cls.num_spatial_refinements[2]):
+                    for it in range(test_cls.num_time_refinements):
+                        validate_array(self, 
+                                       self.mri.velocity_mean, 
+                                       out_mri.voxel_feature[ix::test_cls.num_spatial_refinements[0], \
+                                                             iy::test_cls.num_spatial_refinements[1], \
+                                                             iz::test_cls.num_spatial_refinements[2], \
+                                                             it::test_cls.num_time_refinements,:])
       
     def tearDown(self):
         remove_test_files(self)
