@@ -7,6 +7,7 @@ import logging
 import functools
 from mr_io import FlowMRI # Requires adding ../python to PYTHONPATH
 import json
+import pdb
 
 # Parse data input and output directories
 def parse_args():
@@ -15,7 +16,7 @@ def parse_args():
     # Parse arguments
     parser = argparse.ArgumentParser(description='Generate hpc-predict-io HDF5-message from preprocessed HDF5-files (Bernese experimental dataset).')
     parser.add_argument('--input', type=str, required=True,
-                    help='Directory containing experimental data from Bern (numpy files with coordinates/velocity)')
+                    help='JSON file containing metadata about the  experimental data from Bern (numpy files with coordinates/velocity)')
     parser.add_argument('--output', type=str,  required=True,
                     help='Output directory for HDF5 files')
     parser.add_argument('--log', type=str, default="warn", help="Logging level")
@@ -26,23 +27,18 @@ args = parse_args()
 logging.basicConfig(level=args.log.upper())
 output_filename = args.output + '/bern_experimental_dataset_flow_mri.h5'
 if not os.path.exists(args.input):
-    raise RuntimeError("The path {} does not exist. Exiting...".format(args.input))
+    raise RuntimeError("The file {} does not exist. Exiting...".format(args.input))
 if os.path.exists(output_filename):
     raise RuntimeError("The file {} exists already. Exiting...".format(output_filename))
 if not os.path.exists(args.output):
     os.makedirs(args.output)
 
-# Define time slices (TODO: should be read from a metainformation file e.g. in JSON)
-#time_slices = [{"time": 0., "files": glob.glob(args.input + '/*masked.npy')}]
-#time_slices = [{"time": 0.05, "files": glob.glob(args.input + '/time=0.05/*masked.npy')},
-#{"time": 0.06, "files": glob.glob(args.input + '/time=0.06/*masked.npy')}]
-#exp_protocol={"time_slices":time_slices, "period":0.7}
 
-with open("exp_protocol.json",'r') as exp_protocol_file:
-    exp_protocol = json.load(exp_protocol_file)
+# open JSON file with all the meta data of the experiment (time(=key), path to files(=values for each key))
+with open(args.input,'r') as exp_protocol_file:
+    time_slices = json.load(exp_protocol_file)
 
-time_slices = exp_protocol["time_slices"]
-period = exp_protocol["period"]	
+time_str = list(time_slices.keys())
     
 def read_velocity_time_slice(flist):
     # file list is the list of the n files representing the n repetitions of a specific phase.
@@ -77,7 +73,8 @@ def read_velocity_time_slice(flist):
         # iterations
         k = k+1
         #print(k)
-
+    
+    print('calculated mean')
     FU_mean = FU_mean / k
     FV_mean = FV_mean / k
     FW_mean = FW_mean / k
@@ -262,7 +259,10 @@ def convert_spatial_to_time_slice(voxel_feature):
 
 
 # Read coordinates from ALL files involved (checking that they are all identical)
-X_coord, Y_coord, Z_coord = read_coordinates_checked(functools.reduce(lambda x, y: x+y, [time_slice["files"] for time_slice in time_slices], []))
+#X_coord, Y_coord, Z_coord = read_coordinates_checked(functools.reduce(lambda x, y: x+y, [time_slice["files"] for time_slice in time_slices], []))
+
+X_coord, Y_coord, Z_coord = read_coordinates_checked(functools.reduce(lambda x, y: x+y, [time_slices[times] for times in time_str], []))
+
 # Compute conversion of file velocities/covariances to spatial layout used in hpc-predict-io without time dimension
 geometry, convert_scalar_to_spatial, convert_vector_to_spatial, convert_matrix_to_spatial = get_geometry_and_spatial_conversion(X_coord, Y_coord, Z_coord)
 
@@ -282,9 +282,10 @@ velocity_mean = []
 velocity_cov = []
 
 # Iteratively collect velocity measurements over each time slice
-for time_slice in time_slices:
-    time.append(time_slice["time"])
-    vel_mean_from_file, vel_cov_from_file = read_velocity_time_slice(time_slice["files"])
+for times in time_str:
+    print('reading files at time: ',times)
+    time.append(float(times))
+    vel_mean_from_file, vel_cov_from_file = read_velocity_time_slice(time_slices[times])
     velocity_mean.append(convert_vector_to_spatial(vel_mean_from_file))
     velocity_cov.append(convert_matrix_to_spatial(vel_cov_from_file))
 

@@ -2,38 +2,46 @@ import os
 import glob
 import argparse
 import logging
+import re
+import numpy as np
+import pdb
+import json
 
 # Parse data input and output directories
 def parse_args():
     #input_path  = "./bern_data_experiments_source/"
-    #output_path = "./bern_data_experiments_hpc_predict/"
+    #output_file = "bern_data_experiments_metadata.json"
     # Parse arguments
     parser = argparse.ArgumentParser(description='Generate hpc-predict-io HDF5-message from preprocessed HDF5-files (Bernese experimental dataset).')
     parser.add_argument('--input', type=str, required=True,
                     help='Directory containing experimental data from Bern (numpy files with coordinates/velocity)')
     parser.add_argument('--output', type=str,  required=True,
-                    help='Output directory for HDF5 files')
+                    help='Output name of json file')
     parser.add_argument('--log', type=str, default="warn", help="Logging level")
     return parser.parse_args()
 
 
+
 args = parse_args()
 logging.basicConfig(level=args.log.upper())
-output_filename = args.output + '/bern_experimental_dataset_flow_mri.h5'
 if not os.path.exists(args.input):
     raise RuntimeError("The path {} does not exist. Exiting...".format(args.input))
-#if os.path.exists(output_filename):
-#    raise RuntimeError("The file {} exists already. Exiting...".format(output_filename))
-if not os.path.exists(args.output):
-    os.makedirs(args.output)
-#import pdb
-#pdb.set_trace()
+if os.path.exists(args.output):
+    raise RuntimeError("The file {} exists already. Exiting...".format(args.output))
 
-# Define time slices (TODO: should be read from a metainformation file e.g. in JSON)
-#time_slices = [{"time": 0., "files": glob.glob(args.input + '/*masked.npy')}]
-time_slices = [{"time": 0.05, "files": glob.glob(args.input + '/time=0.05/*masked.npy')},
-{"time": 0.06, "files": glob.glob(args.input + '/time=0.06/*masked.npy')}]
-exp_protocol={"time_slices":time_slices, "period":0.7}
-import json
-with open("exp_protocol.json",'w') as exp_protocol_file:
-    json.dump(exp_protocol,exp_protocol_file)
+# Read from input path the path to each phase folder and sort them
+paths_to_phases = glob.glob(args.input + 'testData/time*/')
+paths_to_phases.sort()
+time_slices = {}
+
+# create a dictionary where the key is the time of each phase and the value is an array containing paths to all the files in this phase
+for p in range(0,len(paths_to_phases)):
+    time = re.search('time=(.*?)/',paths_to_phases[p]).group(1)
+    paths_to_files = glob.glob(paths_to_phases[p] + 'data/*masked.npy')
+    paths_to_files.sort()
+    time_slices[time] = paths_to_files
+
+exp_protocol={"time_slices":time_slices}
+
+with open(args.output,'w') as exp_protocol_file:
+    json.dump(time_slices,exp_protocol_file)

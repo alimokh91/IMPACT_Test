@@ -7,7 +7,7 @@ DATASOURCE_FILENAME=bern_data_experiments.zip
 
 if [ ! -d $DATASOURCE_DIR ]; then
   echo "Downloading files and extracting them to $(pwd)/${DATASOURCE_DIR} directory." 
-  wget -O ${DATASOURCE_FILENAME} https://www.dropbox.com/sh/dv94nnhlt9veo9m/AAABxGfQw9i_nLDNbTJPNqT1a?dl=1
+  wget -O ${DATASOURCE_FILENAME} https://www.dropbox.com/s/ko4uv8tpee2o4pe/exp_data_all_timeslices.zip?dl=0
   unzip ${DATASOURCE_FILENAME} -d ${DATASOURCE_DIR}
   rm ${DATASOURCE_FILENAME}
 else
