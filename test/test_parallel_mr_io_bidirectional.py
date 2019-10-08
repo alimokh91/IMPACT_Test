@@ -3,7 +3,7 @@ import subprocess as sp
 import os
 import numpy as np
 from mr_io import SpatialMRI, SpaceTimeMRI, FlowMRI, SegmentedFlowMRI
-from test_common import spatial_hyperslab_dims_test, validate_group_name, validate_array
+from test_common import spatial_hyperslab_dims_test, validate_group_name, validate_array, validate_replicated_mri_coordinates, validate_refined_mri_vector_array
 
 def write_hdf5_exec_fortran(test_inst):
     test_cls = type(test_inst)
@@ -21,8 +21,8 @@ def write_hdf5_exec_fortran(test_inst):
                             test_cls.filename_mri_out) + \
                             (" %d %d %d %d %d %d " % (*test_cls.num_pad_vox_lhs, *test_cls.num_pad_vox_rhs) \
                              if hasattr(test_cls, "num_pad_vox_lhs") else "") + \
-                            (" %d %d %d %d " % (test_cls.num_time_refinements, *test_cls.num_spatial_refinements) \
-                             if hasattr(test_cls, "num_time_refinements") else "") + \
+                            (" %d %d %d %d " % (test_cls.tr, *test_cls.sr) \
+                             if hasattr(test_cls, "sr") and hasattr(test_cls, "tr")  else "") + \
                             " 1> %s 2> %s " % (test_cls.filename_out_rank % ("${PMI_RANK}"),
                             test_cls.filename_err_rank % ("${PMI_RANK}"))
     fort = sp.run(["mpiexec","-np", "%d" % (test_cls.mpi_proc), \
@@ -286,7 +286,8 @@ class TestFlowMRIPaddedBidirectional(unittest.TestCase): # FIXME: coordinates te
         validate_array(self, self.mri.velocity_cov, out_mri.velocity_cov)
       
     def tearDown(self):
-        remove_test_files(self)
+        remove_test_files(self)    
+
 
 class TestFlowMRIPaddedToSpaceTimeBidirectional(unittest.TestCase): # FIXME: coordinates test...
     # number of Fortran MPI processes
@@ -329,31 +330,18 @@ class TestFlowMRIPaddedToSpaceTimeBidirectional(unittest.TestCase): # FIXME: coo
         test_cls.num_pad_vox_rhs = [(num_ext_vox[i]-test_cls.num_vox[i]+1)//2 for i in range(3)]
         test_cls.num_vox_per_proc = [num_ext_vox[i]//self.mpi_cart_dims[i] for i in range(3)]
         
-        test_cls.num_time_refinements = 3
-        test_cls.num_spatial_refinements= (2,3,3)
+        test_cls.tr = 3
+        test_cls.sr= (2,3,3)
       
       
     def test_communicator(self):
-        test_cls = type(self)
-
         # Write HDF5 from Python and read HDF5 from Fortran   
         write_hdf5_exec_fortran(self) 
         
         out_mri = SpaceTimeMRI.read_hdf5(type(self).filename_mri_out)
- 
-        for i in range(3):
-            validate_array(self, self.mri.geometry[i], out_mri.geometry[i][::test_cls.num_spatial_refinements[i]])        
-        validate_array(self, self.mri.time, out_mri.time[::test_cls.num_time_refinements])
-        for ix in range(test_cls.num_spatial_refinements[0]):
-            for iy in range(test_cls.num_spatial_refinements[1]):
-                for iz in range(test_cls.num_spatial_refinements[2]):
-                    for it in range(test_cls.num_time_refinements):
-                        validate_array(self, 
-                                       self.mri.velocity_mean, 
-                                       out_mri.voxel_feature[ix::test_cls.num_spatial_refinements[0], \
-                                                             iy::test_cls.num_spatial_refinements[1], \
-                                                             iz::test_cls.num_spatial_refinements[2], \
-                                                             it::test_cls.num_time_refinements,:])
+        
+        validate_replicated_mri_coordinates(self, self.mri, out_mri)        
+        validate_refined_mri_vector_array(self, self.mri.velocity_mean, out_mri.voxel_feature)
       
     def tearDown(self):
         remove_test_files(self)
