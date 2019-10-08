@@ -10,12 +10,19 @@ MPI_MASTER_HOST=(localhost)
 MPI_WORKER_HOSTS=(localhost)
 #MPI_MASTER_IMPACT_DIR="$(pwd)/.."
 
+if echo ${MPI_MASTER_HOST} | grep -i gpucandoit > /dev/null; then
+  # TODO for Dario/Derick - fix the following line to load correct modules 
+  MPI_EXEC_COMMAND="module load mpi hdf5; mpiexec"
+else
+  MPI_EXEC_COMMAND="mpiexec"
+fi
+
 # Set MPI environment variable names specific to MPI version
-if ssh ${MPI_MASTER_HOST} mpiexec --version | grep -i openmpi > /dev/null; then
+if ssh ${MPI_MASTER_HOST} bash -l -c \"${MPI_EXEC_COMMAND} --version \" | grep -i openmpi > /dev/null; then
   echo "Using OpenMPI..."
   MPI_RANK=PMIX_RANK
   MPI_SIZE=PMIX_SIZE
-elif ssh ${MPI_MASTER_HOST} mpiexec --version | grep -i mpich > /dev/null; then
+elif ssh ${MPI_MASTER_HOST} bash -l -c \"${MPI_EXEC_COMMAND} --version \" | grep -i mpich > /dev/null; then
   echo "Using MPICH..." 
   MPI_RANK=PMI_RANK
   MPI_SIZE=PMI_SIZE
@@ -73,9 +80,10 @@ echo "Starting IMPACT debugger version over MPI..."
 # Write PIDs and MPI ranks to file that is read again by cssh
 #mpiexec -np $(( ${#MPI_HOSTS[@]}*${NUM_MPI_PROCESSES_PER_HOST} )) bash -c "echo \"Hello from MPI rank \${${MPI_RANK}} on \$(hostname) with PID \$(echo \$\$)!\"; flock -x -w 5 ${IMPACT_DEBUG_INFO_DIR}/mpi_processes echo \"\${${MPI_RANK}} \$(echo \$\$)\" >> ${IMPACT_DEBUG_INFO_DIR}/mpi_processes; cd ../prog; export LD_LIBRARY_PATH=${HDF5_DIR}/lib; exec ./impact_debug.exe" & 
 
-sh_command="echo \\\"Hello from MPI rank \\\${${MPI_RANK}} on \\\$(hostname) with PID \\\$(echo \\\$\\\$)!\\\"; echo \\\"\\\${${MPI_RANK}} \\\$(echo \\\$\\\$)\\\" >> ${IMPACT_DEBUG_INFO_DIR}/\\\$(hostname)/mpi_processes/\\\${${MPI_RANK}}; cd ${MPI_MASTER_IMPACT_DIR}/prog; export LD_LIBRARY_PATH=${HDF5_DIR}/lib; exec ./impact_debug.exe"
+SH_ESC="\\\\\\"
+sh_command="echo ${SH_ESC}\"Hello from MPI rank ${SH_ESC}\${${MPI_RANK}} on ${SH_ESC}\$(hostname) with PID ${SH_ESC}\$(echo ${SH_ESC}\$${SH_ESC}\$)!${SH_ESC}\"; echo ${SH_ESC}\"${SH_ESC}\${${MPI_RANK}} ${SH_ESC}\$(echo ${SH_ESC}\$${SH_ESC}\$)${SH_ESC}\" >> ${IMPACT_DEBUG_INFO_DIR}/${SH_ESC}\$(hostname)/mpi_processes/${SH_ESC}\${${MPI_RANK}}; cd ${MPI_MASTER_IMPACT_DIR}/prog; export LD_LIBRARY_PATH=${HDF5_DIR}/lib; exec ./impact_debug.exe"
 echo "sh_command=\"${sh_command}\""
-ssh ${MPI_MASTER_HOST} mpiexec -np $(( ${#MPI_WORKER_HOSTS[@]}*${NUM_MPI_PROCESSES_PER_HOST} )) bash -c \"${sh_command}\"  &
+ssh ${MPI_MASTER_HOST} bash -l -c \"${MPI_EXEC_COMMAND} -np $(( ${#MPI_WORKER_HOSTS[@]}*${NUM_MPI_PROCESSES_PER_HOST} )) bash -c \\\"${sh_command}\\\"\"  &
 IMPACT_MPI_MASTER_PID=$!
 
 # Not needed for mpi_processes an associative array
