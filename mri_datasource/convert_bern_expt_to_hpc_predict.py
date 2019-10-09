@@ -18,24 +18,29 @@ def parse_args():
     parser.add_argument('--input', type=str, required=True,
                     help='JSON file containing metadata about the  experimental data from Bern (numpy files with coordinates/velocity)')
     parser.add_argument('--output', type=str,  required=True,
-                    help='Output directory for HDF5 files')
+                    help='Name of output file in hpc-predict-io HDF5 format')
     parser.add_argument('--log', type=str, default="warn", help="Logging level")
     return parser.parse_args()
 
 
 args = parse_args()
 logging.basicConfig(level=args.log.upper())
-output_filename = args.output + '/bern_experimental_dataset_flow_mri.h5'
+output_filename = os.path.realpath(args.output)
+
 if not os.path.exists(args.input):
     raise RuntimeError("The file {} does not exist. Exiting...".format(args.input))
-if os.path.exists(output_filename):
-    raise RuntimeError("The file {} exists already. Exiting...".format(output_filename))
-if not os.path.exists(args.output):
-    os.makedirs(args.output)
+if os.path.exists(args.output):
+    raise RuntimeError("The file {} exists already. Exiting...".format(args.output))
+if args.output[-3:] != '.h5':
+    raise RuntimeError("The file {} does not end with '.h5'. Exiting...".format(args.output))
+if not os.path.exists(os.path.dirname(os.path.realpath(args.output))):
+    os.makedirs(os.path.dirname(os.path.realpath(args.output)))
 
+output_filename = os.path.realpath(args.output)
+os.chdir(os.path.dirname(args.input))
 
 # open JSON file with all the meta data of the experiment (time(=key), path to files(=values for each key))
-with open(args.input,'r') as exp_protocol_file:
+with open(os.path.basename(args.input),'r') as exp_protocol_file:
     exp_protocol = json.load(exp_protocol_file)
 
 time_slices = exp_protocol["time_slices"]
