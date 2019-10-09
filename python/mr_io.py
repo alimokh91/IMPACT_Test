@@ -78,6 +78,9 @@ def validate_spacetime_matrix_feature(cls, geometry, time, voxel_feature):
         logging.warning("Constructing {} with non-3x3-dimensional matrix field (instead {}x{}-dimensional)".format(cls.__name__, voxel_feature.shape[4], voxel_feature.shape[5]))                
         
 
+def write_group_attribute(grp, name, value):
+    grp.attrs[name] = value
+    
 def write_space_time_coordinates(grp, geometry, time):
     for i, coord_name in enumerate(["x_coordinates", "y_coordinates", "z_coordinates"]):
         grp.create_dataset(coord_name, geometry[i].shape, data=geometry[i], dtype=geometry[i].dtype)
@@ -165,7 +168,7 @@ class FlowMRI:
 
     group_name = "flow-mri"
     
-    def __init__(self, geometry: List[np.ndarray], time: np.ndarray, intensity: np.ndarray, velocity_mean: np.ndarray, velocity_cov: np.ndarray):
+    def __init__(self, geometry: List[np.ndarray], time: np.ndarray, time_heart_cycle_period: float, intensity: np.ndarray, velocity_mean: np.ndarray, velocity_cov: np.ndarray):
         """Voxel-based parameters must be specified in (x,y,z,t,i)-order, Fortran will treat it in (i,t,x,y,z)-order.
            The index i is used as the component index (i.e. between 0..2 for mean and 0..5 for covariance of velocity field)
         """
@@ -176,6 +179,7 @@ class FlowMRI:
 
         self.geometry = geometry
         self.time = time
+        self.time_heart_cycle_period = time_heart_cycle_period
         self.intensity= intensity
         self.velocity_mean = velocity_mean
         self.velocity_cov= velocity_cov
@@ -189,6 +193,7 @@ class FlowMRI:
         with h5py.File(path, "w") as f:
             # here comes the actual serialization code (transposition to use Fortran memory layout)
             grp = f.create_group(FlowMRI.group_name)
+            write_group_attribute(grp, "t_heart_cycle_period", self.time_heart_cycle_period)
             write_space_time_coordinates(grp, self.geometry, self.time)
             write_space_time_voxel_scalar_feature(grp, "intensity", self.intensity)
             write_space_time_voxel_feature(grp, "velocity_mean", self.velocity_mean)
@@ -198,9 +203,15 @@ class FlowMRI:
         """Read MRI from file at path as hpc-predict-io HDF5-format"""
         with h5py.File(path, "r") as f:
             # here comes the actual deserialization code
+            if "t_heart_cycle_period" not in f[FlowMRI.group_name].attrs:
+                logging.warn("Reading a FlowMRI with t_heart_cycle_period not set - using None in Python object.")
+                time_heart_cycle_period = None
+            else:
+                time_heart_cycle_period = f[FlowMRI.group_name].attrs["t_heart_cycle_period"]
             return FlowMRI(geometry=[f[FlowMRI.group_name][coord_name][()] \
                                           for coord_name in ["x_coordinates", "y_coordinates", "z_coordinates"]],
                                 time=f[FlowMRI.group_name]["t_coordinates"][()],
+                                time_heart_cycle_period=time_heart_cycle_period,
                                 intensity=f[FlowMRI.group_name]["intensity"][()].transpose((2,1,0,3)),
                                 velocity_mean=f[FlowMRI.group_name]["velocity_mean"][()].transpose((2,1,0,3,4)),
                                 velocity_cov=f[FlowMRI.group_name]["velocity_cov"][()].transpose((2,1,0,3,5,4)))
@@ -230,7 +241,7 @@ class SegmentedFlowMRI:
 
     group_name = "segmented-flow-mri"
     
-    def __init__(self, geometry: List[np.ndarray], time: np.ndarray, intensity: np.ndarray, velocity_mean: np.ndarray, velocity_cov: np.ndarray, segmentation_prob: np.ndarray):
+    def __init__(self, geometry: List[np.ndarray], time: np.ndarray, time_heart_cycle_period: float, intensity: np.ndarray, velocity_mean: np.ndarray, velocity_cov: np.ndarray, segmentation_prob: np.ndarray):
         """Voxel-based parameters must be specified in (x,y,z,t,i)-order, Fortran will treat it in (i,t,x,y,z)-order.
            The index i is used as the component index (i.e. between 0..2 for mean and 0..5 for covariance of velocity field)
         """
@@ -242,6 +253,7 @@ class SegmentedFlowMRI:
 
         self.geometry = geometry
         self.time = time
+        self.time_heart_cycle_period = time_heart_cycle_period
         self.intensity= intensity
         self.velocity_mean = velocity_mean
         self.velocity_cov= velocity_cov
@@ -256,6 +268,7 @@ class SegmentedFlowMRI:
         with h5py.File(path, "w") as f:
             # here comes the actual serialization code (transposition to use Fortran memory layout)
             grp = f.create_group(SegmentedFlowMRI.group_name)
+            write_group_attribute(grp, "t_heart_cycle_period", self.time_heart_cycle_period)
             write_space_time_coordinates(grp, self.geometry, self.time)
             write_space_time_voxel_scalar_feature(grp, "intensity", self.intensity)
             write_space_time_voxel_feature(grp, "velocity_mean", self.velocity_mean)
@@ -266,9 +279,15 @@ class SegmentedFlowMRI:
         """Read MRI from file at path as hpc-predict-io HDF5-format"""
         with h5py.File(path, "r") as f:
             # here comes the actual deserialization code
+            if "t_heart_cycle_period" not in f[SegmentedFlowMRI.group_name].attrs:
+                logging.warn("Reading a SegmentedFlowMRI with t_heart_cycle_period not set - using None in Python object.")
+                time_heart_cycle_period = None
+            else:
+                time_heart_cycle_period = f[SegmentedFlowMRI.group_name].attrs["t_heart_cycle_period"]
             return SegmentedFlowMRI(geometry=[f[SegmentedFlowMRI.group_name][coord_name][()] \
                                           for coord_name in ["x_coordinates", "y_coordinates", "z_coordinates"]],
                                 time=f[SegmentedFlowMRI.group_name]["t_coordinates"][()],
+                                time_heart_cycle_period=time_heart_cycle_period,
                                 intensity=f[SegmentedFlowMRI.group_name]["intensity"][()].transpose((2,1,0,3)),
                                 velocity_mean=f[SegmentedFlowMRI.group_name]["velocity_mean"][()].transpose((2,1,0,3,4)),
                                 velocity_cov=f[SegmentedFlowMRI.group_name]["velocity_cov"][()].transpose((2,1,0,3,5,4)),

@@ -5,6 +5,11 @@ use hdf5
 implicit none
 public
 
+type DomainPadding
+     integer, dimension(3) :: lhs
+     integer, dimension(3) :: rhs
+end type
+
 ! ************************ SpatialMRI ************************
 
 character(len=100) :: SpatialMRI_group_name = "spatial-mri"
@@ -91,6 +96,12 @@ type DistSpacetimeMRI
 end type
 
 
+type DistSpacetimeMRIPadded
+     type(DistSpacetimeMRI) :: mri
+     type(DomainPadding) :: domain_padding
+end type
+
+
 ! ************************ FlowMRI ************************
 
 character(len=100) :: FlowMRI_group_name = "flow-mri"
@@ -134,11 +145,6 @@ type DistFlowMRI
      type(DistSpacetimeScalarFeature) :: intensity
      type(DistSpacetimeFeature) :: velocity_mean
      type(DistSpacetimeMatrixFeature) :: velocity_cov
-end type
-
-type DomainPadding
-     integer, dimension(3) :: lhs
-     integer, dimension(3) :: rhs
 end type
 
 type DistFlowMRIPadded

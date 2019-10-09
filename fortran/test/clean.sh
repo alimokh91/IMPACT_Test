@@ -26,4 +26,6 @@ rm  *.mod \
     mr_io_test_parallel_reader_flow_with_padding \
     mr_io_test_parallel_reader_writer_segmented_flow \
     mr_io_test_parallel_reader_writer_flow_padded \
+    mr_io_test_parallel_reader_writer_flow_padded_to_space_time \
     mr_io_test_impact_input \
+    mr_io_test_impact_mri \

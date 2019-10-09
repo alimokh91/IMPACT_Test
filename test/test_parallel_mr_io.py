@@ -256,11 +256,12 @@ class TestFlowMRI(unittest.TestCase): # FIXME: coordinates test...
     def setUp(self):
         # Initialize the MRI data
         time = np.random.rand(11)
+        time_heart_cycle_period = np.max(time)
         geometry = [np.random.rand(67), np.random.rand(43), np.random.rand(29)]
         intensity = np.random.rand(67,43,29,11)        
         velocity_mean = np.random.rand(67,43,29,11,3)        
         velocity_cov = np.random.rand(67,43,29,11,3,5)        
-        self.mri = FlowMRI(geometry, time, intensity, velocity_mean, velocity_cov)
+        self.mri = FlowMRI(geometry, time, time_heart_cycle_period, intensity, velocity_mean, velocity_cov)
         self.mpi_cart_dims = spatial_hyperslab_dims_test(type(self), self.mri.intensity)
  
      
@@ -307,12 +308,13 @@ class TestSegmentedFlowMRI(unittest.TestCase): # FIXME: coordinates test...
     def setUp(self):
         # Initialize the MRI data
         time = np.random.rand(11)
+        time_heart_cycle_period = np.max(time)
         geometry = [np.random.rand(67), np.random.rand(43), np.random.rand(29)]
         intensity = np.random.rand(67,43,29,11)        
         velocity_mean = np.random.rand(67,43,29,11,3)        
         velocity_cov = np.random.rand(67,43,29,11,3,5)        
         segmentation_prob = np.random.rand(67,43,29,11)        
-        self.mri = SegmentedFlowMRI(geometry, time, intensity, velocity_mean, velocity_cov, segmentation_prob)
+        self.mri = SegmentedFlowMRI(geometry, time, time_heart_cycle_period, intensity, velocity_mean, velocity_cov, segmentation_prob)
         self.mpi_cart_dims = spatial_hyperslab_dims_test(type(self), self.mri.intensity)
  
      
@@ -363,11 +365,12 @@ class TestFlowMRIPadded(unittest.TestCase): # FIXME: coordinates test...
         
         # Initialize the MRI data
         time = np.random.rand(11)
+        time_heart_cycle_period = np.max(time)
         geometry = [np.random.rand(67), np.random.rand(43), np.random.rand(29)]
         intensity = np.random.rand(67,43,29,11)        
         velocity_mean = np.random.rand(67,43,29,11,3)        
         velocity_cov = np.random.rand(67,43,29,11,3,5)        
-        self.mri = FlowMRI(geometry, time, intensity, velocity_mean, velocity_cov)
+        self.mri = FlowMRI(geometry, time, time_heart_cycle_period, intensity, velocity_mean, velocity_cov)
         
         self.mpi_cart_dims = spatial_hyperslab_dims_test(type(self), self.mri.intensity)
         

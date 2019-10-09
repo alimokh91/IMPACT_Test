@@ -33,8 +33,14 @@ kalman_num_padding_data_voxels_rhs_2  {{ kalman_num_padding_data_voxels_rhs_2 }}
 kalman_num_data_voxels_per_process_3  {{ kalman_num_data_voxels_per_process_3 }}
 kalman_num_padding_data_voxels_lhs_3  {{ kalman_num_padding_data_voxels_lhs_3 }}
 kalman_num_padding_data_voxels_rhs_3  {{ kalman_num_padding_data_voxels_rhs_3 }}
-# hpc-predict-io MRI file path
-kalman_mri_file_path                   {{ kalman_mri_file_path }}
+kalman_num_time_refinements           {{ kalman_num_time_refinements }}
+kalman_num_spatial_refinements        {{ kalman_num_spatial_refinements }}
+# hpc-predict-io MRI file paths
+kalman_mri_input_file_path                   {{ kalman_mri_input_file_path }}
+kalman_mri_output_file_path                  {{ kalman_mri_output_file_path }}
+
+# MRI attributes currently have to be supplied through the config file due to compiler error in hpc-predict-io
+kalman_mri_input_attr_t_heart_cycle_period   {{ kalman_mri_input_attr_t_heart_cycle_period }}
 
 Re			3300.
 

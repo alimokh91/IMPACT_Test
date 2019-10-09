@@ -9,8 +9,10 @@ import argparse
 def main():
     # parse arguments
     parser = argparse.ArgumentParser(description='Generate IMPACT input configuration file from MRI HDF5-message.')
-    parser.add_argument('--mri', type=str,
+    parser.add_argument('--input-mri', type=str,
                         help='hpc-predict-io file containting MRI')
+    parser.add_argument('--output-mri', type=str,
+                        help='hpc-predict-io file containing fluid simulation results from assimilation to MRI')
     parser.add_argument('--sr', type=int, nargs=3,
                     help='Number of spatial refinements along each dimension compared to MRI grid')
     parser.add_argument('--padding', type=float, nargs=3, default=(0.,0.,0.),
@@ -25,7 +27,7 @@ def main():
     args = parser.parse_args()
 
     # Read MRI
-    mri = FlowMRI.read_hdf5(args.mri)
+    mri = FlowMRI.read_hdf5(args.input_mri)
     
     for i in range(3):
         if len(mri.geometry[i]) == 1:
@@ -102,6 +104,8 @@ def main():
         template_args['kalman_num_padding_data_voxels_lhs_%d' % (i+1)]  = num_padding_voxels_lhs[i]
         template_args['kalman_num_padding_data_voxels_rhs_%d' % (i+1)]  = num_padding_voxels_rhs[i]
     
+    template_args['kalman_num_time_refinements'] = args.tr
+    template_args['kalman_num_spatial_refinements'] = " ".join([str(sr) for sr in args.sr])
 
     template_args['time_start'] = mri.time[0]   # 0.
     template_args['time_end']   = mri.time[-1]  # 5000.
@@ -114,7 +118,11 @@ def main():
     template_args['dtime_out_kalm'] = '0.2' # Delta time for Kalman-filtered sim.
     template_args['vel_initcond_file_yes'] = 'F' # for DNS set to true, for Kalman-filtered sim. to false
     
-    template_args['kalman_mri_file_path'] = os.path.realpath(args.mri)
+    # For now temporary solution to pass meta-information due to internal compiler error with hpc-predict-io/fortran
+    template_args['kalman_mri_input_attr_t_heart_cycle_period'] = mri.time_heart_cycle_period
+    
+    template_args['kalman_mri_input_file_path'] = os.path.realpath(args.input_mri)
+    template_args['kalman_mri_output_file_path'] = os.path.realpath(args.output_mri)
     
     # Load config.txt termplate and instantiate variables
     env = Environment(loader=FileSystemLoader(searchpath=os.path.dirname(args.config)))

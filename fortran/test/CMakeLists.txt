@@ -32,10 +32,11 @@ foreach(file
     mr_io_test_parallel_reader_writer_space_time
     mr_io_test_parallel_reader_writer_flow
     mr_io_test_parallel_reader_writer_flow_padded
+    mr_io_test_parallel_reader_writer_flow_padded_to_space_time
     mr_io_test_parallel_reader_writer_segmented_flow
 )
   add_executable(${file} ${file}.f90 mr_io_test_arg_parser.f90)
-  target_compile_options(${file} PUBLIC -cpp -g -fbacktrace)
+  target_compile_options(${file} PUBLIC -cpp -g -fbacktrace -ffree-line-length-0)
   target_link_libraries(${file} hpc-predict-io)
   set_target_properties(${file} PROPERTIES INSTALL_RPATH_USE_LINK_PATH TRUE)
   install(TARGETS ${file}
@@ -52,13 +53,19 @@ if (EXISTS $ENV{IMPACT_DIR})
 	
     set( IMPACT_DEPS libm.so libdl.so libz.so libblas.so liblapack.so )
     
-    add_executable(mr_io_test_impact_input mr_io_test_impact_input.f90)
-    target_link_libraries(mr_io_test_impact_input PRIVATE ${IMPACT_LIBRARIES} ${IMPACT_DEPS} ${HDF5_LIBRARIES} hpc-predict-io)
-    target_link_libraries(mr_io_test_impact_input PRIVATE -L$ENV{IMPACT_DIR} )
-    target_include_directories(mr_io_test_impact_input PRIVATE $ENV{IMPACT_DIR} ${HDF5_INCLUDES} )
-    set_target_properties(mr_io_test_impact_input PROPERTIES INSTALL_RPATH_USE_LINK_PATH TRUE)	
-    install(TARGETS mr_io_test_impact_input
-	        RUNTIME DESTINATION bin/test)
+    foreach(file 
+        mr_io_test_impact_input
+        mr_io_test_impact_mri
+        )
+	    add_executable(${file} ${file}.f90)
+        target_compile_options(${file} PUBLIC -cpp -g -fbacktrace -ffree-line-length-0)
+	    target_link_libraries(${file} PRIVATE ${IMPACT_LIBRARIES} ${IMPACT_DEPS} ${HDF5_LIBRARIES} hpc-predict-io)
+	    target_link_libraries(${file} PRIVATE -L$ENV{IMPACT_DIR} )
+	    target_include_directories(${file} PRIVATE $ENV{IMPACT_DIR} ${HDF5_INCLUDES} )
+	    set_target_properties(${file} PROPERTIES INSTALL_RPATH_USE_LINK_PATH TRUE)	
+	    install(TARGETS ${file}
+		        RUNTIME DESTINATION bin/test)
+	endforeach()
 else ()
     message("Could not find IMPACT... skipping IMPACT startup tests.")
 endif ()

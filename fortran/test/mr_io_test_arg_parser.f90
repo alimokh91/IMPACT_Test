@@ -11,6 +11,9 @@ module mr_io_test_arg_parser
     integer, dimension(3) :: domain_padding_lhs
     integer, dimension(3) :: domain_padding_rhs
 
+    integer :: simulation_time_refinement
+    integer, dimension(3) :: simulation_spatial_refinement
+
 contains
 
 ! Sequential tests
@@ -103,6 +106,8 @@ end subroutine mr_io_test_parse_args_parallel_reader_writer
 
 subroutine mr_io_test_parse_args_parallel_reader_padded
 
+    implicit none
+
     character(len=100) :: pad_lhs_1_c
     character(len=100) :: pad_lhs_2_c
     character(len=100) :: pad_lhs_3_c
@@ -110,6 +115,14 @@ subroutine mr_io_test_parse_args_parallel_reader_padded
     character(len=100) :: pad_rhs_1_c
     character(len=100) :: pad_rhs_2_c
     character(len=100) :: pad_rhs_3_c
+
+    integer :: pad_lhs_1
+    integer :: pad_lhs_2
+    integer :: pad_lhs_3
+
+    integer :: pad_rhs_1
+    integer :: pad_rhs_2
+    integer :: pad_rhs_3
 
     call mr_io_test_parse_args_parallel_reader()
 
@@ -136,6 +149,8 @@ end subroutine mr_io_test_parse_args_parallel_reader_padded
 
 subroutine mr_io_test_parse_args_parallel_reader_writer_padded
 
+    implicit none
+
     character(len=100) :: pad_lhs_1_c
     character(len=100) :: pad_lhs_2_c
     character(len=100) :: pad_lhs_3_c
@@ -143,6 +158,14 @@ subroutine mr_io_test_parse_args_parallel_reader_writer_padded
     character(len=100) :: pad_rhs_1_c
     character(len=100) :: pad_rhs_2_c
     character(len=100) :: pad_rhs_3_c
+
+    integer :: pad_lhs_1
+    integer :: pad_lhs_2
+    integer :: pad_lhs_3
+
+    integer :: pad_rhs_1
+    integer :: pad_rhs_2
+    integer :: pad_rhs_3
 
     call mr_io_test_parse_args_parallel_reader_writer()
 
@@ -167,5 +190,36 @@ subroutine mr_io_test_parse_args_parallel_reader_writer_padded
 
 end subroutine mr_io_test_parse_args_parallel_reader_writer_padded
 
+
+subroutine mr_io_test_parse_args_parallel_reader_writer_padded_to_st
+
+    implicit none
+
+    character(len=100) :: t_refinement_c
+    character(len=100) :: x_refinement_c
+    character(len=100) :: y_refinement_c
+    character(len=100) :: z_refinement_c
+
+    integer :: t_refinement
+    integer :: x_refinement
+    integer :: y_refinement
+    integer :: z_refinement
+
+    call mr_io_test_parse_args_parallel_reader_writer_padded()
+
+    call get_command_argument(12, t_refinement_c)
+    call get_command_argument(13, x_refinement_c)
+    call get_command_argument(14, y_refinement_c)
+    call get_command_argument(15, z_refinement_c)
+
+    read(t_refinement_c,*)t_refinement
+    read(x_refinement_c,*)x_refinement
+    read(y_refinement_c,*)y_refinement
+    read(z_refinement_c,*)z_refinement
+
+    simulation_time_refinement = t_refinement
+    simulation_spatial_refinement = (/ x_refinement, y_refinement, z_refinement /)
+
+end subroutine mr_io_test_parse_args_parallel_reader_writer_padded_to_st
 
 end module mr_io_test_arg_parser
