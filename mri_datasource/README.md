@@ -7,7 +7,7 @@ Download Bern experimental data and convert it to hpc-predict-io format
 source python/venv/bin/activate
 cd mri_datasource
 ./fetch_bern_experimental_data.sh
-python generate_bern_expt_metadata.py --input bern_data_experiments_source/ --output metadata.json
+python generate_bern_exp_meta_info.py --input bern_data_experiments_source/ --output metadata.json
 PYTHONPATH=../python/ python  convert_bern_expt_to_hpc_predict.py --input metadata.json --output bern_data_experiments_hpc_predict/
 ```
 
