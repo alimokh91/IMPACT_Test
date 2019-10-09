@@ -30,7 +30,7 @@ if os.path.exists(args.output):
     raise RuntimeError("The file {} exists already. Exiting...".format(args.output))
 
 # Read from input path the path to each phase folder and sort them
-paths_to_phases = glob.glob(args.input + 'testData/time*/')
+paths_to_phases = glob.glob(args.input + 'exp_data_all_timeslices/time*/')
 paths_to_phases.sort()
 time_slices = {}
 
@@ -41,7 +41,8 @@ for p in range(0,len(paths_to_phases)):
     paths_to_files.sort()
     time_slices[time] = paths_to_files
 
-exp_protocol={"time_slices":time_slices,"heart_cycle_period":0.75}
+heart_cycle_period = 60/70
+exp_protocol={"time_slices":time_slices,"heart_cycle_period":heart_cycle_period}
 
 with open(args.output,'w') as exp_protocol_file:
     #json.dump(time_slices,exp_protocol_file)

@@ -36,13 +36,13 @@ if not os.path.exists(args.output):
 
 # open JSON file with all the meta data of the experiment (time(=key), path to files(=values for each key))
 with open(args.input,'r') as exp_protocol_file:
-    #time_slices = json.load(exp_protocol_file)
     exp_protocol = json.load(exp_protocol_file)
 
 time_slices = exp_protocol["time_slices"]
-time_heart_cycle_period = exp_protocol["heart_cycle_period"]
+heart_cycle_period = exp_protocol["heart_cycle_period"]
 time_str = list(time_slices.keys())
-    
+time_str.sort()
+
 def read_velocity_time_slice(flist):
     # file list is the list of the n files representing the n repetitions of a specific phase.
 
@@ -132,7 +132,7 @@ def read_velocity_time_slice(flist):
         #print(k)
 
     R = R/k
-
+    print('Max R value:',np.amax(R))
     return np.stack([FU_mean, FV_mean, FW_mean], axis=1) , R
 
     # output_dir = os.path.realpath(args.output)
@@ -300,6 +300,7 @@ velocity_cov = np.stack(velocity_cov, axis=3)
 # Write flow MRI
 flow_mri = FlowMRI(geometry=geometry,
                    time=time,
+		   time_heart_cycle_period=heart_cycle_period,
                    intensity=np.zeros(velocity_mean.shape[:-1]),
                    velocity_mean=velocity_mean,
                    velocity_cov=velocity_cov)
