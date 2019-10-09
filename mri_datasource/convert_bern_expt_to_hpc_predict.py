@@ -36,8 +36,11 @@ if not os.path.exists(args.output):
 
 # open JSON file with all the meta data of the experiment (time(=key), path to files(=values for each key))
 with open(args.input,'r') as exp_protocol_file:
-    time_slices = json.load(exp_protocol_file)
+    #time_slices = json.load(exp_protocol_file)
+    exp_protocol = json.load(exp_protocol_file)
 
+time_slices = exp_protocol["time_slices"]
+time_heart_cycle_period = exp_protocol["heart_cycle_period"]
 time_str = list(time_slices.keys())
     
 def read_velocity_time_slice(flist):

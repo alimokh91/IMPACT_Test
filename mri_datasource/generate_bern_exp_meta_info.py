@@ -41,7 +41,8 @@ for p in range(0,len(paths_to_phases)):
     paths_to_files.sort()
     time_slices[time] = paths_to_files
 
-exp_protocol={"time_slices":time_slices}
+exp_protocol={"time_slices":time_slices,"heart_cycle_period":0.75}
 
 with open(args.output,'w') as exp_protocol_file:
-    json.dump(time_slices,exp_protocol_file)
+    #json.dump(time_slices,exp_protocol_file)
+    json.dump(exp_protocol,exp_protocol_file)
