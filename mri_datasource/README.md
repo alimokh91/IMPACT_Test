@@ -18,4 +18,8 @@ cd bern_data_experiments_hpc_predict/
 PYTHONPATH=../../ python ../../python/mr_io_impact_config.py --input-mri bern_experimental_dataset_flow_mri.h5 --output-mri  bern_experimental_dataset_assimilation_results.h5 --sr 2 2 2 --padding 0.5 0.5 0.5 --tr 2 --config ../../python/config.txt.j2 --output config.txt --np 4
 ```
 
-As of the first version, you can then copy both config.txt and bern_experimental_dataset_flow_mri.h5 to the prog directory of IMPACT and start impact_debug.exe from there.
+As of the first version, you can then copy both config.txt and bern_experimental_dataset_flow_mri.h5 to the prog directory of IMPACT and start impact_debug.exe from there or start impact_debug.exe directly in the bern_data_experiments_hpc_predict directory (make sure it is not spinning in the gdb-debug-loop) using
+
+```
+mpiexec -np 4 .../IMPACT/prog/impact_debug.exe
+```
