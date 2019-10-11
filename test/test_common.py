@@ -1,6 +1,5 @@
 import numpy as np
 from mr_io_domain_decomp import spatial_hyperslab_dims, spatial_hyperslab_loc, DomainPadding
-from astor.source_repr import begin_delim
 
 def validate_group_name(test_inst, fort_group_name):
     test_inst.assertEqual(fort_group_name, type(test_inst).mri_group_name)        
@@ -71,7 +70,7 @@ def validate_refined_mri_coordinates(test_inst, in_mri, out_mri):
         validate_array_approx(test_inst, in_mri.time, out_mri.time[j::test_cls.tr])
 
 
-def validate_refined_mri_vector_array(test_inst, in_array, out_array):
+def validate_replicated_mri_vector_array(test_inst, in_array, out_array):
     test_cls = type(test_inst)
     for ix in range(test_cls.sr[0]):
         for iy in range(test_cls.sr[1]):

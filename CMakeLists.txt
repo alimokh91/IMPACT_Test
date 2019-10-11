@@ -34,4 +34,8 @@ add_test(NAME impact_integration WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} COMMAND
     FORTRAN_TEST_BINARY_PATH=${CMAKE_INSTALL_PREFIX}/bin/test/
     PYTHONPATH=${CMAKE_CURRENT_SOURCE_DIR}/python
     python ${CMAKE_CURRENT_SOURCE_DIR}/test/test_impact_integration.py)
+#add_test(NAME data_integration WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} COMMAND ${CMAKE_COMMAND} -E env
+#    FORTRAN_TEST_BINARY_PATH=${CMAKE_INSTALL_PREFIX}/bin/test/
+#    PYTHONPATH=${CMAKE_CURRENT_SOURCE_DIR}/python
+#    python ${CMAKE_CURRENT_SOURCE_DIR}/test/test_data_integration.py)
 

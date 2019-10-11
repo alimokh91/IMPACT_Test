@@ -3,7 +3,7 @@ import subprocess as sp
 import os
 import numpy as np
 from mr_io import SpatialMRI, SpaceTimeMRI, FlowMRI, SegmentedFlowMRI
-from test_common import spatial_hyperslab_dims_test, validate_group_name, validate_array, validate_replicated_mri_coordinates, validate_refined_mri_vector_array
+from test_common import spatial_hyperslab_dims_test, validate_group_name, validate_array, validate_replicated_mri_coordinates, validate_replicated_mri_vector_array
 
 def write_hdf5_exec_fortran(test_inst):
     test_cls = type(test_inst)
@@ -341,7 +341,7 @@ class TestFlowMRIPaddedToSpaceTimeBidirectional(unittest.TestCase): # FIXME: coo
         out_mri = SpaceTimeMRI.read_hdf5(type(self).filename_mri_out)
         
         validate_replicated_mri_coordinates(self, self.mri, out_mri)        
-        validate_refined_mri_vector_array(self, self.mri.velocity_mean, out_mri.voxel_feature)
+        validate_replicated_mri_vector_array(self, self.mri.velocity_mean, out_mri.voxel_feature)
       
     def tearDown(self):
         remove_test_files(self)
