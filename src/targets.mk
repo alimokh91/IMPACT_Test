@@ -39,9 +39,9 @@ portable:       $(BUILD_TARGET)
 # target for Cray XC30 (Piz Daint, 5272 8-core SandyBridge 64-bit CPU compute nodes, 5272 NVidia Tesla K20X w/ 6GB memory)
 xc30:	COMP = ftn
 xc30:	INCL = -I$(HDF5_DIR)/include -I$(HPC_PREDICT_IO_DIR)/include
-xc30:	LIBS = -L$(HDF5_DIR)/lib -L$(HPC_PREDICT_IO_DIR)/lib -lhdf5_fortran -lhdf5_hl -lhdf5 -lz -lm -ldl
+xc30:	LIBS = -L$(HDF5_DIR)/lib -L$(HPC_PREDICT_IO_DIR)/lib -lhpc-predict-io -lhdf5_fortran -lhdf5_hl -lhdf5 -lz -lm -ldl
 xc30:	OPT1 = -ffree-form -ffree-line-length-none -cpp -fdefault-real-8 \
-	-g -O2
+	-g -O0
 #	-O3 -ffast-math -funroll-all-loops -fpeel-loops -ftracer -funswitch-loops \
 #	-ftree-vectorize -funsafe-math-optimizations -fomit-frame-pointer -fno-math-errno
 xc30:	OPT2 = $(OPT1) -xf95-cpp-input
