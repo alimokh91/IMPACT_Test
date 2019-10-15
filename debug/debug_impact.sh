@@ -30,10 +30,16 @@ elif echo ${MPI_MASTER_HOST} | grep -i daint > /dev/null; then
   SSH_WORKER_PROXY="" #ProxyCommand=ssh -q -Y daint.cscs.ch -W %h:%p"
   # TODO: Debug job allocation, writing shell_env_alloc.sh on MPI_MASTER_HOST and MPI_WORKER_HOSTS initialization
   # Currently on Piz Daint perform the following steps:
-  # 1. salloc  --nodes=4 --partition=debug --time=00:30:00 -C gpu (assuming that you already have a valid config.txt/MRIs)
-  # 2. cd ~/; declare -x > shell_env_alloc.sh; cd -;
-  # 3. Display allocated nodes: scontrol show job <jobid-allocated-above>
-  # 4. Update MPI_WORKER_HOSTS above accordingly
+  # 1. Put the following line in your ~/.ssh/config: 
+  #    Host nid*
+  #    User <your-username>
+  #    ControlMaster no
+  #    StrictHostKeyChecking no
+  #    ProxyCommand ssh -q -W "%h:%p" daint
+  # 2. salloc  --nodes=<desired-num-nodes> --partition=debug --time=00:30:00 -C gpu (assuming that you already have a valid config.txt/MRIs)
+  # 3.. cd ~/; declare -x > shell_env_alloc.sh; cd -;
+  # 4.. Display allocated nodes: scontrol show job <jobid-allocated-above>
+  # 5. Update MPI_WORKER_HOSTS above accordingly
 else
   MPI_WORKER_HOSTS=(localhost)
   MPI_EXEC_COMMAND="mpiexec"
