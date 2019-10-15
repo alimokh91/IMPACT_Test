@@ -105,7 +105,9 @@ def read_velocity_time_slice(flist):
         X_coord = np.array(data[:,0])
         Y_coord = np.array(data[:,1])
         Z_coord = np.array(data[:,2])
-
+        X_coord = X_coord*1e-3
+        Y_coord = Y_coord*1e-3
+        Z_coord = Z_coord*1e-3
         if k == 0:
             # allocate
 
@@ -168,6 +170,7 @@ def read_coordinates(fname):
     """Reads coordinates from a single numpy file
     """
     coords = np.load(fname)[:,:3]
+    coords = coords*1e-3
     if np.isnan(coords[:,:3]).any():
         raise ValueError("NaN-values in coordinates of file %s" % fname)
     return coords[:,0], coords[:,1], coords[:,2]
@@ -188,6 +191,7 @@ def check_if_coordinates_are_identical(flist):
     # Check coordinates for equality in all files
     for fname in flist:
         data = np.load(fname)
+        data = data*1e-3
         if not np.equal(np.stack([X_coord, Y_coord, Z_coord], axis=1), data[:,:3]).all():
             raise ValueError("Inconsistent coordinates between files %s and %s" % (fname_ref, fname))
 
