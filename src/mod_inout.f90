@@ -82,6 +82,8 @@ MODULE mod_inout
   CHARACTER(LEN=2)       ::  id
   CHARACTER(LEN=1)       ::  conc_number
   CHARACTER(LEN=50)      ::  write_dir
+
+  REAL :: write_field(b1L:(N1+b1U),b2L:(N2+b2U),b3L:(N3+b3U),1:6)
   
   IF (rank == 0) WRITE(*,'(a)') 'writing fields ...'
   
@@ -299,87 +301,112 @@ MODULE mod_inout
   END IF
   !===========================================================================================================
 
-  IF (write_covariance_yes) THEN
-    IF (dtime_out_kalm .GT. 0.0) THEN
-      !===========================================================================================================
-      !=== write means_ and covariances_fields for visualization =================================================
-      !===========================================================================================================
-      CALL num_to_string(2,phase,id)
-      write_dir = './kf_result/phase_'//id//'/'
+  IF (write_covariance_yes .and. dtime_out_kalm .GT. 0.0) THEN
+    !===========================================================================================================
+    !=== write means_ and covariances_fields for visualization =================================================
+    !===========================================================================================================
+    CALL num_to_string(2,phase,id)
+    write_dir = './kf_result/phase_'//id//'/'
 
-      write_mean(:,:,:,:) = mean_gbl(phase,:,:,:,:)
-      write_covar(:,:,:,1) = covar_gbl(phase,:,:,:,1) - mean_gbl(phase,:,:,:,1)*mean_gbl(phase,:,:,:,1)
-      write_covar(:,:,:,2) = covar_gbl(phase,:,:,:,2) - mean_gbl(phase,:,:,:,2)*mean_gbl(phase,:,:,:,2)
-      write_covar(:,:,:,3) = covar_gbl(phase,:,:,:,3) - mean_gbl(phase,:,:,:,3)*mean_gbl(phase,:,:,:,3)
-      write_covar(:,:,:,4) = covar_gbl(phase,:,:,:,4) - mean_gbl(phase,:,:,:,1)*mean_gbl(phase,:,:,:,2)
-      write_covar(:,:,:,5) = covar_gbl(phase,:,:,:,5) - mean_gbl(phase,:,:,:,1)*mean_gbl(phase,:,:,:,3)
-      write_covar(:,:,:,6) = covar_gbl(phase,:,:,:,6) - mean_gbl(phase,:,:,:,2)*mean_gbl(phase,:,:,:,3)
+    write_field = 0.
+    write_field(:,:,:,1:3) = mean_gbl(phase,:,:,:,1:3)
+    CALL write_hdf(trim(write_dir)//'kalmanX_'//id,'meanX',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_field(b1L,b2L,b3L,1))
+    CALL write_hdf(trim(write_dir)//'kalmanY_'//id,'meanY',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_field(b1L,b2L,b3L,2))
+    CALL write_hdf(trim(write_dir)//'kalmanZ_'//id,'meanZ',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_field(b1L,b2L,b3L,3))
 
-      CALL write_hdf(trim(write_dir)//'kalmanX_'//id,'meanX',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_mean(b1L,b2L,b3L,1))
-      CALL write_hdf(trim(write_dir)//'kalmanY_'//id,'meanY',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_mean(b1L,b2L,b3L,2))
-      CALL write_hdf(trim(write_dir)//'kalmanZ_'//id,'meanZ',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_mean(b1L,b2L,b3L,3))
-      CALL write_hdf(trim(write_dir)//'kalmanXX_'//id,'RSS_XX',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_covar(b1L,b2L,b3L,1))
-      CALL write_hdf(trim(write_dir)//'kalmanYY_'//id,'RSS_YY',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_covar(b1L,b2L,b3L,2))
-      CALL write_hdf(trim(write_dir)//'kalmanZZ_'//id,'RSS_ZZ',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_covar(b1L,b2L,b3L,3))
-      CALL write_hdf(trim(write_dir)//'kalmanXY_'//id,'RSS_XY',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_covar(b1L,b2L,b3L,4))
-      CALL write_hdf(trim(write_dir)//'kalmanXZ_'//id,'RSS_XZ',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_covar(b1L,b2L,b3L,5))
-      CALL write_hdf(trim(write_dir)//'kalmanYZ_'//id,'RSS_YZ',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_covar(b1L,b2L,b3L,6))
-      CALL write_hdf(trim(write_dir)//'kalman_gain_XX_'//count_char,'gainXX',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_gain(b1L,b2L,b3L,1))
-      CALL write_hdf(trim(write_dir)//'kalman_gain_YY_'//count_char,'gainYY',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_gain(b1L,b2L,b3L,2))
-      CALL write_hdf(trim(write_dir)//'kalman_gain_ZZ_'//count_char,'gainZZ',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_gain(b1L,b2L,b3L,3))
-      CALL write_hdf(trim(write_dir)//'kalman_gain_XY_'//count_char,'gainXY',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_gain(b1L,b2L,b3L,4))
-      CALL write_hdf(trim(write_dir)//'kalman_gain_XZ_'//count_char,'gainXZ',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_gain(b1L,b2L,b3L,5))
-      CALL write_hdf(trim(write_dir)//'kalman_gain_YZ_'//count_char,'gainYZ',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_gain(b1L,b2L,b3L,6))
-    END IF
+    write_field = 0.
+    write_field(:,:,:,1) = covar_gbl(phase,:,:,:,1) - mean_gbl(phase,:,:,:,1)*mean_gbl(phase,:,:,:,1)
+    write_field(:,:,:,2) = covar_gbl(phase,:,:,:,2) - mean_gbl(phase,:,:,:,2)*mean_gbl(phase,:,:,:,2)
+    write_field(:,:,:,3) = covar_gbl(phase,:,:,:,3) - mean_gbl(phase,:,:,:,3)*mean_gbl(phase,:,:,:,3)
+    write_field(:,:,:,4) = covar_gbl(phase,:,:,:,4) - mean_gbl(phase,:,:,:,1)*mean_gbl(phase,:,:,:,2)
+    write_field(:,:,:,5) = covar_gbl(phase,:,:,:,5) - mean_gbl(phase,:,:,:,1)*mean_gbl(phase,:,:,:,3)
+    write_field(:,:,:,6) = covar_gbl(phase,:,:,:,6) - mean_gbl(phase,:,:,:,2)*mean_gbl(phase,:,:,:,3)
+    CALL write_hdf(trim(write_dir)//'kalmanXX_'//id,'RSS_XX',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_field(b1L,b2L,b3L,1))
+    CALL write_hdf(trim(write_dir)//'kalmanYY_'//id,'RSS_YY',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_field(b1L,b2L,b3L,2))
+    CALL write_hdf(trim(write_dir)//'kalmanZZ_'//id,'RSS_ZZ',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_field(b1L,b2L,b3L,3))
+    CALL write_hdf(trim(write_dir)//'kalmanXY_'//id,'RSS_XY',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_field(b1L,b2L,b3L,4))
+    CALL write_hdf(trim(write_dir)//'kalmanXZ_'//id,'RSS_XZ',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_field(b1L,b2L,b3L,5))
+    CALL write_hdf(trim(write_dir)//'kalmanYZ_'//id,'RSS_YZ',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_field(b1L,b2L,b3L,6))
 
+
+    CALL write_hdf(trim(write_dir)//'kalman_gain_XX_'//count_char,'gainXX',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_gain(b1L,b2L,b3L,1))
+    CALL write_hdf(trim(write_dir)//'kalman_gain_YY_'//count_char,'gainYY',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_gain(b1L,b2L,b3L,2))
+    CALL write_hdf(trim(write_dir)//'kalman_gain_ZZ_'//count_char,'gainZZ',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_gain(b1L,b2L,b3L,3))
+    CALL write_hdf(trim(write_dir)//'kalman_gain_XY_'//count_char,'gainXY',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_gain(b1L,b2L,b3L,4))
+    CALL write_hdf(trim(write_dir)//'kalman_gain_XZ_'//count_char,'gainXZ',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_gain(b1L,b2L,b3L,5))
+    CALL write_hdf(trim(write_dir)//'kalman_gain_YZ_'//count_char,'gainYZ',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_gain(b1L,b2L,b3L,6))
+  END IF
+
+  IF (write_covariance_yes .and. dtime_out_scal .GT. 0.0) THEN
     !===========================================================================================================
     !write fluctuations_fields for visualization
     !===========================================================================================================
-    IF (dtime_out_scal .GT. 0.0) THEN
-      stats_group => stats_group_first
-      do while(associated(stats_group))
-         write_mean = 0.
-         write_covar = 0.
-         stats => stats_group%stats_first
-         do while(associated(stats))
-            do i = 1,stats%m
-               write_mean(stats%x(i),stats%y(i),stats%z(i),1)  = stats%mean_xyzt(phase,1)
-               write_mean(stats%x(i),stats%y(i),stats%z(i),2)  = stats%mean_xyzt(phase,2)
-               write_mean(stats%x(i),stats%y(i),stats%z(i),3)  = stats%mean_xyzt(phase,3)
-               write_covar(stats%x(i),stats%y(i),stats%z(i),1) = stats%covar_xyzt(phase,1) - stats%mean_xyzt(phase,1)*stats%mean_xyzt(phase,1)
-               write_covar(stats%x(i),stats%y(i),stats%z(i),2) = stats%covar_xyzt(phase,2) - stats%mean_xyzt(phase,2)*stats%mean_xyzt(phase,2)
-               write_covar(stats%x(i),stats%y(i),stats%z(i),3) = stats%covar_xyzt(phase,3) - stats%mean_xyzt(phase,3)*stats%mean_xyzt(phase,3)
-               write_covar(stats%x(i),stats%y(i),stats%z(i),4) = stats%covar_xyzt(phase,4) - stats%mean_xyzt(phase,1)*stats%mean_xyzt(phase,2)
-               write_covar(stats%x(i),stats%y(i),stats%z(i),5) = stats%covar_xyzt(phase,5) - stats%mean_xyzt(phase,1)*stats%mean_xyzt(phase,3)
-               write_covar(stats%x(i),stats%y(i),stats%z(i),6) = stats%covar_xyzt(phase,6) - stats%mean_xyzt(phase,2)*stats%mean_xyzt(phase,3)
-            end do
-            stats => stats%next
-         end do
+    stats_group => stats_group_first
+    do while(associated(stats_group))
 
-         CALL num_to_string(2,stats_group%group_id,id)
-         write_dir = './data_'//id//'/'
+       CALL num_to_string(2,stats_group%group_id,id)
+       write_dir = './data_'//id//'/'
 
-         CALL write_hdf(trim(write_dir)//'dataX_'//count_char,'meanX', &
-                             S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_mean(b1L,b2L,b3L,1))
-         CALL write_hdf(trim(write_dir)//'dataY_'//count_char,'meanY', &
-                             S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_mean(b1L,b2L,b3L,2))
-         CALL write_hdf(trim(write_dir)//'dataZ_'//count_char,'meanZ', &
-                             S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_mean(b1L,b2L,b3L,3))
-         CALL write_hdf(trim(write_dir)//'dataXX_'//count_char,'covarXX', &
-                             S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_covar(b1L,b2L,b3L,1))
-         CALL write_hdf(trim(write_dir)//'dataYY_'//count_char,'covarYY', &
-                             S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_covar(b1L,b2L,b3L,2))
-         CALL write_hdf(trim(write_dir)//'dataZZ_'//count_char,'covarZZ', &
-                             S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_covar(b1L,b2L,b3L,3))
-         !CALL write_hdf(trim(write_dir)//'dataXY_'//count_char,'covarXY', &
-         !              S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_covar(b1L,b2L,b3L,4))
-         !CALL write_hdf(trim(write_dir)//'dataXZ_'//count_char,'covarXZ', &
-         !              S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_covar(b1L,b2L,b3L,5))
-         !CALL write_hdf(trim(write_dir)//'dataYZ_'//count_char,'covarYZ', &
-         !              S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_covar(b1L,b2L,b3L,6))
-         stats_group => stats_group%next
-      end do
-    END IF
+       write_field = 0.
+       stats => stats_group%stats_first
+       do while(associated(stats))
+          do i = 1,stats%m
+             write_field(stats%x(i),stats%y(i),stats%z(i),1)  = stats%mean_xyzt(phase,1)
+             write_field(stats%x(i),stats%y(i),stats%z(i),2)  = stats%mean_xyzt(phase,2)
+             write_field(stats%x(i),stats%y(i),stats%z(i),3)  = stats%mean_xyzt(phase,3)
+          end do
+          stats => stats%next
+       end do
+       CALL write_hdf(trim(write_dir)//'dataX_'//count_char,'meanX',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_field(b1L,b2L,b3L,1))
+       CALL write_hdf(trim(write_dir)//'dataY_'//count_char,'meanY',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_field(b1L,b2L,b3L,2))
+       CALL write_hdf(trim(write_dir)//'dataZ_'//count_char,'meanZ',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_field(b1L,b2L,b3L,3))
+
+       write_field = 0.
+       stats => stats_group%stats_first
+       do while(associated(stats))
+          do i = 1,stats%m
+             write_field(stats%x(i),stats%y(i),stats%z(i),1) = stats%covar_xyzt(phase,1) - stats%mean_xyzt(phase,1)*stats%mean_xyzt(phase,1)
+             write_field(stats%x(i),stats%y(i),stats%z(i),2) = stats%covar_xyzt(phase,2) - stats%mean_xyzt(phase,2)*stats%mean_xyzt(phase,2)
+             write_field(stats%x(i),stats%y(i),stats%z(i),3) = stats%covar_xyzt(phase,3) - stats%mean_xyzt(phase,3)*stats%mean_xyzt(phase,3)
+             write_field(stats%x(i),stats%y(i),stats%z(i),4) = stats%covar_xyzt(phase,4) - stats%mean_xyzt(phase,1)*stats%mean_xyzt(phase,2)
+             write_field(stats%x(i),stats%y(i),stats%z(i),5) = stats%covar_xyzt(phase,5) - stats%mean_xyzt(phase,1)*stats%mean_xyzt(phase,3)
+             write_field(stats%x(i),stats%y(i),stats%z(i),6) = stats%covar_xyzt(phase,6) - stats%mean_xyzt(phase,2)*stats%mean_xyzt(phase,3)
+          end do
+          stats => stats%next
+       end do
+       CALL write_hdf(trim(write_dir)//'dataXX_'//count_char,'covarXX',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_field(b1L,b2L,b3L,1))
+       CALL write_hdf(trim(write_dir)//'dataYY_'//count_char,'covarYY',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_field(b1L,b2L,b3L,2))
+       CALL write_hdf(trim(write_dir)//'dataZZ_'//count_char,'covarZZ',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_field(b1L,b2L,b3L,3))
+       CALL write_hdf(trim(write_dir)//'dataXY_'//count_char,'covarXY',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_field(b1L,b2L,b3L,4))
+       CALL write_hdf(trim(write_dir)//'dataXZ_'//count_char,'covarXZ',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_field(b1L,b2L,b3L,5))
+       CALL write_hdf(trim(write_dir)//'dataYZ_'//count_char,'covarYZ',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_field(b1L,b2L,b3L,6))
+
+       stats_group => stats_group%next
+    end do
+
+    CALL num_to_string(2,phase,id)
+    write_dir = './stats_result/phase_'//id//'/'
+
+    write_field = 0.
+    write_field(:,:,:,1:3) = mean_gbl(phase,:,:,:,1:3)
+    CALL write_hdf(trim(write_dir)//'statsX_'//id,'meanX',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_field(b1L,b2L,b3L,1))
+    CALL write_hdf(trim(write_dir)//'statsY_'//id,'meanY',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_field(b1L,b2L,b3L,2))
+    CALL write_hdf(trim(write_dir)//'statsZ_'//id,'meanZ',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_field(b1L,b2L,b3L,3))
+
+    write_field = 0.
+    write_field(:,:,:,1) = covar_gbl(phase,:,:,:,1) - mean_gbl(phase,:,:,:,1)*mean_gbl(phase,:,:,:,1)
+    write_field(:,:,:,2) = covar_gbl(phase,:,:,:,2) - mean_gbl(phase,:,:,:,2)*mean_gbl(phase,:,:,:,2)
+    write_field(:,:,:,3) = covar_gbl(phase,:,:,:,3) - mean_gbl(phase,:,:,:,3)*mean_gbl(phase,:,:,:,3)
+    write_field(:,:,:,4) = covar_gbl(phase,:,:,:,4) - mean_gbl(phase,:,:,:,1)*mean_gbl(phase,:,:,:,2)
+    write_field(:,:,:,5) = covar_gbl(phase,:,:,:,5) - mean_gbl(phase,:,:,:,1)*mean_gbl(phase,:,:,:,3)
+    write_field(:,:,:,6) = covar_gbl(phase,:,:,:,6) - mean_gbl(phase,:,:,:,2)*mean_gbl(phase,:,:,:,3)
+    CALL write_hdf(trim(write_dir)//'statsXX_'//id,'RSS_XX',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_field(b1L,b2L,b3L,1))
+    CALL write_hdf(trim(write_dir)//'statsYY_'//id,'RSS_YY',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_field(b1L,b2L,b3L,2))
+    CALL write_hdf(trim(write_dir)//'statsZZ_'//id,'RSS_ZZ',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_field(b1L,b2L,b3L,3))
+    CALL write_hdf(trim(write_dir)//'statsXY_'//id,'RSS_XY',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_field(b1L,b2L,b3L,4))
+    CALL write_hdf(trim(write_dir)//'statsXZ_'//id,'RSS_XZ',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_field(b1L,b2L,b3L,5))
+    CALL write_hdf(trim(write_dir)//'statsYZ_'//id,'RSS_YZ',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_field(b1L,b2L,b3L,6))
+
   END IF
 
   write_count    = write_count   + 1
@@ -680,8 +707,9 @@ MODULE mod_inout
   CALL write_hdf_infoREAL(1         ,.TRUE. ,attr_yes,'time_out_kalm'    ,scalar=time_out_kalm    )
   CALL write_hdf_infoREAL(1         ,.TRUE. ,attr_yes,'dtime_out_kalm'   ,scalar=dtime_out_kalm   )
   CALL write_hdf_infoLOG (1         ,.TRUE. ,attr_yes,'write_out_kalm'   ,scalar=write_out_kalm   )
-  CALL write_hdf_infoINT (intervals ,.FALSE.,attr_yes,'repetition'       ,array =repetition      )
-
+  IF (ALLOCATED(repetition)) then
+     CALL write_hdf_infoINT (intervals ,.FALSE.,attr_yes,'repetition'       ,array =repetition(1:intervals)   )
+  END IF 
   !-----------------------------------------------------------------------------------------------------------
   ! Select hyperslab in the file space / memory space:
   CALL h5sselect_hyperslab_f(filespace,H5S_SELECT_SET_F,offset_file,dims_data,herror)
@@ -1576,7 +1604,9 @@ MODULE mod_inout
   CALL read_hdf_infoREAL(1,.TRUE. ,attr_yes,'time_out_kalm'    ,scalar=time_out_kalm    )
   CALL read_hdf_infoREAL(1,.TRUE. ,attr_yes,'dtime_out_kalm'   ,scalar=dtime_out_kalm   )
   CALL read_hdf_infoLOG (1,.TRUE. ,attr_yes,'write_out_kalm'   ,scalar=write_out_kalm   )
-  CALL read_hdf_infoINT (intervals,.FALSE.,attr_yes,'repetition',array =repetition      )
+  IF (ALLOCATED(repetition)) then
+     CALL read_hdf_infoINT (intervals,.FALSE.,attr_yes,'repetition',array =repetition      )
+  END IF
  
   !-----------------------------------------------------------------------------------------------------------
   CALL h5dclose_f(dset_id,herror)
@@ -3596,6 +3626,7 @@ MODULE mod_inout
       IF (dtime_out_kalm .GT. 0.0) THEN
         CALL num_to_string(2,phase,id)
         write_dir = './kf_result/phase_'//id//'/'
+          write(*,*) id
           !--- Mean -------------------------------------------------------------------------------------------------------------------------------------------------------
           !--- data_X
           WRITE(xmf,fmt1) '        <Attribute Name="Mean_X" Center="Node">'

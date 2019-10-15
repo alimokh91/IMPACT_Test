@@ -41,20 +41,19 @@ CHARACTER(LEN=2) ::  id_char
 CHARACTER(LEN=3) ::  M1_char
 CHARACTER(LEN=3) ::  M2_char
 CHARACTER(LEN=3) ::  M3_char
+CHARACTER(LEN=2) ::  phs
 !=============================================================================================================
 
-ALLOCATE(i_data(S1p:N1p,S2p:N2p,S3p:N3p)); i_data = 0
 ALLOCATE(mean_gbl(1:intervals,b1L:(N1+b1U),b2L:(N2+b2U),b3L:(N3+b3U),1:3)); mean_gbl = 0.
-ALLOCATE(mean_gbl(1:intervals,b1L:(N1+b1U),b2L:(N2+b2U),b3L:(N3+b3U),1:3)); mean_gbl = 0.
-ALLOCATE(write_mean(b1L:(N1+b1U),b2L:(N2+b2U),b3L:(N3+b3U),1:3)); write_mean = 0.
-ALLOCATE(write_fluct(b1L:(N1+b1U),b2L:(N2+b2U),b3L:(N3+b3U),1:3)); write_fluct = 0.
-ALLOCATE(write_covar(b1L:(N1+b1U),b2L:(N2+b2U),b3L:(N3+b3U),1:6)); write_covar = 0.
+ALLOCATE(covar_gbl(1:intervals,b1L:(N1+b1U),b2L:(N2+b2U),b3L:(N3+b3U),1:6)); covar_gbl = 0.
 
+ALLOCATE(i_data(S1p:N1p,S2p:N2p,S3p:N3p)); i_data = 0
 NULLIFY(stats_group_first)
 
 !=============================================================================================================
 !=== define windows box for each stats_group =================================================================
 !=============================================================================================================
+
 id = 0
 pw = 0
 do while (pw.le.2)
@@ -338,6 +337,11 @@ IF (rank == 0 .AND. dtime_out_scal /= 0.) THEN
      CALL system('mkdir -p '//write_dir) !create directory if it do not exists
      OPEN(33+id,FILE=trim(write_dir)//'tke_window_'//id_char//'_'//restart_char//'.txt',STATUS='UNKNOWN')
   END DO
+  CALL system('mkdir -p stats_result')
+  do n = 1,intervals
+     CALL num_to_string(2,n,phs)
+     CALL system('mkdir -p stats_result/phase_'//phs )
+  end do
 END IF
 
 contains 
@@ -432,7 +436,7 @@ if(associated(stats_group_first)) then
   DEALLOCATE(stats_group_first)
 end if
 
-DEALLOCATE(mean_gbl,write_mean,write_fluct,write_covar)
+DEALLOCATE(mean_gbl,covar_gbl)
 DEALLOCATE(repetition)
 
 contains
@@ -502,7 +506,10 @@ INCLUDE 'mpif.h'
 TYPE(stats_group_t), pointer :: stats_group
 TYPE(stats_t), pointer :: stats
 INTEGER :: i,j,k
-REAL    :: TKE(1:2), TKE_global(1:2), mean_xz_write(1:M2), mean_xz(S2p:N2p), mean_xz_global(S2p:N2p)
+REAL    :: TKE(1:2), TKE_global(1:2), FKE(1:2), FKE_global(1:2)
+REAL    :: mean_xz_write(1:M2), mean_xz(S2p:N2p), mean_xz_global(S2p:N2p)
+REAL    :: write_mean(b1L:(N1+b1U),b2L:(N2+b2U),b3L:(N3+b3U),1:3)
+REAL    :: write_fluct(b1L:(N1+b1U),b2L:(N2+b2U),b3L:(N3+b3U),1:3)
 REAL, ALLOCATABLE :: d_k(:,:), R_k(:,:), R_t(:,:)
 CHARACTER(LEN=8) :: count_char
 CHARACTER(LEN=2) :: id
@@ -548,47 +555,75 @@ phase = mod(write_stats_count,intervals) + 1
 repetition(phase) = repetition(phase) + 1
 
 !--------------------------------------------------------------------------------------------------------
-!--- <u_i>(t_k) -------------------------------------------------------------------------------------------
+!--- <u_i>(t_k) -----------------------------------------------------------------------------------------
+!--- <u_i u_j>(t_k) -------------------------------------------------------------------------------------
 !--------------------------------------------------------------------------------------------------------
-mean_gbl(phase,:,:,:,1:3) = mean_gbl(phase,:,:,:,1:3)*(repetition(phase)-1)
+mean_gbl (phase,:,:,:,1:3) = mean_gbl (phase,:,:,:,1:3)*(repetition(phase)-1)
+covar_gbl(phase,:,:,:,1:6) = covar_gbl(phase,:,:,:,1:6)*(repetition(phase)-1)
 DO k = S3p, N3p
   DO j = S2p, N2p
      DO i = S1p, N1p
         mean_gbl(phase,i,j,k,1) = mean_gbl(phase,i,j,k,1) + work1(i,j,k)
         mean_gbl(phase,i,j,k,2) = mean_gbl(phase,i,j,k,2) + work2(i,j,k)
         mean_gbl(phase,i,j,k,3) = mean_gbl(phase,i,j,k,3) + work3(i,j,k)
+        covar_gbl(phase,i,j,k,1) = covar_gbl(phase,i,j,k,1) + work1(i,j,k)*work1(i,j,k)
+        covar_gbl(phase,i,j,k,2) = covar_gbl(phase,i,j,k,2) + work2(i,j,k)*work2(i,j,k)
+        covar_gbl(phase,i,j,k,3) = covar_gbl(phase,i,j,k,3) + work3(i,j,k)*work3(i,j,k)
+        covar_gbl(phase,i,j,k,4) = covar_gbl(phase,i,j,k,4) + work1(i,j,k)*work2(i,j,k)
+        covar_gbl(phase,i,j,k,5) = covar_gbl(phase,i,j,k,5) + work1(i,j,k)*work3(i,j,k)
+        covar_gbl(phase,i,j,k,6) = covar_gbl(phase,i,j,k,6) + work2(i,j,k)*work3(i,j,k)
      END DO
   END DO
 END DO
-mean_gbl(phase,:,:,:,1:3) = mean_gbl(phase,:,:,:,1:3)/repetition(phase)
-!--------------------------------------------------------------------------------------------------------
-!--- <u'_i>(t_k) ------------------------------------------------------------------------------------------
-!--------------------------------------------------------------------------------------------------------
-write_fluct(:,:,:,1) = work1(:,:,:) - mean_gbl(phase,:,:,:,1)
-write_fluct(:,:,:,2) = work2(:,:,:) - mean_gbl(phase,:,:,:,2)
-write_fluct(:,:,:,3) = work3(:,:,:) - mean_gbl(phase,:,:,:,3)
+mean_gbl (phase,:,:,:,1:3) = mean_gbl (phase,:,:,:,1:3)/repetition(phase)
+covar_gbl(phase,:,:,:,1:6) = covar_gbl(phase,:,:,:,1:6)/repetition(phase)
+
+
 !===========================================================================================================
 !=== integral energy for the whole domain  =================================================================
 !===========================================================================================================
+FKE = 0.
+DO k = S3p, N3p
+   DO j = S2p, N2p
+      DO i = S1p, N1p
+         FKE(1) = FKE(1) + dx1p(i)*dx2p(j)*dx3p(k)*(mean_gbl(phase,i,j,k,1)**2+mean_gbl(phase,i,j,k,2)**2+&
+                                                    mean_gbl(phase,i,j,k,3)**2)
+         !--------------------------------------------------------------------------------------------------------
+         !--- u'_i u'_i(t_k) -------------------------------------------------------------------------------------
+         !--------------------------------------------------------------------------------------------------------
+         FKE(2) = FKE(2) + dx1p(i)*dx2p(j)*dx3p(k)*( (work1(i,j,k) - mean_gbl(phase,i,j,k,1))**2 + &
+                                                     (work2(i,j,k) - mean_gbl(phase,i,j,k,2))**2 + &
+                                                     (work3(i,j,k) - mean_gbl(phase,i,j,k,3))**2 )
+      END DO
+   END DO
+END DO
+CALL MPI_ALLREDUCE(FKE,FKE_global,2,MPI_REAL8,MPI_SUM,COMM_CART,merror)
+FKE_global = FKE_global/2.
+
 TKE = 0.
 DO k = S3p, N3p
-  DO j = S2p, N2p
-     DO i = S1p, N1p
-        TKE(1) = TKE(1) + dx1p(i)*dx2p(j)*dx3p(k)*(mean_gbl(phase,i,j,k,1)**2+mean_gbl(phase,i,j,k,2)**2+&
-                                                   mean_gbl(phase,i,j,k,3)**2)
-        TKE(2) = TKE(2) + dx1p(i)*dx2p(j)*dx3p(k)*(write_fluct(i,j,k,1)**2+write_fluct(i,j,k,2)**2+&
-                                                   write_fluct(i,j,k,3)**2)
-     END DO
-  END DO
+   DO j = S2p, N2p
+      DO i = S1p, N1p
+         TKE(1) = TKE(1) + dx1p(i)*dx2p(j)*dx3p(k)*(mean_gbl(phase,i,j,k,1)**2+mean_gbl(phase,i,j,k,2)**2+&
+                                                    mean_gbl(phase,i,j,k,3)**2)
+         !--------------------------------------------------------------------------------------------------------
+         !--- <u'_i u'_i>(t_k) -----------------------------------------------------------------------------------
+         !--------------------------------------------------------------------------------------------------------
+         TKE(2) = TKE(2) + dx1p(i)*dx2p(j)*dx3p(k)*( (covar_gbl(phase,i,j,k,1) - mean_gbl(phase,i,j,k,1)*mean_gbl(phase,i,j,k,1) ) + &
+                                                     (covar_gbl(phase,i,j,k,2) - mean_gbl(phase,i,j,k,2)*mean_gbl(phase,i,j,k,2) ) + &
+                                                     (covar_gbl(phase,i,j,k,3) - mean_gbl(phase,i,j,k,3)*mean_gbl(phase,i,j,k,3) ) )
+      END DO
+   END DO
 END DO
 CALL MPI_ALLREDUCE(TKE,TKE_global,2,MPI_REAL8,MPI_SUM,COMM_CART,merror)
-!--- Absolute kinetic energy ---
-TKE_global = TKE_global / 2.
+TKE_global = TKE_global/2.
+
 !--- Output ---
 IF (rank == 0) THEN
- WRITE(33,'(3E25.17)') time, TKE_global(1:2)
+ WRITE(33,'(3E25.17)') time, FKE_global(1:2),TKE_global(1:2)
  CALL flush(33)
 END IF
+
 
 stats_group => stats_group_first
 do while(associated(stats_group))
@@ -692,9 +727,9 @@ do while(associated(stats_group))
                            stats_group%n_data_tot,6,1,1,stats_group%n_data,6,stats_group%data_shift,0,R_t)
 !===========================================================================================================
 
-!===========================================================================================================
-!=== integral energy for the window box ====================================================================
-!===========================================================================================================
+   !===========================================================================================================
+   !=== integral energy for the window box ====================================================================
+   !===========================================================================================================
    write_mean = 0.
    write_fluct = 0.
    stats => stats_group%stats_first
@@ -713,22 +748,58 @@ do while(associated(stats_group))
       stats => stats%next
    end do
 
+   FKE = 0.
+   DO k = S3p, N3p
+      DO j = S2p, N2p
+         DO i = S1p, N1p
+            FKE(1) = FKE(1)+dx1p(i)*dx2p(j)*dx3p(k)*(write_mean(i,j,k,1)**2+write_mean(i,j,k,2)**2+write_mean(i,j,k,3)**2)
+            !--------------------------------------------------------------------------------------------------------
+            !--- u'_i u'_i(t_k) -------------------------------------------------------------------------------------
+            !--------------------------------------------------------------------------------------------------------
+            FKE(2) = FKE(2)+dx1p(i)*dx2p(j)*dx3p(k)*(write_fluct(i,j,k,1)**2+write_fluct(i,j,k,2)**2+&
+                                                     write_fluct(i,j,k,3)**2)
+         END DO
+      END DO
+   END DO
+   CALL MPI_ALLREDUCE(FKE,FKE_global,2,MPI_REAL8,MPI_SUM,COMM_CART,merror)
+   FKE_global = FKE_global/2.
+   
+   write_mean = 0.
+   write_fluct = 0.
+   stats => stats_group%stats_first
+   do while(associated(stats))
+      do i = 1,stats%m
+         write_mean(stats%x(i),stats%y(i),stats%z(i),1)  = stats%mean_xyzt(phase,1)
+         write_mean(stats%x(i),stats%y(i),stats%z(i),2)  = stats%mean_xyzt(phase,2)
+         write_mean(stats%x(i),stats%y(i),stats%z(i),3)  = stats%mean_xyzt(phase,3)
+         write_fluct(stats%x(i),stats%y(i),stats%z(i),1) = stats%covar_xyzt(phase,1) - &
+                                                           stats%mean_xyzt(phase,1)*stats%mean_xyzt(phase,1)
+         write_fluct(stats%x(i),stats%y(i),stats%z(i),2) = stats%covar_xyzt(phase,2) - &
+                                                           stats%mean_xyzt(phase,2)*stats%mean_xyzt(phase,2)
+         write_fluct(stats%x(i),stats%y(i),stats%z(i),3) = stats%covar_xyzt(phase,3) - &
+                                                           stats%mean_xyzt(phase,3)*stats%mean_xyzt(phase,3)
+      end do
+      stats => stats%next
+   end do
+
    TKE = 0.
    DO k = S3p, N3p
       DO j = S2p, N2p
          DO i = S1p, N1p
             TKE(1) = TKE(1)+dx1p(i)*dx2p(j)*dx3p(k)*(write_mean(i,j,k,1)**2+write_mean(i,j,k,2)**2+write_mean(i,j,k,3)**2)
-            TKE(2) = TKE(2)+dx1p(i)*dx2p(j)*dx3p(k)*(write_fluct(i,j,k,1)**2+write_fluct(i,j,k,2)**2+&
-                                                     write_fluct(i,j,k,3)**2)
+            !--------------------------------------------------------------------------------------------------------
+            !--- <u'_i u'_i>(t_k) -----------------------------------------------------------------------------------
+            !--------------------------------------------------------------------------------------------------------
+            TKE(2) = TKE(2)+dx1p(i)*dx2p(j)*dx3p(k)*(write_fluct(i,j,k,1)+write_fluct(i,j,k,2)+write_fluct(i,j,k,3))
          END DO
       END DO
    END DO
    CALL MPI_ALLREDUCE(TKE,TKE_global,2,MPI_REAL8,MPI_SUM,COMM_CART,merror)
-   !--- Absolute kinetic energy ---
-   TKE_global = TKE_global / 2.
+   TKE_global = TKE_global/2.
+
    !--- Output ---
    IF (rank == 0) THEN
-     WRITE(33+stats_group%group_id,'(3E25.17)') time, TKE_global(1:2)
+     WRITE(33+stats_group%group_id,'(3E25.17)') time, FKE_global(1:2), TKE_global(1:2)
      CALL flush(33+stats_group%group_id)
    END IF
 
