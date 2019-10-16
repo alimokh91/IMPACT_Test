@@ -11,7 +11,7 @@ if [ ! -d $DATASOURCE_DIR ]; then
 
   echo "Downloading json file."
   wget -O ${DATASOURCE_METADATA_FILENAME} https://www.dropbox.com/s/otbu709nc6k8fsq/bern_exp_metadata.json?dl=0 
-   
+  mv ${DATASOURCE_METADATA_FILENAME} ${DATASOURCE_DIR}/ 
 
   echo "Downloading files and extracting them to $(pwd)/${DATASOURCE_DIR} directory." 
   wget -O ${DATASOURCE_FILENAME} https://www.dropbox.com/s/62gisr19w247thx/exp_data_all_timeslices.zip?dl=0 
