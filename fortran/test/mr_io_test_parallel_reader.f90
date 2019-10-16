@@ -20,10 +20,10 @@ program mr_io_test_parallel_reader
                                      path, mri_dest)
 
     print *, SpatialMRI_group_name
-    print *, mri_dest%voxel_feature%dims
-    print *, mri_dest%voxel_feature%offset   
-    print *, shape(mri_dest%voxel_feature%array)    
-    print *, mri_dest%voxel_feature%array
+    print *, mri_dest%scalar_feature%dims
+    print *, mri_dest%scalar_feature%offset
+    print *, shape(mri_dest%scalar_feature%array)
+    print *, mri_dest%scalar_feature%array
 
     call MPI_Finalize(err)
         

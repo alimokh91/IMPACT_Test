@@ -169,9 +169,9 @@ class TestSpatialMRI(unittest.TestCase):
  
     def setUp(self):
         # Initialize the MRI data
-        voxel_feature = np.random.rand(91,31,71) # splitting on the last dim in Fortran (must be the largest in size due to grid splitting!)
-        self.mri = SpatialMRI(voxel_feature)
-        self.mpi_cart_dims = spatial_hyperslab_dims_test(type(self), self.mri.voxel_feature)
+        scalar_feature = np.random.rand(91,31,71) # splitting on the last dim in Fortran (must be the largest in size due to grid splitting!)
+        self.mri = SpatialMRI(scalar_feature)
+        self.mpi_cart_dims = spatial_hyperslab_dims_test(type(self), self.mri.scalar_feature)
  
     def test_communicator(self):
         # Write HDF5 from Python and read HDF5 from Fortran   
@@ -185,7 +185,7 @@ class TestSpatialMRI(unittest.TestCase):
  
                 validate_group_name(self, out_lines[0])
                  
-                validate_dist_spatial_fort_array(self, mpi_rank, self.mri.voxel_feature, out_lines[1:5])
+                validate_dist_spatial_fort_array(self, mpi_rank, self.mri.scalar_feature, out_lines[1:5])
            
     def tearDown(self):
         remove_test_files(self)

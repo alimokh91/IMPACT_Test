@@ -53,8 +53,8 @@ class TestSpatialMRI(unittest.TestCase):
  
     def setUp(self):
         # Initialize the MRI data
-        voxel_feature = np.random.rand(83,63,93)
-        self.mri = SpatialMRI(voxel_feature)
+        scalar_feature = np.random.rand(83,63,93)
+        self.mri = SpatialMRI(scalar_feature)
       
     def test_communicator(self):
         # Write HDF5 from Python and read HDF5 from Fortran   
@@ -64,7 +64,7 @@ class TestSpatialMRI(unittest.TestCase):
             out_lines = [l.strip(' \n') for l in out.readlines()]
             validate_group_name(self, out_lines[0])
  
-            validate_spatial_fort_array(self, self.mri.voxel_feature, out_lines[1:3])
+            validate_spatial_fort_array(self, self.mri.scalar_feature, out_lines[1:3])
          
     def tearDown(self):
         remove_test_files(self)

@@ -17,11 +17,11 @@ class SpatialMRI:
     
     group_name = "spatial-mri"  
 
-    def __init__(self, voxel_feature: np.ndarray):
+    def __init__(self, scalar_feature: np.ndarray):
         # a numpy array
-        if not(len(voxel_feature.shape) == 3):
-            raise ValueError("voxel_feature must be a 3D-array (instead it has shape {}).".format(voxel_feature.shape))
-        self.voxel_feature = voxel_feature
+        if not(len(scalar_feature.shape) == 3):
+            raise ValueError("scalar_feature must be a 3D-array (instead it has shape {}).".format(scalar_feature.shape))
+        self.scalar_feature = scalar_feature
         
 
     def write_hdf5(self, path: str):
@@ -31,15 +31,15 @@ class SpatialMRI:
             raise FileExistsError("Tried to open file %s, which exists already" % path)
     
         with h5py.File(path, "w") as f:
-            voxel_feature_transposed = self.voxel_feature.transpose()
+            scalar_feature_transposed = self.scalar_feature.transpose()
             grp = f.create_group(SpatialMRI.group_name)
-            ds = grp.create_dataset("voxel_feature", voxel_feature_transposed.shape, data=voxel_feature_transposed, dtype=voxel_feature_transposed.dtype)
+            ds = grp.create_dataset("scalar_feature", scalar_feature_transposed.shape, data=scalar_feature_transposed, dtype=scalar_feature_transposed.dtype)
 
     def read_hdf5(path: str):
         """Read MRI from file at path as hpc-predict-io HDF5-format"""
         with h5py.File(path, "r") as f:
             # here comes the actual deserialization code
-            return SpatialMRI(voxel_feature=f[SpatialMRI.group_name]["voxel_feature"][()].transpose())
+            return SpatialMRI(scalar_feature=f[SpatialMRI.group_name]["scalar_feature"][()].transpose())
 
 
 def validate_spacetime_coordinates(geometry, time):

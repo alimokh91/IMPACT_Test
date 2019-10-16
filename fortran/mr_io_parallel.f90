@@ -390,10 +390,10 @@ subroutine mr_io_read_parallel_spatial(mr_io_mpi_comm, mr_io_mpi_info, mr_io_mpi
   ! Read spatial feature
   CALL mr_io_read_parallel_spatial_feature(mr_io_mpi_comm, &
                                            mr_io_mpi_cart_dims, &
-                                           grp_id, "voxel_feature", &
-                                           mri_inst%voxel_feature%array, &
-                                           mri_inst%voxel_feature%offset, &
-                                           mri_inst%voxel_feature%dims)
+                                           grp_id, "scalar_feature", &
+                                           mri_inst%scalar_feature%array, &
+                                           mri_inst%scalar_feature%offset, &
+                                           mri_inst%scalar_feature%dims)
 
   ! Close the group
   CALL h5gclose_f(grp_id, error)
@@ -594,10 +594,11 @@ subroutine mr_io_write_parallel_spatial(mr_io_mpi_comm, mr_io_mpi_info, path, mr
 !   print *, shape(mri_inst%voxel_feature%array)   
 
   ! Read spatial feature
-  CALL mr_io_write_parallel_spatial_feature(mr_io_mpi_comm, grp_id, "voxel_feature", &
-                                           mri_inst%voxel_feature%array, &
-                                           mri_inst%voxel_feature%offset, &
-                                           mri_inst%voxel_feature%dims)
+  CALL mr_io_write_parallel_spatial_feature(mr_io_mpi_comm, &
+                                           grp_id, "scalar_feature", &
+                                           mri_inst%scalar_feature%array, &
+                                           mri_inst%scalar_feature%offset, &
+                                           mri_inst%scalar_feature%dims)
 
   ! Close the group
   CALL h5gclose_f(grp_id, error)

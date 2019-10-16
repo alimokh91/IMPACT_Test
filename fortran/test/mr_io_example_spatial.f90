@@ -32,7 +32,7 @@ program mr_io_example_spatial
     call mr_io_write_spatial(path, mri_inst)
     call mr_io_read_spatial(path, mri_dest)
 
-    print *, mri_dest%voxel_feature_dims    
-    print *, mri_dest%voxel_feature
+    print *, mri_dest%scalar_feature_dims
+    print *, mri_dest%scalar_feature
 
 end program mr_io_example_spatial

@@ -14,7 +14,7 @@ program mr_io_test_reader
     call mr_io_read_spatial(path, mri_dest)
 
     print *, SpatialMRI_group_name
-    print *, mri_dest%voxel_feature_dims    
-    print *, mri_dest%voxel_feature
+    print *, mri_dest%scalar_feature_dims
+    print *, mri_dest%scalar_feature
 
 end program mr_io_test_reader

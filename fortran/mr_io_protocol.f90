@@ -16,8 +16,8 @@ character(len=100) :: SpatialMRI_group_name = "spatial-mri"
 
 type SpatialMRI
      ! voxel_feature
-     real*8, dimension(:,:,:), allocatable :: voxel_feature
-     integer, dimension(3) :: voxel_feature_dims
+     real*8, dimension(:,:,:), allocatable :: scalar_feature
+     integer, dimension(3) :: scalar_feature_dims
 end type
 
 type DistSpatialFeature
@@ -28,7 +28,7 @@ end type
 
 type DistSpatialMRI
      ! voxel_feature
-     type(DistSpatialFeature) :: voxel_feature
+     type(DistSpatialFeature) :: scalar_feature
 end type
 
 
@@ -211,7 +211,7 @@ subroutine mr_io_deallocate_spatial_mri(mri)
 
     implicit none
     type(SpatialMRI), intent(inout) :: mri
-    deallocate(mri%voxel_feature)
+    deallocate(mri%scalar_feature)
 
 end subroutine mr_io_deallocate_spatial_mri
 
@@ -219,7 +219,7 @@ subroutine mr_io_deallocate_dist_spatial_mri(mri)
 
     implicit none
     type(DistSpatialMRI), intent(inout) :: mri
-    deallocate(mri%voxel_feature%array)
+    deallocate(mri%scalar_feature%array)
 
 end subroutine mr_io_deallocate_dist_spatial_mri
 

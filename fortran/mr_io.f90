@@ -195,8 +195,8 @@ subroutine mr_io_read_spatial(path, mri_inst)
   mr_io_handle_error(error)
 
   ! Read spatial feature
-  CALL mr_io_read_spatial_feature(grp_id, "voxel_feature", mri_inst%voxel_feature)
-  mri_inst%voxel_feature_dims = shape(mri_inst%voxel_feature)
+  CALL mr_io_read_spatial_feature(grp_id, "scalar_feature", mri_inst%scalar_feature)
+  mri_inst%scalar_feature_dims = shape(mri_inst%scalar_feature)
 
   ! Close the group
   CALL h5gclose_f(grp_id, error)
@@ -238,7 +238,7 @@ subroutine mr_io_write_spatial(path, mri_inst)
   mr_io_handle_error(error)
 
   ! Write spatial feature
-  CALL mr_io_write_spatial_feature(grp_id, "voxel_feature", mri_inst%voxel_feature)
+  CALL mr_io_write_spatial_feature(grp_id, "scalar_feature", mri_inst%scalar_feature)
 
   ! Close the group
   CALL h5gclose_f(grp_id, error)

@@ -17,9 +17,9 @@ program mr_io_test_parallel_reader_writer
 
     call mr_io_read_parallel_spatial(MPI_COMM_WORLD, MPI_INFO_NULL, mr_io_test_mpi_cart_dims, in_path, mri_dest)
     print *, "Array properties:"
-    print *, mri_dest%voxel_feature%dims
-    print *, mri_dest%voxel_feature%offset
-    print *, shape(mri_dest%voxel_feature%array)
+    print *, mri_dest%scalar_feature%dims
+    print *, mri_dest%scalar_feature%offset
+    print *, shape(mri_dest%scalar_feature%array)
     call mr_io_write_parallel_spatial(MPI_COMM_WORLD, MPI_INFO_NULL, out_path, mri_dest)
 
     call MPI_Finalize(err)
