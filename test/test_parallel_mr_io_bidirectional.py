@@ -118,9 +118,9 @@ class TestSpaceTimeMRIBidirectional(unittest.TestCase): # FIXME: coordinates tes
         #geometry = [np.random.rand(4), np.random.rand(2), np.random.rand(7)] 
         time = np.random.rand(11)
         geometry = [np.random.rand(67), np.random.rand(43), np.random.rand(29)]
-        voxel_feature = np.random.rand(67,43,29,11,3)
-        self.mri = SpaceTimeMRI(geometry, time, voxel_feature)
-        self.mpi_cart_dims = spatial_hyperslab_dims_test(type(self), self.mri.voxel_feature)
+        vector_feature = np.random.rand(67,43,29,11,3)
+        self.mri = SpaceTimeMRI(geometry, time, vector_feature)
+        self.mpi_cart_dims = spatial_hyperslab_dims_test(type(self), self.mri.vector_feature)
    
     def test_communicator(self):
         # Write HDF5 from Python and read HDF5 from Fortran   
@@ -132,7 +132,7 @@ class TestSpaceTimeMRIBidirectional(unittest.TestCase): # FIXME: coordinates tes
         for i in range(3):
             validate_array(self, self.mri.geometry[i], out_mri.geometry[i])        
         validate_array(self, self.mri.time, out_mri.time)
-        validate_array(self, self.mri.voxel_feature, out_mri.voxel_feature)
+        validate_array(self, self.mri.vector_feature, out_mri.vector_feature)
         
     def tearDown(self):
         remove_test_files(self)
@@ -341,7 +341,7 @@ class TestFlowMRIPaddedToSpaceTimeBidirectional(unittest.TestCase): # FIXME: coo
         out_mri = SpaceTimeMRI.read_hdf5(type(self).filename_mri_out)
         
         validate_replicated_mri_coordinates(self, self.mri, out_mri)        
-        validate_replicated_mri_vector_array(self, self.mri.velocity_mean, out_mri.voxel_feature)
+        validate_replicated_mri_vector_array(self, self.mri.velocity_mean, out_mri.vector_feature)
       
     def tearDown(self):
         remove_test_files(self)

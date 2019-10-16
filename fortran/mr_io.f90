@@ -471,9 +471,9 @@ subroutine mr_io_read_spacetime(path, mri_inst)
   CALL mr_io_read_coordinates(grp_id, "z", mri_inst%z_coordinates)
   mri_inst%z_dim = size(mri_inst%z_coordinates)
 
-  ! Read voxel_feature data
-  CALL mr_io_read_spacetime_feature(grp_id, "voxel_feature", mri_inst%voxel_feature)
-  mri_inst%voxel_feature_dims =  shape(mri_inst%voxel_feature)
+  ! Read vector_feature data
+  CALL mr_io_read_spacetime_feature(grp_id, "vector_feature", mri_inst%vector_feature)
+  mri_inst%vector_feature_dims =  shape(mri_inst%vector_feature)
 
   ! Close the group
   CALL h5gclose_f(grp_id, error)
@@ -523,8 +523,8 @@ subroutine mr_io_write_spacetime(path, mri_inst)
   CALL mr_io_write_coordinates(grp_id, "y", mri_inst%y_coordinates)
   CALL mr_io_write_coordinates(grp_id, "z", mri_inst%z_coordinates)
 
-  ! Write voxel_feature data
-  CALL mr_io_write_spacetime_feature(grp_id, "voxel_feature", mri_inst%voxel_feature)
+  ! Write vector_feature data
+  CALL mr_io_write_spacetime_feature(grp_id, "vector_feature", mri_inst%vector_feature)
 
   ! Close the group
   CALL h5gclose_f(grp_id, error)
@@ -753,7 +753,7 @@ subroutine mr_io_read_flow(path, mri_inst)
   CALL mr_io_read_coordinates(grp_id, "z", mri_inst%z_coordinates)
   mri_inst%z_dim = size(mri_inst%z_coordinates)
 
-  ! Read voxel_feature data
+  ! Read vector_feature data
   CALL mr_io_read_spacetime_scalar_feature(grp_id, "intensity", mri_inst%intensity)
   mri_inst%intensity_dims =  shape(mri_inst%intensity)
   CALL mr_io_read_spacetime_feature(grp_id, "velocity_mean", mri_inst%velocity_mean)
@@ -809,7 +809,7 @@ subroutine mr_io_write_flow(path, mri_inst)
   CALL mr_io_write_coordinates(grp_id, "y", mri_inst%y_coordinates)
   CALL mr_io_write_coordinates(grp_id, "z", mri_inst%z_coordinates)
 
-  ! Write voxel_feature data
+  ! Write vector_feature data
   CALL mr_io_write_spacetime_scalar_feature(grp_id, "intensity", mri_inst%intensity)
   CALL mr_io_write_spacetime_feature(grp_id, "velocity_mean", mri_inst%velocity_mean)
   CALL mr_io_write_spacetime_matrix_feature(grp_id, "velocity_cov", mri_inst%velocity_cov)
@@ -867,7 +867,7 @@ subroutine mr_io_read_segmentedflow(path, mri_inst)
   CALL mr_io_read_coordinates(grp_id, "z", mri_inst%z_coordinates)
   mri_inst%z_dim = size(mri_inst%z_coordinates)
 
-  ! Read voxel_feature data
+  ! Read vector_feature data
   CALL mr_io_read_spacetime_scalar_feature(grp_id, "intensity", mri_inst%intensity)
   mri_inst%intensity_dims =  shape(mri_inst%intensity)
   CALL mr_io_read_spacetime_feature(grp_id, "velocity_mean", mri_inst%velocity_mean)
@@ -925,7 +925,7 @@ subroutine mr_io_write_segmentedflow(path, mri_inst)
   CALL mr_io_write_coordinates(grp_id, "y", mri_inst%y_coordinates)
   CALL mr_io_write_coordinates(grp_id, "z", mri_inst%z_coordinates)
 
-  ! Write voxel_feature data
+  ! Write vector_feature data
   CALL mr_io_write_spacetime_scalar_feature(grp_id, "intensity", mri_inst%intensity)
   CALL mr_io_write_spacetime_feature(grp_id, "velocity_mean", mri_inst%velocity_mean)
   CALL mr_io_write_spacetime_matrix_feature(grp_id, "velocity_cov", mri_inst%velocity_cov)

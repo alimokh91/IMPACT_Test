@@ -71,7 +71,7 @@ program mr_io_example_space_time
     print *, mri_inst%z_coordinates
     print *, mri_dest%z_coordinates
 
-    print *, mri_dest%voxel_feature_dims    
-    print *, mri_dest%voxel_feature
+    print *, mri_dest%vector_feature_dims    
+    print *, mri_dest%vector_feature
 
 end program mr_io_example_space_time

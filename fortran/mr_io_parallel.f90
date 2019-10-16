@@ -589,9 +589,9 @@ subroutine mr_io_write_parallel_spatial(mr_io_mpi_comm, mr_io_mpi_info, path, mr
   CALL h5pclose_f(plist_id, error)
   mr_io_handle_error(error)
   
-!   print *, mri_inst%voxel_feature%dims
-!   print *, mri_inst%voxel_feature%offset   
-!   print *, shape(mri_inst%voxel_feature%array)   
+!   print *, mri_inst%vector_feature%dims
+!   print *, mri_inst%vector_feature%offset   
+!   print *, shape(mri_inst%vector_feature%array)   
 
   ! Read spatial feature
   CALL mr_io_write_parallel_spatial_feature(mr_io_mpi_comm, &

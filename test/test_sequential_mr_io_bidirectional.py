@@ -90,8 +90,8 @@ class TestSpaceTimeMRIBidirectional(unittest.TestCase):
         # Initialize the MRI data
         time = np.random.rand(13)
         geometry = [np.random.rand(26), np.random.rand(11), np.random.rand(7)]
-        voxel_feature = np.random.rand(26,11,7,13,19)
-        self.mri = SpaceTimeMRI(geometry, time, voxel_feature)
+        vector_feature = np.random.rand(26,11,7,13,19)
+        self.mri = SpaceTimeMRI(geometry, time, vector_feature)
  
     def test_communicator(self):
         # Write HDF5 from Python and read HDF5 from Fortran   
@@ -103,7 +103,7 @@ class TestSpaceTimeMRIBidirectional(unittest.TestCase):
         for i in range(3):
             validate_array(self, self.mri.geometry[i], out_mri.geometry[i])        
         validate_array(self, self.mri.time, out_mri.time)
-        validate_array(self, self.mri.voxel_feature, out_mri.voxel_feature)
+        validate_array(self, self.mri.vector_feature, out_mri.vector_feature)
 
     def tearDown(self):
         remove_test_files(self)

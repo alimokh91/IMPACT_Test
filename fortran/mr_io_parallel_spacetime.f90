@@ -533,12 +533,12 @@ subroutine mr_io_read_parallel_spacetime(mr_io_mpi_comm, mr_io_mpi_info, mr_io_m
   ! Read spatial feature
   CALL mr_io_read_parallel_spacetime_feature(mr_io_mpi_comm, &
                                              mr_io_mpi_cart_dims, &
-                                             grp_id, "voxel_feature", &
-                                             mri_inst%voxel_feature%array, &
-                                             mri_inst%voxel_feature%offset, &
-                                             mri_inst%voxel_feature%dims, &
-                                             mri_inst%voxel_feature%time_offset, &
-                                             mri_inst%voxel_feature%time_dim)
+                                             grp_id, "vector_feature", &
+                                             mri_inst%vector_feature%array, &
+                                             mri_inst%vector_feature%offset, &
+                                             mri_inst%vector_feature%dims, &
+                                             mri_inst%vector_feature%time_offset, &
+                                             mri_inst%vector_feature%time_dim)
 
   ! Close the group
   CALL h5gclose_f(grp_id, error)
@@ -903,9 +903,9 @@ subroutine mr_io_write_parallel_spacetime(mr_io_mpi_comm, mr_io_mpi_info, path, 
   CALL h5pclose_f(plist_id, error)
   mr_io_handle_error(error)
 
-!   print *, mri_inst%voxel_feature%dims
-!   print *, mri_inst%voxel_feature%offset
-!   print *, shape(mri_inst%voxel_feature%array)
+!   print *, mri_inst%vector_feature%dims
+!   print *, mri_inst%vector_feature%offset
+!   print *, shape(mri_inst%vector_feature%array)
   CALL mr_io_write_parallel_coordinates(mr_io_mpi_comm, grp_id, "t", &
                                         mri_inst%t_coordinates)
   CALL mr_io_write_parallel_coordinates(mr_io_mpi_comm, grp_id, "x", &
@@ -917,12 +917,12 @@ subroutine mr_io_write_parallel_spacetime(mr_io_mpi_comm, mr_io_mpi_info, path, 
 
   ! Read spatial feature
   CALL mr_io_write_parallel_spacetime_feature(mr_io_mpi_comm, &
-                                           grp_id, "voxel_feature", &
-                                           mri_inst%voxel_feature%array, &
-                                           mri_inst%voxel_feature%offset, &
-                                           mri_inst%voxel_feature%dims, &
-                                           mri_inst%voxel_feature%time_offset, &
-                                           mri_inst%voxel_feature%time_dim)
+                                           grp_id, "vector_feature", &
+                                           mri_inst%vector_feature%array, &
+                                           mri_inst%vector_feature%offset, &
+                                           mri_inst%vector_feature%dims, &
+                                           mri_inst%vector_feature%time_offset, &
+                                           mri_inst%vector_feature%time_dim)
 
   ! Close the group
   CALL h5gclose_f(grp_id, error)
@@ -2072,9 +2072,9 @@ subroutine mr_io_write_parallel_flow(mr_io_mpi_comm, mr_io_mpi_info, path, mri_i
   CALL h5pclose_f(plist_id, error)
   mr_io_handle_error(error)
 
-!   print *, mri_inst%voxel_feature%dims
-!   print *, mri_inst%voxel_feature%offset
-!   print *, shape(mri_inst%voxel_feature%array)
+!   print *, mri_inst%vector_feature%dims
+!   print *, mri_inst%vector_feature%offset
+!   print *, shape(mri_inst%vector_feature%array)
   CALL mr_io_write_parallel_coordinates(mr_io_mpi_comm, grp_id, "t", &
                                         mri_inst%t_coordinates)
   CALL mr_io_write_parallel_coordinates(mr_io_mpi_comm, grp_id, "x", &
@@ -2365,9 +2365,9 @@ subroutine mr_io_write_parallel_segmentedflow(mr_io_mpi_comm, mr_io_mpi_info, pa
   CALL h5pclose_f(plist_id, error)
   mr_io_handle_error(error)
 
-!   print *, mri_inst%voxel_feature%dims
-!   print *, mri_inst%voxel_feature%offset
-!   print *, shape(mri_inst%voxel_feature%array)
+!   print *, mri_inst%vector_feature%dims
+!   print *, mri_inst%vector_feature%offset
+!   print *, shape(mri_inst%vector_feature%array)
   CALL mr_io_write_parallel_coordinates(mr_io_mpi_comm, grp_id, "t", &
                                         mri_inst%t_coordinates)
   CALL mr_io_write_parallel_coordinates(mr_io_mpi_comm, grp_id, "x", &

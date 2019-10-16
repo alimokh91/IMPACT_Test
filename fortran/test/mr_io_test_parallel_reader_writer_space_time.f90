@@ -11,7 +11,7 @@ program mr_io_test_parallel_reader_writer_space_time
 !    character(len=40) :: out_path = "mr_io_test_parallel_space_time_out.h5"
     type(DistSpacetimeMRI) :: mri_dest
 
-    integer, dimension(5) :: voxel_feature_shape
+    integer, dimension(5) :: vector_feature_shape
 
     call MPI_Init(err)
     
@@ -21,18 +21,18 @@ program mr_io_test_parallel_reader_writer_space_time
 
     print *, SpaceTimeMRI_group_name
 
-    voxel_feature_shape = shape(mri_dest%voxel_feature%array)
+    vector_feature_shape = shape(mri_dest%vector_feature%array)
 
-    print *, mri_dest%voxel_feature%dims
-    print *, mri_dest%voxel_feature%offset
-    print *, voxel_feature_shape(3:5)
+    print *, mri_dest%vector_feature%dims
+    print *, mri_dest%vector_feature%offset
+    print *, vector_feature_shape(3:5)
 
-    print *, mri_dest%voxel_feature%time_dim
-    print *, mri_dest%voxel_feature%time_offset
-    print *, voxel_feature_shape(2)
+    print *, mri_dest%vector_feature%time_dim
+    print *, mri_dest%vector_feature%time_offset
+    print *, vector_feature_shape(2)
 
-    print *, voxel_feature_shape(1)
-    print *, mri_dest%voxel_feature%array
+    print *, vector_feature_shape(1)
+    print *, mri_dest%vector_feature%array
 
     call mr_io_write_parallel_spacetime(MPI_COMM_WORLD, MPI_INFO_NULL, out_path, mri_dest)
 

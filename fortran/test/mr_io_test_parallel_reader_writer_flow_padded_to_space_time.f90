@@ -13,8 +13,8 @@ program mr_io_test_parallel_reader_writer_flow_padded
     type(DistSpacetimeMRI) :: mri_dest
 
 
-    integer, dimension(5) :: voxel_feature_shape
-    integer, dimension(5) :: voxel_feature_shape_for_loop
+    integer, dimension(5) :: vector_feature_shape
+    integer, dimension(5) :: vector_feature_shape_for_loop
 
     integer :: i, ix, iy, iz, it, iv
 
@@ -45,7 +45,7 @@ program mr_io_test_parallel_reader_writer_flow_padded
     allocate(mri_dest%x_coordinates(size(mri_dest_padded%mri%x_coordinates)*simulation_spatial_refinement(1)))
     allocate(mri_dest%y_coordinates(size(mri_dest_padded%mri%y_coordinates)*simulation_spatial_refinement(2)))
     allocate(mri_dest%z_coordinates(size(mri_dest_padded%mri%z_coordinates)*simulation_spatial_refinement(3)))
-    allocate(mri_dest%voxel_feature%array(  lbound(mri_dest_padded%mri%velocity_mean%array,1):ubound(mri_dest_padded%mri%velocity_mean%array,1), &
+    allocate(mri_dest%vector_feature%array(  lbound(mri_dest_padded%mri%velocity_mean%array,1):ubound(mri_dest_padded%mri%velocity_mean%array,1), &
                                            (lbound(mri_dest_padded%mri%velocity_mean%array,2)-1)*simulation_time_refinement+1:ubound(mri_dest_padded%mri%velocity_mean%array,2)*simulation_time_refinement, &
                                            (lbound(mri_dest_padded%mri%velocity_mean%array,3)-1)*simulation_spatial_refinement(1)+1:ubound(mri_dest_padded%mri%velocity_mean%array,3)*simulation_spatial_refinement(1), &
                                            (lbound(mri_dest_padded%mri%velocity_mean%array,4)-1)*simulation_spatial_refinement(2)+1:ubound(mri_dest_padded%mri%velocity_mean%array,4)*simulation_spatial_refinement(2), &
@@ -73,13 +73,13 @@ program mr_io_test_parallel_reader_writer_flow_padded
     end do
     mri_dest%z_dim = mri_dest_padded%mri%z_dim*simulation_spatial_refinement(3)
 
-    ! voxel_feature
+    ! vector_feature
     do iz=(lbound(mri_dest_padded%mri%velocity_mean%array,5)-1),(ubound(mri_dest_padded%mri%velocity_mean%array,5)-1)
         do iy=(lbound(mri_dest_padded%mri%velocity_mean%array,4)-1),(ubound(mri_dest_padded%mri%velocity_mean%array,4)-1)
             do ix=(lbound(mri_dest_padded%mri%velocity_mean%array,3)-1),(ubound(mri_dest_padded%mri%velocity_mean%array,3)-1)
                 do it=(lbound(mri_dest_padded%mri%velocity_mean%array,2)-1),(ubound(mri_dest_padded%mri%velocity_mean%array,2)-1)
                     do iv=1,3
-                        mri_dest%voxel_feature%array(iv, &
+                        mri_dest%vector_feature%array(iv, &
                                              it*simulation_time_refinement+1:(it+1)*simulation_time_refinement, &
                                              ix*simulation_spatial_refinement(1)+1:(ix+1)*simulation_spatial_refinement(1), &
                                              iy*simulation_spatial_refinement(2)+1:(iy+1)*simulation_spatial_refinement(2), &
@@ -91,12 +91,12 @@ program mr_io_test_parallel_reader_writer_flow_padded
         end do
     end do
 
-    mri_dest%voxel_feature%time_offset = mri_dest_padded%mri%velocity_mean%time_offset*simulation_time_refinement
-    mri_dest%voxel_feature%time_dim = mri_dest_padded%mri%velocity_mean%time_dim*simulation_time_refinement
-    mri_dest%voxel_feature%offset = (/ mri_dest_padded%mri%velocity_mean%offset(1)*simulation_spatial_refinement(1), &
+    mri_dest%vector_feature%time_offset = mri_dest_padded%mri%velocity_mean%time_offset*simulation_time_refinement
+    mri_dest%vector_feature%time_dim = mri_dest_padded%mri%velocity_mean%time_dim*simulation_time_refinement
+    mri_dest%vector_feature%offset = (/ mri_dest_padded%mri%velocity_mean%offset(1)*simulation_spatial_refinement(1), &
                                        mri_dest_padded%mri%velocity_mean%offset(2)*simulation_spatial_refinement(2), &
                                        mri_dest_padded%mri%velocity_mean%offset(3)*simulation_spatial_refinement(3) /)
-    mri_dest%voxel_feature%dims = (/ mri_dest_padded%mri%velocity_mean%dims(1)*simulation_spatial_refinement(1), &
+    mri_dest%vector_feature%dims = (/ mri_dest_padded%mri%velocity_mean%dims(1)*simulation_spatial_refinement(1), &
                                      mri_dest_padded%mri%velocity_mean%dims(2)*simulation_spatial_refinement(2), &
                                      mri_dest_padded%mri%velocity_mean%dims(3)*simulation_spatial_refinement(3) /)
 
@@ -114,16 +114,16 @@ program mr_io_test_parallel_reader_writer_flow_padded
     print *, shape(mri_dest%z_coordinates)
     print *, mri_dest%z_coordinates
 
-    print *, mri_dest%voxel_feature%dims
-    print *, mri_dest%voxel_feature%offset
-    print *, voxel_feature_shape(3:5)
+    print *, mri_dest%vector_feature%dims
+    print *, mri_dest%vector_feature%offset
+    print *, vector_feature_shape(3:5)
 
-    print *, mri_dest%voxel_feature%time_dim
-    print *, mri_dest%voxel_feature%time_offset
-    print *, voxel_feature_shape(2)
+    print *, mri_dest%vector_feature%time_dim
+    print *, mri_dest%vector_feature%time_offset
+    print *, vector_feature_shape(2)
 
-    print *, voxel_feature_shape(1)
-    print *, mri_dest%voxel_feature%array
+    print *, vector_feature_shape(1)
+    print *, mri_dest%vector_feature%array
 
     call mr_io_write_parallel_spacetime(MPI_COMM_WORLD, MPI_INFO_NULL, out_path, mri_dest)
 

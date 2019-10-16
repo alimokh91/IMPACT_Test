@@ -210,9 +210,9 @@ class TestSpaceTimeMRI(unittest.TestCase): # FIXME: coordinates test...
         # Initialize the MRI data
         time = np.random.rand(11)
         geometry = [np.random.rand(67), np.random.rand(43), np.random.rand(29)]
-        voxel_feature = np.random.rand(67,43,29,11,3)
-        self.mri = SpaceTimeMRI(geometry, time, voxel_feature)
-        self.mpi_cart_dims = spatial_hyperslab_dims_test(type(self), self.mri.voxel_feature)
+        vector_feature = np.random.rand(67,43,29,11,3)
+        self.mri = SpaceTimeMRI(geometry, time, vector_feature)
+        self.mpi_cart_dims = spatial_hyperslab_dims_test(type(self), self.mri.vector_feature)
  
     def test_communicator(self):  
         # Write HDF5 from Python and read HDF5 from Fortran   
@@ -231,7 +231,7 @@ class TestSpaceTimeMRI(unittest.TestCase): # FIXME: coordinates test...
                 validate_spatial_fort_array(self, self.mri.geometry[1], out_lines[5:7])
                 validate_spatial_fort_array(self, self.mri.geometry[2], out_lines[7:9])
                  
-                validate_dist_spacetime_vector_fort_array(self, mpi_rank, self.mri.voxel_feature, out_lines[9:17])
+                validate_dist_spacetime_vector_fort_array(self, mpi_rank, self.mri.vector_feature, out_lines[9:17])
    
        
     def tearDown(self):

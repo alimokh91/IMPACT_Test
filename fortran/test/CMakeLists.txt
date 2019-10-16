@@ -48,7 +48,7 @@ endforeach()
 set( IMPACT_LIBRARIES libimpact.a )
 find_file(IMPACT_LIB ${IMPACT_LIBRARIES} PATHS ENV IMPACT_DIR NO_DEFAULT_PATH)
 
-if (EXISTS $ENV{IMPACT_DIR})
+if (IMPACT_LIB)
     message("Found IMPACT... building IMPACT startup tests.")
 	
     set( IMPACT_DEPS libm.so libdl.so libz.so libblas.so liblapack.so )

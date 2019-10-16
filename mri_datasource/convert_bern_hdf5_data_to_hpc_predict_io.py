@@ -55,7 +55,7 @@ def main():
                                  y_coordinates,
                                  z_coordinates],
                        time=np.array([i for i in range(len(mean_files))]),
-                       voxel_feature=means)
+                       vector_feature=means)
     
     mri.write_hdf5(args.output)
 

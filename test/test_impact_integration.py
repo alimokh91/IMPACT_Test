@@ -263,7 +263,7 @@ class TestImpactMRI(unittest.TestCase): # FIXME: coordinates test...
         out_mri = SpaceTimeMRI.read_hdf5(type(self).filename_mri_out)
  
         validate_refined_mri_coordinates(self, self.mri, out_mri)        
-        validate_replicated_mri_vector_array(self, self.mri.velocity_mean, out_mri.voxel_feature)
+        validate_replicated_mri_vector_array(self, self.mri.velocity_mean, out_mri.vector_feature)
  
     def tearDown(self):
 #         pass

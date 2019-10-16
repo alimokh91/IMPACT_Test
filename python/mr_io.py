@@ -90,7 +90,7 @@ def write_space_time_voxel_scalar_feature(grp, name, voxel_feature):
     voxel_feature_transposed = voxel_feature.transpose((2,1,0,3))
     ds = grp.create_dataset(name, voxel_feature_transposed.shape, data=voxel_feature_transposed, dtype=voxel_feature_transposed.dtype)
     
-def write_space_time_voxel_feature(grp, name, voxel_feature):
+def write_space_time_voxel_vector_feature(grp, name, voxel_feature):
     voxel_feature_transposed = voxel_feature.transpose((2,1,0,3,4))
     ds = grp.create_dataset(name, voxel_feature_transposed.shape, data=voxel_feature_transposed, dtype=voxel_feature_transposed.dtype)
     
@@ -115,15 +115,15 @@ class SpaceTimeMRI:
 
     group_name = "space-time-mri"
     
-    def __init__(self, geometry: List[np.ndarray], time: np.ndarray, voxel_feature: np.ndarray):
+    def __init__(self, geometry: List[np.ndarray], time: np.ndarray, vector_feature: np.ndarray):
         """Voxel-based parameters must be specified in (x,y,z,t,i)-order, Fortran will treat it in (i,t,x,y,z)-order.
            The index i is used as the component index (i.e. between 0..2 for mean and 0..5 for covariance of velocity field)
         """
         validate_spacetime_coordinates(geometry, time)
-        validate_spacetime_vector_feature(SpaceTimeMRI, geometry, time, voxel_feature)
+        validate_spacetime_vector_feature(SpaceTimeMRI, geometry, time, vector_feature)
         self.geometry = geometry
         self.time = time
-        self.voxel_feature = voxel_feature
+        self.vector_feature = vector_feature
 
     def write_hdf5(self, path: str):
         """Write this MRI to hpc-predict-io HDF5-format at path"""
@@ -135,7 +135,7 @@ class SpaceTimeMRI:
             # here comes the actual serialization code (transposition to use Fortran memory layout)
             grp = f.create_group(SpaceTimeMRI.group_name)
             write_space_time_coordinates(grp, self.geometry, self.time)
-            write_space_time_voxel_feature(grp, "voxel_feature", self.voxel_feature)
+            write_space_time_voxel_vector_feature(grp, "vector_feature", self.vector_feature)
 
     def read_hdf5(path: str):
         """Read MRI from file at path as hpc-predict-io HDF5-format"""
@@ -144,7 +144,7 @@ class SpaceTimeMRI:
             return SpaceTimeMRI(geometry=[f[SpaceTimeMRI.group_name][coord_name][()] \
                                           for coord_name in ["x_coordinates", "y_coordinates", "z_coordinates"]],
                                 time=f[SpaceTimeMRI.group_name]["t_coordinates"][()],
-                                voxel_feature=f[SpaceTimeMRI.group_name]["voxel_feature"][()].transpose((2,1,0,3,4)))
+                                vector_feature=f[SpaceTimeMRI.group_name]["vector_feature"][()].transpose((2,1,0,3,4)))
 
 
 class FlowMRI:
@@ -196,7 +196,7 @@ class FlowMRI:
             write_group_attribute(grp, "t_heart_cycle_period", self.time_heart_cycle_period)
             write_space_time_coordinates(grp, self.geometry, self.time)
             write_space_time_voxel_scalar_feature(grp, "intensity", self.intensity)
-            write_space_time_voxel_feature(grp, "velocity_mean", self.velocity_mean)
+            write_space_time_voxel_vector_feature(grp, "velocity_mean", self.velocity_mean)
             write_space_time_voxel_matrix_feature(grp, "velocity_cov", self.velocity_cov)
 
     def read_hdf5(path: str):
@@ -271,7 +271,7 @@ class SegmentedFlowMRI:
             write_group_attribute(grp, "t_heart_cycle_period", self.time_heart_cycle_period)
             write_space_time_coordinates(grp, self.geometry, self.time)
             write_space_time_voxel_scalar_feature(grp, "intensity", self.intensity)
-            write_space_time_voxel_feature(grp, "velocity_mean", self.velocity_mean)
+            write_space_time_voxel_vector_feature(grp, "velocity_mean", self.velocity_mean)
             write_space_time_voxel_matrix_feature(grp, "velocity_cov", self.velocity_cov)
             write_space_time_voxel_scalar_feature(grp, "segmentation_prob", self.segmentation_prob)
 

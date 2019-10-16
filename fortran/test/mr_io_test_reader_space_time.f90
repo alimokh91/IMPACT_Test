@@ -27,7 +27,7 @@ program mr_io_test_reader_space_time
     print *, mri_dest%t_dim
     print *, mri_dest%t_coordinates
 
-    print *, mri_dest%voxel_feature_dims    
-    print *, mri_dest%voxel_feature
+    print *, mri_dest%vector_feature_dims    
+    print *, mri_dest%vector_feature
 
 end program mr_io_test_reader_space_time

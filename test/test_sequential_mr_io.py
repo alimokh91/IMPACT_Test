@@ -87,8 +87,8 @@ class TestSpaceTimeMRI(unittest.TestCase):
         # Initialize the MRI data
         time = np.random.rand(17)
         geometry = [np.random.rand(23), np.random.rand(13), np.random.rand(19)]
-        voxel_feature = np.random.rand(23,13,19,17,21)
-        self.mri = SpaceTimeMRI(geometry, time, voxel_feature)
+        vector_feature = np.random.rand(23,13,19,17,21)
+        self.mri = SpaceTimeMRI(geometry, time, vector_feature)
     
     def test_communicator(self):
         # Write HDF5 from Python and read HDF5 from Fortran   
@@ -103,7 +103,7 @@ class TestSpaceTimeMRI(unittest.TestCase):
             validate_spatial_fort_array(self, self.mri.geometry[2], out_lines[5:7])
             validate_spatial_fort_array(self, self.mri.time, out_lines[7:9])
  
-            validate_spacetime_vector_fort_array(self, self.mri.voxel_feature, out_lines[9:11])
+            validate_spacetime_vector_fort_array(self, self.mri.vector_feature, out_lines[9:11])
          
     def tearDown(self):
         # Clean up file

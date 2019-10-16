@@ -15,7 +15,7 @@ end type
 character(len=100) :: SpatialMRI_group_name = "spatial-mri"
 
 type SpatialMRI
-     ! voxel_feature
+     ! scalar_feature
      real*8, dimension(:,:,:), allocatable :: scalar_feature
      integer, dimension(3) :: scalar_feature_dims
 end type
@@ -27,7 +27,7 @@ type DistSpatialFeature
 end type
 
 type DistSpatialMRI
-     ! voxel_feature
+     ! scalar_feature
      type(DistSpatialFeature) :: scalar_feature
 end type
 
@@ -49,9 +49,9 @@ type SpaceTimeMRI
      real*8, dimension(:), allocatable :: z_coordinates
      integer :: z_dim
 
-     ! voxel_feature
-     real*8, dimension(:,:,:,:,:), allocatable :: voxel_feature
-     integer, dimension(5) :: voxel_feature_dims
+     ! vector_feature
+     real*8, dimension(:,:,:,:,:), allocatable :: vector_feature
+     integer, dimension(5) :: vector_feature_dims
 end type
 
 type DistSpacetimeScalarFeature ! (t, x, y, z)
@@ -91,8 +91,8 @@ type DistSpacetimeMRI
      real*8, dimension(:), allocatable :: z_coordinates
      integer :: z_dim
 
-     ! voxel_feature
-     type(DistSpacetimeFeature) :: voxel_feature
+     ! vector_feature
+     type(DistSpacetimeFeature) :: vector_feature
 end type
 
 
@@ -232,7 +232,7 @@ subroutine mr_io_deallocate_spacetime_mri(mri)
     deallocate(mri%y_coordinates)
     deallocate(mri%z_coordinates)
     deallocate(mri%t_coordinates)
-    deallocate(mri%voxel_feature)
+    deallocate(mri%vector_feature)
 
 end subroutine mr_io_deallocate_spacetime_mri
 
@@ -244,7 +244,7 @@ subroutine mr_io_deallocate_dist_spacetime_mri(mri)
     deallocate(mri%y_coordinates)
     deallocate(mri%z_coordinates)
     deallocate(mri%t_coordinates)
-    deallocate(mri%voxel_feature%array)
+    deallocate(mri%vector_feature%array)
 
 end subroutine mr_io_deallocate_dist_spacetime_mri
 
