@@ -527,12 +527,12 @@ ifeq ($(CUSR),FALSE)
 
 clean: f2py-clean
 clean:
-	rm -f $(DST)/*.o $(DST)/*.mod $(DST)/$(EXE) $(DST)/$(EXE_DEBUG)
+	rm -f $(DST)/*.o $(DST)/*.mod $(DST)/$(EXE) $(DST)/$(EXE_DEBUG) $(DST)/lib$(NAME).a
 
 else
 
 clean: f2py-clean
 clean:
-	rm -f $(DST)/usr_*.o $(DST)/usr_*.mod $(DST)/$(NAME).o $(DST)/$(EXE) $(DST)/$(NAME_DEBUG).o $(DST)/$(EXE_DEBUG)
+	rm -f $(DST)/usr_*.o $(DST)/usr_*.mod $(DST)/$(NAME).o $(DST)/$(EXE) $(DST)/$(NAME_DEBUG).o $(DST)/$(EXE_DEBUG) $(DST)/lib$(NAME).a
 
 endif
