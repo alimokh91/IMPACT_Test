@@ -92,7 +92,6 @@ if len(sys.argv) < 2:
 
 group = "flow-mri"
 necesary_fiels = ('x_coordinates', 'y_coordinates', 'z_coordinates', 't_coordinates')
-# 'intensity', 'velocity_mean', 'voxel_feature'
 hdf5FileName = sys.argv[1]
 
 
@@ -107,19 +106,21 @@ for field in necesary_fiels:
         print("Missing field {} in file {}".format(field, hdf5FileName))
         exit(1)
 
-for field in ('intensity', 'velocity_mean', 'voxel_feature', 'segmentation_prob'):
-    if field in hdf5file:
-        for idx,coordinates in zip((0,1,2,3), ('z_coordinates', 'y_coordinates', 'x_coordinates', 't_coordinates')):
-            if hdf5file[field].shape[idx] != hdf5file[coordinates].shape[0]:
-                print("The field {} does not have the correct dimensions for {}".format(field, coordinates))
-                exit(1)
-
 scalar_fields = []
 vector_fields = []
-if 'intensity' in hdf5file: scalar_fields.append('intensity')
-if 'segmentation_prob' in hdf5file: scalar_fields.append('segmentation_prob')
-if 'velocity_mean' in hdf5file: vector_fields.append('velocity_mean')
-if 'voxel_feature' in hdf5file: vector_fields.append('voxel_feature')
+for field in hdf5file:
+    if len(hdf5file[field].shape) >=4:
+        for idx,coordinates in zip((0,1,2,3), ('z_coordinates', 'y_coordinates', 'x_coordinates', 't_coordinates')):
+            if hdf5file[field].shape[idx] != hdf5file[coordinates].shape[0]:
+                print("The field {} does not have the correct dimensions for {}. Skipping it in the xdmf file".format(field, coordinates))
+                continue
+    if len(hdf5file[field].shape) == 4:
+        scalar_fields.append(field)
+    if len(hdf5file[field].shape) == 5:
+        if hdf5file[field].shape[4] != 3:
+            print("The field {} has {} components. Expected would be 3 components for a vector field".format(field. hdf5file[field].shape[4]))
+        else:
+            vector_fields.append(field)
 
 xdmfFile = os.path.splitext(hdf5FileName)[0]+'.xdmf'
 xdmfFile = open(xdmfFile, 'w')
