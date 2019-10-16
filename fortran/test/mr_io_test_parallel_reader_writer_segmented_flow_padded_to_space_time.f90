@@ -1,4 +1,4 @@
-program mr_io_test_parallel_reader_writer_flow_padded_to_st
+program mr_io_test_parallel_reader_writer_segmented_flow_padded_to_st
   
     use mr_io_parallel_spacetime
     use mr_io_test_arg_parser
@@ -9,7 +9,7 @@ program mr_io_test_parallel_reader_writer_flow_padded_to_st
     INTEGER err
 !    character(len=100) :: path = "mr_io_test_parallel_flow_with_padding.h5"
 
-    type(DistFlowMRIPadded) :: mri_dest_padded
+    type(DistSegmentedFlowMRIPadded) :: mri_dest_padded
     type(DistSpacetimeMRI) :: mri_dest
 
 
@@ -39,7 +39,7 @@ program mr_io_test_parallel_reader_writer_flow_padded_to_st
 !    print *, mri_dest_padded%domain_padding%rhs
 !    call flush()
 
-    call mr_io_read_parallel_flow_padded(MPI_COMM_WORLD, MPI_INFO_NULL, mr_io_test_mpi_cart_dims, path, mri_dest_padded)
+    call mr_io_read_parallel_segmentedflow_padded(MPI_COMM_WORLD, MPI_INFO_NULL, mr_io_test_mpi_cart_dims, path, mri_dest_padded)
 
     allocate(mri_dest%t_coordinates(size(mri_dest_padded%mri%t_coordinates)*simulation_time_refinement))
     allocate(mri_dest%x_coordinates(size(mri_dest_padded%mri%x_coordinates)*simulation_spatial_refinement(1)))
@@ -129,4 +129,4 @@ program mr_io_test_parallel_reader_writer_flow_padded_to_st
 
     call MPI_Finalize(err)
         
-end program mr_io_test_parallel_reader_writer_flow_padded_to_st
+end program mr_io_test_parallel_reader_writer_segmented_flow_padded_to_st

@@ -204,7 +204,7 @@ class FlowMRI:
         with h5py.File(path, "r") as f:
             # here comes the actual deserialization code
             if "t_heart_cycle_period" not in f[FlowMRI.group_name].attrs:
-                logging.warn("Reading a FlowMRI with t_heart_cycle_period not set - using None in Python object.")
+                logging.warning("Reading a FlowMRI with t_heart_cycle_period not set - using None in Python object.")
                 time_heart_cycle_period = None
             else:
                 time_heart_cycle_period = f[FlowMRI.group_name].attrs["t_heart_cycle_period"]
@@ -280,7 +280,7 @@ class SegmentedFlowMRI:
         with h5py.File(path, "r") as f:
             # here comes the actual deserialization code
             if "t_heart_cycle_period" not in f[SegmentedFlowMRI.group_name].attrs:
-                logging.warn("Reading a SegmentedFlowMRI with t_heart_cycle_period not set - using None in Python object.")
+                logging.warning("Reading a SegmentedFlowMRI with t_heart_cycle_period not set - using None in Python object.")
                 time_heart_cycle_period = None
             else:
                 time_heart_cycle_period = f[SegmentedFlowMRI.group_name].attrs["t_heart_cycle_period"]

@@ -22,11 +22,13 @@ public :: mr_io_write_parallel_flow
 public :: mr_io_read_parallel_flow_padded
 public :: mr_io_read_parallel_segmentedflow
 public :: mr_io_write_parallel_segmentedflow
+public :: mr_io_read_parallel_segmentedflow_padded
 
 public :: DistSpaceTimeMRI
 public :: DistFlowMRI
 public :: DistFlowMRIPadded
 public :: DistSegmentedFlowMRI
+public :: DistSegmentedFlowMRIPadded
 
 public :: SpaceTimeMRI_group_name
 public :: FlowMRI_group_name
@@ -36,6 +38,7 @@ public :: mr_io_deallocate_dist_spacetime_mri
 public :: mr_io_deallocate_dist_flow_mri
 public :: mr_io_deallocate_dist_flow_mri_padded
 public :: mr_io_deallocate_dist_segmentedflow_mri
+public :: mr_io_deallocate_dist_segmentedflow_mri_padded
 
 
 #ifdef __GFORTRAN__
@@ -2417,5 +2420,115 @@ subroutine mr_io_write_parallel_segmentedflow(mr_io_mpi_comm, mr_io_mpi_info, pa
 
 end subroutine mr_io_write_parallel_segmentedflow
 
+
+subroutine mr_io_read_parallel_segmentedflow_padded(mr_io_mpi_comm, mr_io_mpi_info, mr_io_mpi_cart_dims, path, mri_inst_padded)
+
+  implicit none
+
+  character(len=*), intent(in) :: path
+  INTEGER, intent (in) :: mr_io_mpi_comm, mr_io_mpi_info
+  integer, dimension(3), intent(in) :: mr_io_mpi_cart_dims
+  type(DistSegmentedFlowMRIPadded), intent(inout) :: mri_inst_padded
+!  type(DistFlowMRI) :: mri_inst
+
+  INTEGER(HID_T) :: file_id       ! File identifier
+  INTEGER(HID_T) :: grp_id        ! Group identifier
+
+  INTEGER(HID_T) :: plist_id      ! Property list identifier
+
+  INTEGER     ::   error ! Error flag
+
+!  mri_inst = mri_inst_padded%mri
+
+  ! Initialize FORTRAN interface.
+  CALL h5open_f(error)
+  mr_io_handle_error(error)
+
+  ! Setup file access property list with parallel I/O access.
+  CALL h5pcreate_f(H5P_FILE_ACCESS_F, plist_id, error)
+  mr_io_handle_error(error)
+
+  CALL h5pset_fapl_mpio_f(plist_id, mr_io_mpi_comm, mr_io_mpi_info, error)
+  mr_io_handle_error(error)
+
+  ! Open existing file collectively
+  CALL h5fopen_f(trim(path), H5F_ACC_RDWR_F, file_id, error, access_prp = plist_id)
+  mr_io_handle_error(error)
+
+  CALL h5pclose_f(plist_id, error)
+  mr_io_handle_error(error)
+
+  ! Open an existing group
+  CALL h5gopen_f(file_id, SegmentedFlowMRI_group_name, grp_id, error)
+  mr_io_handle_error(error)
+
+  ! Read time coordinates
+  CALL mr_io_read_parallel_coordinates(mr_io_mpi_comm, grp_id, "t", &
+                                       mri_inst_padded%mri%t_coordinates)
+
+  ! Read coordinates
+  CALL mr_io_read_parallel_coordinates(mr_io_mpi_comm, grp_id, "x", &
+                                       mri_inst_padded%mri%x_coordinates)
+  CALL mr_io_read_parallel_coordinates(mr_io_mpi_comm, grp_id, "y", &
+                                       mri_inst_padded%mri%y_coordinates)
+  CALL mr_io_read_parallel_coordinates(mr_io_mpi_comm, grp_id, "z", &
+                                       mri_inst_padded%mri%z_coordinates)
+
+
+  ! Read spatial feature
+  CALL mr_io_read_parallel_spacetime_scalar_feature_padded(mr_io_mpi_comm, &
+                                             mr_io_mpi_cart_dims, &
+                                             grp_id, &
+                                             mri_inst_padded%domain_padding, &
+                                             "intensity", &
+                                             mri_inst_padded%mri%intensity%array, &
+                                             mri_inst_padded%mri%intensity%offset, &
+                                             mri_inst_padded%mri%intensity%dims, &
+                                             mri_inst_padded%mri%intensity%time_offset, &
+                                             mri_inst_padded%mri%intensity%time_dim)
+  CALL mr_io_read_parallel_spacetime_feature_padded(mr_io_mpi_comm, &
+                                             mr_io_mpi_cart_dims, &
+                                             grp_id, &
+                                             mri_inst_padded%domain_padding, &
+                                             "velocity_mean", &
+                                             mri_inst_padded%mri%velocity_mean%array, &
+                                             mri_inst_padded%mri%velocity_mean%offset, &
+                                             mri_inst_padded%mri%velocity_mean%dims, &
+                                             mri_inst_padded%mri%velocity_mean%time_offset, &
+                                             mri_inst_padded%mri%velocity_mean%time_dim)
+  CALL mr_io_read_parallel_spacetime_matrix_feature_padded(mr_io_mpi_comm, &
+                                             mr_io_mpi_cart_dims, &
+                                             grp_id, &
+                                             mri_inst_padded%domain_padding, &
+                                             "velocity_cov", &
+                                             mri_inst_padded%mri%velocity_cov%array, &
+                                             mri_inst_padded%mri%velocity_cov%offset, &
+                                             mri_inst_padded%mri%velocity_cov%dims, &
+                                             mri_inst_padded%mri%velocity_cov%time_offset, &
+                                             mri_inst_padded%mri%velocity_cov%time_dim)
+  CALL mr_io_read_parallel_spacetime_scalar_feature_padded(mr_io_mpi_comm, &
+                                             mr_io_mpi_cart_dims, &
+                                             grp_id, &
+                                             mri_inst_padded%domain_padding, &
+                                             "segmentation_prob", &
+                                             mri_inst_padded%mri%segmentation_prob%array, &
+                                             mri_inst_padded%mri%segmentation_prob%offset, &
+                                             mri_inst_padded%mri%segmentation_prob%dims, &
+                                             mri_inst_padded%mri%segmentation_prob%time_offset, &
+                                             mri_inst_padded%mri%segmentation_prob%time_dim)
+
+  ! Close the group
+  CALL h5gclose_f(grp_id, error)
+  mr_io_handle_error(error)
+
+  ! Close the file.
+  CALL h5fclose_f(file_id, error)
+  mr_io_handle_error(error)
+
+  ! Close FORTRAN interface.
+  CALL h5close_f(error)
+  mr_io_handle_error(error)
+
+end subroutine mr_io_read_parallel_segmentedflow_padded
 
 end module mr_io_parallel_spacetime

@@ -192,67 +192,67 @@ class TestSpatialMRI(unittest.TestCase):
   
   
 class TestSpaceTimeMRI(unittest.TestCase): # FIXME: coordinates test...
-       
+        
     # number of Fortran MPI processes
     mpi_proc = 2**3
-   
+    
     # Filenames
     filename_prefix = os.environ['FORTRAN_TEST_BINARY_PATH'] + "mr_io_test_parallel_reader_space_time"
- 
+  
     filename_exec = filename_prefix
     filename_mri = filename_prefix + ".h5"
     filename_out_rank = filename_prefix + "_%s.out"
     filename_err_rank = filename_prefix + "_%s.err"
-   
+    
     mri_group_name = "space-time-mri"
-   
+    
     def setUp(self):
-        # Initialize the MRI data
+        # Initialize the MRI datan
         time = np.random.rand(11)
         geometry = [np.random.rand(67), np.random.rand(43), np.random.rand(29)]
         vector_feature = np.random.rand(67,43,29,11,3)
         self.mri = SpaceTimeMRI(geometry, time, vector_feature)
         self.mpi_cart_dims = spatial_hyperslab_dims_test(type(self), self.mri.vector_feature)
- 
+  
     def test_communicator(self):  
         # Write HDF5 from Python and read HDF5 from Fortran   
         write_hdf5_read_in_fortran(self)
-   
+    
         for mpi_rank in range(type(self).mpi_proc):
             filename_out = type(self).filename_out_rank % (mpi_rank)
-   
+    
             with open(filename_out,'r') as out:
                 out_lines = [l.strip(' \n') for l in out.readlines()]
-   
+    
                 validate_group_name(self, out_lines[0])
- 
+  
                 validate_spatial_fort_array(self, self.mri.time, out_lines[1:3])
                 validate_spatial_fort_array(self, self.mri.geometry[0], out_lines[3:5])
                 validate_spatial_fort_array(self, self.mri.geometry[1], out_lines[5:7])
                 validate_spatial_fort_array(self, self.mri.geometry[2], out_lines[7:9])
-                 
+                  
                 validate_dist_spacetime_vector_fort_array(self, mpi_rank, self.mri.vector_feature, out_lines[9:17])
-   
-       
+    
+        
     def tearDown(self):
         remove_test_files(self)
-               
-   
+                
+    
 class TestFlowMRI(unittest.TestCase): # FIXME: coordinates test...
     # number of Fortran MPI processes
     mpi_proc = 2**3
-   
+    
     # Filenames
     filename_prefix = os.environ['FORTRAN_TEST_BINARY_PATH'] + "mr_io_test_parallel_reader_flow"
- 
+  
     filename_exec = filename_prefix
     filename_mri = filename_prefix + ".h5"
     filename_out_rank = filename_prefix + "_%s.out"
     filename_err_rank = filename_prefix + "_%s.err"
-   
+    
     mri_group_name = "flow-mri"
-   
-   
+    
+    
     def setUp(self):
         # Initialize the MRI data
         time = np.random.rand(11)
@@ -263,48 +263,48 @@ class TestFlowMRI(unittest.TestCase): # FIXME: coordinates test...
         velocity_cov = np.random.rand(67,43,29,11,3,5)        
         self.mri = FlowMRI(geometry, time, time_heart_cycle_period, intensity, velocity_mean, velocity_cov)
         self.mpi_cart_dims = spatial_hyperslab_dims_test(type(self), self.mri.intensity)
- 
-     
+  
+      
     def test_communicator(self):
         # Write HDF5 from Python and read HDF5 from Fortran   
         write_hdf5_read_in_fortran(self)
-   
+    
         for mpi_rank in range(type(self).mpi_proc):
             filename_out = type(self).filename_out_rank % (mpi_rank)
-   
+    
             with open(filename_out,'r') as out:
                 out_lines = [l.strip(' \n') for l in out.readlines()]
-   
+    
                 validate_group_name(self, out_lines[0])
- 
+  
                 validate_spatial_fort_array(self, self.mri.time, out_lines[1:3])
                 validate_spatial_fort_array(self, self.mri.geometry[0], out_lines[3:5])
                 validate_spatial_fort_array(self, self.mri.geometry[1], out_lines[5:7])
                 validate_spatial_fort_array(self, self.mri.geometry[2], out_lines[7:9])
- 
+  
                 validate_dist_spacetime_scalar_fort_array(self, mpi_rank, self.mri.intensity, out_lines[9:16])
                 validate_dist_spacetime_vector_fort_array(self, mpi_rank, self.mri.velocity_mean, out_lines[16:24])
                 validate_dist_spacetime_matrix_fort_array(self, mpi_rank, self.mri.velocity_cov, out_lines[24:32])
-       
+        
     def tearDown(self):
         remove_test_files(self)
-              
- 
+               
+  
 class TestSegmentedFlowMRI(unittest.TestCase): # FIXME: coordinates test...
     # number of Fortran MPI processes
     mpi_proc = 2**3
-   
+    
     # Filenames
     filename_prefix = os.environ['FORTRAN_TEST_BINARY_PATH'] + "mr_io_test_parallel_reader_segmented_flow"
- 
+  
     filename_exec = filename_prefix
     filename_mri = filename_prefix + ".h5"
     filename_out_rank = filename_prefix + "_%s.out"
     filename_err_rank = filename_prefix + "_%s.err"
-   
+    
     mri_group_name = "segmented-flow-mri"
-   
-   
+    
+    
     def setUp(self):
         # Initialize the MRI data
         time = np.random.rand(11)
@@ -316,7 +316,73 @@ class TestSegmentedFlowMRI(unittest.TestCase): # FIXME: coordinates test...
         segmentation_prob = np.random.rand(67,43,29,11)        
         self.mri = SegmentedFlowMRI(geometry, time, time_heart_cycle_period, intensity, velocity_mean, velocity_cov, segmentation_prob)
         self.mpi_cart_dims = spatial_hyperslab_dims_test(type(self), self.mri.intensity)
+  
+      
+    def test_communicator(self):
+        # Write HDF5 from Python and read HDF5 from Fortran   
+        write_hdf5_read_in_fortran(self)
+    
+        for mpi_rank in range(type(self).mpi_proc):
+            filename_out = type(self).filename_out_rank % (mpi_rank)
+    
+            with open(filename_out,'r') as out:
+                out_lines = [l.strip(' \n') for l in out.readlines()]
+    
+                validate_group_name(self, out_lines[0])
+  
+                validate_spatial_fort_array(self, self.mri.time, out_lines[1:3])
+                validate_spatial_fort_array(self, self.mri.geometry[0], out_lines[3:5])
+                validate_spatial_fort_array(self, self.mri.geometry[1], out_lines[5:7])
+                validate_spatial_fort_array(self, self.mri.geometry[2], out_lines[7:9])
+  
+                validate_dist_spacetime_scalar_fort_array(self, mpi_rank, self.mri.intensity, out_lines[9:16])
+                validate_dist_spacetime_vector_fort_array(self, mpi_rank, self.mri.velocity_mean, out_lines[16:24])
+                validate_dist_spacetime_matrix_fort_array(self, mpi_rank, self.mri.velocity_cov, out_lines[24:32])
+                validate_dist_spacetime_scalar_fort_array(self, mpi_rank, self.mri.segmentation_prob, out_lines[32:39])
+        
+    def tearDown(self):
+        remove_test_files(self)
  
+             
+class TestFlowMRIPadded(unittest.TestCase): # FIXME: coordinates test...
+    # number of Fortran MPI processes
+    mpi_proc = 2**3
+   
+    # Filenames
+    filename_prefix = os.environ['FORTRAN_TEST_BINARY_PATH'] + "mr_io_test_parallel_reader_flow_padded"
+ 
+    filename_exec = filename_prefix
+    filename_mri = filename_prefix + ".h5"
+    filename_out_rank = filename_prefix + "_%s.out"
+    filename_err_rank = filename_prefix + "_%s.err"
+   
+    mri_group_name = "flow-mri"
+     
+    padding = (1.5, 1.4, 1.7)
+   
+    def setUp(self):
+        test_cls = type(self)
+         
+        # Initialize the MRI data
+        time = np.random.rand(11)
+        time_heart_cycle_period = np.max(time)
+        geometry = [np.random.rand(67), np.random.rand(43), np.random.rand(29)]
+        intensity = np.random.rand(67,43,29,11)        
+        velocity_mean = np.random.rand(67,43,29,11,3)        
+        velocity_cov = np.random.rand(67,43,29,11,3,5)        
+        self.mri = FlowMRI(geometry, time, time_heart_cycle_period, intensity, velocity_mean, velocity_cov)
+         
+        self.mpi_cart_dims = spatial_hyperslab_dims_test(type(self), self.mri.intensity)
+         
+        test_cls.num_vox = intensity.shape[:3]
+         
+        num_pad_vox = [int(np.ceil(2.*test_cls.padding[i]*test_cls.num_vox[i])) for i in range(3)]
+         
+        num_ext_vox = [((test_cls.num_vox[i] + num_pad_vox[i] + self.mpi_cart_dims[i] -1) // self.mpi_cart_dims[i]) \
+                       * self.mpi_cart_dims[i] for i in range(3)]
+        test_cls.num_pad_vox_lhs = [(num_ext_vox[i]-test_cls.num_vox[i])//2 for i in range(3)]
+        test_cls.num_pad_vox_rhs = [(num_ext_vox[i]-test_cls.num_vox[i]+1)//2 for i in range(3)]
+        test_cls.num_vox_per_proc = [num_ext_vox[i]//self.mpi_cart_dims[i] for i in range(3)]
      
     def test_communicator(self):
         # Write HDF5 from Python and read HDF5 from Fortran   
@@ -327,6 +393,8 @@ class TestSegmentedFlowMRI(unittest.TestCase): # FIXME: coordinates test...
    
             with open(filename_out,'r') as out:
                 out_lines = [l.strip(' \n') for l in out.readlines()]
+ 
+                validate_dist_spacetime_scalar_fort_array(self, mpi_rank, self.mri.intensity, out_lines[9:16])
    
                 validate_group_name(self, out_lines[0])
  
@@ -338,25 +406,24 @@ class TestSegmentedFlowMRI(unittest.TestCase): # FIXME: coordinates test...
                 validate_dist_spacetime_scalar_fort_array(self, mpi_rank, self.mri.intensity, out_lines[9:16])
                 validate_dist_spacetime_vector_fort_array(self, mpi_rank, self.mri.velocity_mean, out_lines[16:24])
                 validate_dist_spacetime_matrix_fort_array(self, mpi_rank, self.mri.velocity_cov, out_lines[24:32])
-                validate_dist_spacetime_scalar_fort_array(self, mpi_rank, self.mri.segmentation_prob, out_lines[32:39])
        
     def tearDown(self):
-        remove_test_files(self)
-
+        remove_test_files(self)            
             
-class TestFlowMRIPadded(unittest.TestCase): # FIXME: coordinates test...
+
+class TestSegmentedFlowMRIPadded(unittest.TestCase): # FIXME: coordinates test...
     # number of Fortran MPI processes
     mpi_proc = 2**3
   
     # Filenames
-    filename_prefix = os.environ['FORTRAN_TEST_BINARY_PATH'] + "mr_io_test_parallel_reader_flow_padded"
+    filename_prefix = os.environ['FORTRAN_TEST_BINARY_PATH'] + "mr_io_test_parallel_reader_segmented_flow_padded"
 
     filename_exec = filename_prefix
     filename_mri = filename_prefix + ".h5"
     filename_out_rank = filename_prefix + "_%s.out"
     filename_err_rank = filename_prefix + "_%s.err"
   
-    mri_group_name = "flow-mri"
+    mri_group_name = "segmented-flow-mri"
     
     padding = (1.5, 1.4, 1.7)
   
@@ -370,7 +437,8 @@ class TestFlowMRIPadded(unittest.TestCase): # FIXME: coordinates test...
         intensity = np.random.rand(67,43,29,11)        
         velocity_mean = np.random.rand(67,43,29,11,3)        
         velocity_cov = np.random.rand(67,43,29,11,3,5)        
-        self.mri = FlowMRI(geometry, time, time_heart_cycle_period, intensity, velocity_mean, velocity_cov)
+        segmentation_prob = np.random.rand(67,43,29,11)        
+        self.mri = SegmentedFlowMRI(geometry, time, time_heart_cycle_period, intensity, velocity_mean, velocity_cov, segmentation_prob)
         
         self.mpi_cart_dims = spatial_hyperslab_dims_test(type(self), self.mri.intensity)
         
@@ -406,10 +474,11 @@ class TestFlowMRIPadded(unittest.TestCase): # FIXME: coordinates test...
                 validate_dist_spacetime_scalar_fort_array(self, mpi_rank, self.mri.intensity, out_lines[9:16])
                 validate_dist_spacetime_vector_fort_array(self, mpi_rank, self.mri.velocity_mean, out_lines[16:24])
                 validate_dist_spacetime_matrix_fort_array(self, mpi_rank, self.mri.velocity_cov, out_lines[24:32])
+                validate_dist_spacetime_scalar_fort_array(self, mpi_rank, self.mri.segmentation_prob, out_lines[32:39])
       
     def tearDown(self):
+#         pass
         remove_test_files(self)            
-            
             
 if __name__ == '__main__':
     unittest.main()

@@ -201,6 +201,10 @@ type DistSegmentedFlowMRI
      type(DistSpacetimeScalarFeature) :: segmentation_prob
 end type
 
+type DistSegmentedFlowMRIPadded
+     type(DistSegmentedFlowMRI) :: mri
+     type(DomainPadding) :: domain_padding
+end type
 
 
 contains
@@ -313,6 +317,14 @@ subroutine mr_io_deallocate_dist_segmentedflow_mri(mri)
     deallocate(mri%segmentation_prob%array)
 
 end subroutine mr_io_deallocate_dist_segmentedflow_mri
+
+subroutine mr_io_deallocate_dist_segmentedflow_mri_padded(mri)
+
+    implicit none
+    type(DistSegmentedFlowMRIPadded), intent(inout) :: mri
+    call mr_io_deallocate_dist_segmentedflow_mri(mri%mri)
+
+end subroutine mr_io_deallocate_dist_segmentedflow_mri_padded
 
 
 end module mr_io_protocol
