@@ -139,7 +139,7 @@ PROGRAM impact_debug
   allocate(mri_dest%x_coordinates(size(mri_inst%mri%x_coordinates)*kalman_num_spatial_refinements(1)))
   allocate(mri_dest%y_coordinates(size(mri_inst%mri%y_coordinates)*kalman_num_spatial_refinements(2)))
   allocate(mri_dest%z_coordinates(size(mri_inst%mri%z_coordinates)*kalman_num_spatial_refinements(3)))
-  allocate(mri_dest%voxel_feature%array(  lbound(mri_inst%mri%velocity_mean%array,1):ubound(mri_inst%mri%velocity_mean%array,1), &
+  allocate(mri_dest%vector_feature%array(  lbound(mri_inst%mri%velocity_mean%array,1):ubound(mri_inst%mri%velocity_mean%array,1), &
                                          (lbound(mri_inst%mri%velocity_mean%array,2)-1)*kalman_num_time_refinements+1:ubound(mri_inst%mri%velocity_mean%array,2)*kalman_num_time_refinements, &
                                          (lbound(mri_inst%mri%velocity_mean%array,3)-1)*kalman_num_spatial_refinements(1)+1:ubound(mri_inst%mri%velocity_mean%array,3)*kalman_num_spatial_refinements(1), &
                                          (lbound(mri_inst%mri%velocity_mean%array,4)-1)*kalman_num_spatial_refinements(2)+1:ubound(mri_inst%mri%velocity_mean%array,4)*kalman_num_spatial_refinements(2), &
@@ -164,12 +164,12 @@ PROGRAM impact_debug
   mri_dest%z_dim = mri_inst%mri%x_dim*kalman_num_spatial_refinements(3)
 
   ! Local hyperslab dimensions - TODO: Fix time dimensions
-  mri_dest%voxel_feature%time_offset = mri_inst%mri%velocity_mean%time_offset*kalman_num_time_refinements
-  mri_dest%voxel_feature%time_dim = mri_inst%mri%velocity_mean%time_dim*kalman_num_time_refinements
-  mri_dest%voxel_feature%offset = (/ mri_inst%mri%velocity_mean%offset(1)*kalman_num_spatial_refinements(1), &
+  mri_dest%vector_feature%time_offset = mri_inst%mri%velocity_mean%time_offset*kalman_num_time_refinements
+  mri_dest%vector_feature%time_dim = mri_inst%mri%velocity_mean%time_dim*kalman_num_time_refinements
+  mri_dest%vector_feature%offset = (/ mri_inst%mri%velocity_mean%offset(1)*kalman_num_spatial_refinements(1), &
                                      mri_inst%mri%velocity_mean%offset(2)*kalman_num_spatial_refinements(2), &
                                      mri_inst%mri%velocity_mean%offset(3)*kalman_num_spatial_refinements(3) /)
-  mri_dest%voxel_feature%dims = (/ mri_inst%mri%velocity_mean%dims(1)*kalman_num_spatial_refinements(1), &
+  mri_dest%vector_feature%dims = (/ mri_inst%mri%velocity_mean%dims(1)*kalman_num_spatial_refinements(1), &
                                    mri_inst%mri%velocity_mean%dims(2)*kalman_num_spatial_refinements(2), &
                                    mri_inst%mri%velocity_mean%dims(3)*kalman_num_spatial_refinements(3) /)
 
@@ -205,7 +205,7 @@ PROGRAM impact_debug
           end do
       end do
 
-      mri_dest%voxel_feature%array(:, it, lbound_x:ubound_x, lbound_y:ubound_y, lbound_z:ubound_z) = pressure_voxel_velocity
+      mri_dest%vector_feature%array(:, it, lbound_x:ubound_x, lbound_y:ubound_y, lbound_z:ubound_z) = pressure_voxel_velocity
   end do
 
 
@@ -246,7 +246,7 @@ PROGRAM impact_debug
 !                   work3(lbound_x+0:ubound_x+0, lbound_y+0:ubound_y+0, lbound_z+1:ubound_z+1) + &
 !                   work3(lbound_x+0:ubound_x+0, lbound_y+0:ubound_y+0, lbound_z+0:ubound_z+0) )
 !
-!      mri_dest%voxel_feature%array(:, it, lbound_x:ubound_x, lbound_y:ubound_y, lbound_z:ubound_z) = pressure_voxel_velocity
+!      mri_dest%vector_feature%array(:, it, lbound_x:ubound_x, lbound_y:ubound_y, lbound_z:ubound_z) = pressure_voxel_velocity
 !  end do
 
   ! Write MRI-assimilated fluid simulation to output file
