@@ -10,7 +10,7 @@ if [ ! -d $DATASOURCE_DIR ]; then
   mkdir -p ${DATASOURCE_DIR}
 
   echo "Downloading json file."
-  wget -O ${DATASOURCE_METADATA_FILENAME} https://www.dropbox.com/s/otbu709nc6k8fsq/bern_exp_metadata.json?dl=0 
+  wget -O ${DATASOURCE_METADATA_FILENAME} https://www.dropbox.com/s/0jaqteyysxo5ps5/bern_exp_metadata.json?dl=0 
   mv ${DATASOURCE_METADATA_FILENAME} ${DATASOURCE_DIR}/ 
 
   echo "Downloading files and extracting them to $(pwd)/${DATASOURCE_DIR} directory." 

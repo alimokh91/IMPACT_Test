@@ -49,5 +49,4 @@ heart_cycle_period = 60/70
 exp_protocol={"time_slices":time_slices,"heart_cycle_period":heart_cycle_period}
 
 with open(args.output,'w') as exp_protocol_file:
-    #json.dump(time_slices,exp_protocol_file)
     json.dump(exp_protocol, exp_protocol_file, indent=4, sort_keys=True)
