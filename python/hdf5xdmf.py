@@ -8,7 +8,7 @@ xdmfTemplate = """
 <Xdmf>
   <Domain>
     <Grid Name="GridTime" GridType="Collection" CollectionType="Temporal">
-    {% for curIdx in range(timeSlices.shape[0]) -%}
+      {%- for curIdx in range(timeSlices.shape[0]) %}
       <Grid Name="Grid" GridType="Uniform">
         <Time Value="{{ timeSlices[curIdx] }}" />
         <Topology TopologyType="3DRectMesh" Dimensions="{{ zDims }} {{ yDims }} {{ xDims }}" />
@@ -17,7 +17,7 @@ xdmfTemplate = """
           <DataItem Name="Y" Format="HDF" NumberType="Float" Precision="8" Dimensions="{{ yDims }}">{{ hdf5FileName }}:/{{ group }}/y_coordinates</DataItem>
           <DataItem Name="Z" Format="HDF" NumberType="Float" Precision="8" Dimensions="{{ zDims }}">{{ hdf5FileName }}:/{{ group }}/z_coordinates</DataItem>
         </Geometry>
-        {% for scalar_field in scalar_fields -%}
+        {%- for scalar_field in scalar_fields %}
         <Attribute AttributeType="Scalar" Name="{{ scalar_field }}" Center="Node">
           <DataItem ItemType="HyperSlab" Dimensions="{{ zDims }} {{ yDims }} {{ xDims }}" Format="XML">
             <DataItem Dimensions="3 4" Format="XML">
@@ -30,8 +30,8 @@ xdmfTemplate = """
             </DataItem>
           </DataItem>
         </Attribute>
-        {% endfor -%}
-        {% for vector_field in vector_fields -%}
+        {%- endfor %}
+        {%- for vector_field in vector_fields %}
         <Attribute AttributeType="Vector" Name="{{ vector_field }}" Center="Node">
           <DataItem ItemType="HyperSlab" Dimensions="{{ zDims }} {{ yDims }} {{ xDims }} 3" Format="XML">
             <DataItem Dimensions="3 5" Format="XML">
@@ -77,10 +77,10 @@ xdmfTemplate = """
               </DataItem>
             </DataItem>
           </DataItem>
-       </Attribute>
-       {% endfor -%}
+        </Attribute>
+        {%- endfor %}
       </Grid>
-    {% endfor -%}
+      {%- endfor %}
     </Grid>
   </Domain>
 </Xdmf>
@@ -96,9 +96,9 @@ hdf5FileName = sys.argv[1]
 
 
 hdf5file = h5py.File(hdf5FileName, 'r')
-if not group in hdf5file:
-    print("Missing group {} in file {}".format(group, hdf5FileName))
-    exit(1)
+if len(hdf5file)==0:
+    print("Missing group in file {}".format(hdf5FileName))
+group =  list(hdf5file.keys())[0]
 hdf5file = hdf5file[group]
 
 for field in necesary_fiels:
