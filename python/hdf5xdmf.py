@@ -40,7 +40,7 @@ xdmfTemplate = """
               {{ zDims }} {{ yDims }} {{ xDims }} 1 3 <!-- count -->
             </DataItem>
             <DataItem Format="HDF" NumberType="Float" Precision="8" Dimensions="{{ zDims }} {{ yDims }} {{ xDims }} {{ tDims }} 3">
-              {{ hdf5FileName }}:/{{ group }}/velocity_mean
+              {{ hdf5FileName }}:/{{ group }}/{{ vector_field }}
             </DataItem>
           </DataItem>
         </Attribute>
@@ -53,7 +53,7 @@ xdmfTemplate = """
                 {{ zDims }} {{ yDims }} {{ xDims }} 1 1 <!-- count -->
               </DataItem>
               <DataItem Format="HDF" NumberType="Float" Precision="8" Dimensions="{{ zDims }} {{ yDims }} {{ xDims }} {{ tDims }} 3">
-                {{ hdf5FileName }}:/{{ group }}/velocity_mean
+                {{ hdf5FileName }}:/{{ group }}/{{ vector_field }}
               </DataItem>
             </DataItem>
             <DataItem ItemType="HyperSlab" Dimensions="{{ zDims }} {{ yDims }} {{ xDims }}" Format="XML">
@@ -63,7 +63,7 @@ xdmfTemplate = """
                 {{ zDims }} {{ yDims }} {{ xDims }} 1 1 <!-- count -->
               </DataItem>
               <DataItem Format="HDF" NumberType="Float" Precision="8" Dimensions="{{ zDims }} {{ yDims }} {{ xDims }} {{ tDims }} 3">
-                {{ hdf5FileName }}:/{{ group }}/velocity_mean
+                {{ hdf5FileName }}:/{{ group }}/{{ vector_field }}
               </DataItem>
             </DataItem>
             <DataItem ItemType="HyperSlab" Dimensions="{{ zDims }} {{ yDims }} {{ xDims }}" Format="XML">
@@ -73,7 +73,7 @@ xdmfTemplate = """
                 {{ zDims }} {{ yDims }} {{ xDims }} 1 1 <!-- count -->
               </DataItem>
               <DataItem Format="HDF" NumberType="Float" Precision="8" Dimensions="{{ zDims }} {{ yDims }} {{ xDims }} {{ tDims }} 3">
-                {{ hdf5FileName }}:/{{ group }}/velocity_mean
+                {{ hdf5FileName }}:/{{ group }}/{{ vector_field }}
               </DataItem>
             </DataItem>
           </DataItem>
