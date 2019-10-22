@@ -108,14 +108,14 @@ def main():
     template_args['kalman_num_spatial_refinements'] = " ".join([str(sr) for sr in args.sr])
 
     template_args['time_start'] = mri.time[0]   # 0.
-    template_args['time_end']   = mri.time[-1]  # 5000.
+    template_args['time_end']   = mri.time_heart_cycle_period * 100  # 5000.
     
-    template_args['n_timesteps'] = args.tr*len(mri.time) #'100000000'
+    template_args['n_intervals'] = args.tr*len(mri.time) #'100000000'
     
     # Kalman filter variables (probably subject to change) # FIXME: These fields are probably all outdated
     template_args['dtime_out_scal'] = '0.0' # Delta time for saving data from DNS simulation 
                                             #for subsequent Kalman-filtered sim.
-    template_args['dtime_out_kalm'] = '0.2' # Delta time for Kalman-filtered sim.
+    template_args['dtime_out_kalm'] = mri.time[0]   # 0.
     template_args['vel_initcond_file_yes'] = 'F' # for DNS set to true, for Kalman-filtered sim. to false
     
     # For now temporary solution to pass meta-information due to internal compiler error with hpc-predict-io/fortran
