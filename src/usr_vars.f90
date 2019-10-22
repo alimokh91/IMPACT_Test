@@ -80,47 +80,4 @@ MODULE usr_vars
   TYPE(C_PTR), bind(C,name='_wk_pre_c') :: wk_preptr
 #endif
 
-  INTEGER :: n_data,n_data_tot,data_shift
-	REAL, ALLOCATABLE :: mean_gbl(:,:,:,:,:)
-
-  TYPE stats_t
-     INTEGER :: i_data,m
-     INTEGER, POINTER :: x(:),y(:),z(:)  !i,j,k of the grid node for each m component
-     REAL, POINTER :: mean_xyz(:),covar_xyz(:),mean_xyzt(:,:),covar_xyzt(:,:) !stats
-     REAL, POINTER :: wgt(:) !stats
-     TYPE(stats_t), POINTER :: next
-  END TYPE stats_t
-
-  TYPE stats_group_t
-     INTEGER :: group_id,phase
-     INTEGER :: n_data,n_data_tot,data_shift
-     TYPE(stats_t), pointer :: stats_first
-     TYPE(stats_group_t), POINTER :: next
-  END TYPE stats_group_t
-
-  TYPE(stats_group_t), pointer :: stats_group_first
-
-  TYPE kalman_t
-     INTEGER :: i_data,flg,m,phase
-     INTEGER, POINTER :: x(:),y(:),z(:)  !i,j,k of the grid node for each m component
-     REAL, POINTER :: mean(:,:,:),covar(:,:,:) ! phases, m, 3 or 6
-     REAL, POINTER :: muf(:),pf(:,:),obs_data(:),obs_covar(:,:),obs_oper(:,:),K(:,:) !kalman
-     TYPE(kalman_t), POINTER :: next
-  END TYPE kalman_t
-
-  TYPE(kalman_t), pointer :: kalman_first
-
-  ! MRI file paths
-  character(len=300) :: kalman_mri_input_file_path
-  character(len=300) :: kalman_mri_output_file_path
-
-  ! Attributes of input MRI (currently supplied through config due to compiler error in hpc-predict-io)
-  REAL*8 :: kalman_mri_input_attr_t_heart_cycle_period
-
-  ! MRI grid layout parameters
-  INTEGER, DIMENSION(3) :: kalman_num_data_voxels_per_process = (/-1, -1, -1/)
-  INTEGER :: kalman_num_time_refinements = -1
-  INTEGER, DIMENSION(3) :: kalman_num_spatial_refinements = (/-1, -1, -1/)
-  TYPE(DomainPadding) :: kalman_domain_padding
-
 END MODULE usr_vars

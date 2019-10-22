@@ -25,6 +25,8 @@ MODULE mod_vars
   
   USE mod_dims
   USE ISO_C_BINDING !bbecsek
+  USE mr_io_protocol, only: DomainPadding
+  USE mr_io_parallel_spacetime
 
   IMPLICIT NONE
   
@@ -133,8 +135,8 @@ MODULE mod_vars
   INTEGER, PROTECTED, bind(C, name='_b3l_c') :: b3l_c = b3L
  
   !--- upwind (nicht-linear) ---------------------------------------------------------------------------------
-  ! (aktuell wird nicht zwischen auf- und abwärtsgerichteten Stencils unterschieden, um auch am Rand arbeiten
-  !  zu können, wo KEINE upwind-Differenzierung verwendet wird)
+  ! (aktuell wird nicht zwischen auf- und abwÃ¤rtsgerichteten Stencils unterschieden, um auch am Rand arbeiten
+  !  zu kÃ¶nnen, wo KEINE upwind-Differenzierung verwendet wird)
   INTEGER, PARAMETER     ::  n1L = b1L
   INTEGER, PARAMETER     ::  n2L = b2L
   INTEGER, PARAMETER     ::  n3L = b3L
@@ -214,8 +216,8 @@ MODULE mod_vars
   INTEGER, PARAMETER     ::  b3L = -3
 
   !--- upwind (nicht-linear) ---------------------------------------------------------------------------------
-  ! (aktuell wird nicht zwischen auf- und abwärtsgerichteten Stencils unterschieden, um auch am Rand arbeiten
-  !  zu können, wo KEINE upwind-Differenzierung verwendet wird)
+  ! (aktuell wird nicht zwischen auf- und abwÃ¤rtsgerichteten Stencils unterschieden, um auch am Rand arbeiten
+  !  zu kÃ¶nnen, wo KEINE upwind-Differenzierung verwendet wird)
   INTEGER, PARAMETER     ::  n1L = -3
   INTEGER, PARAMETER     ::  n2L = -3
   INTEGER, PARAMETER     ::  n3L = -3
@@ -321,13 +323,13 @@ MODULE mod_vars
   REAL   , ALLOCATABLE   ::  cFv2(:,:)
   REAL   , ALLOCATABLE   ::  cFw3(:,:)
   
-  !--- Integrator (nur für Druckgitter) ----------------------------------------------------------------------
+  !--- Integrator (nur fÃ¼r Druckgitter) ----------------------------------------------------------------------
   REAL   , ALLOCATABLE   ::  cInt1(:,:)
   REAL   , ALLOCATABLE   ::  cInt2(:,:)
   REAL   , ALLOCATABLE   ::  cInt3(:,:)  
   
   !--- 2. Ableitung (Multigrid) ------------------------------------------------------------------------------ 
-  ! Anmerkung: Die Koeffizientensätze unterscheiden sich z.T. lediglich durch die Randbedingungen.
+  ! Anmerkung: Die KoeffizientensÃ¤tze unterscheiden sich z.T. lediglich durch die Randbedingungen.
   REAL   , ALLOCATABLE   ::  cp11R(:,:,:)
   REAL   , ALLOCATABLE   ::  cp22R(:,:,:)
   REAL   , ALLOCATABLE   ::  cp33R(:,:,:)
@@ -464,8 +466,8 @@ MODULE mod_vars
 #endif
   
   !--- Ausfluss-RB (Geschwindigkeitsfeld) --------------------------------------------------------------------
-  ! Da die RHS für die Konzentrationsfelder nicht über die Runge-Kutta-Zwischenschritte hinweg gespeichert 
-  ! werden, müssen mindestens die zugehörigen Randbedingungen gespeichert werden.
+  ! Da die RHS fÃ¼r die Konzentrationsfelder nicht Ã¼ber die Runge-Kutta-Zwischenschritte hinweg gespeichert 
+  ! werden, mÃ¼ssen mindestens die zugehÃ¶rigen Randbedingungen gespeichert werden.
   REAL   , ALLOCATABLE   ::  bc11(:,:,:), nlbc11(:,:,:)
   REAL   , ALLOCATABLE   ::  bc12(:,:,:), nlbc12(:,:,:)
   REAL   , ALLOCATABLE   ::  bc13(:,:,:), nlbc13(:,:,:)
@@ -487,7 +489,7 @@ MODULE mod_vars
   !--- Druckgradient (eine Komponente) -----------------------------------------------------------------------
   REAL   , ALLOCATABLE   ::  gpre(:,:,:)
   
-  !--- Gewichte für Divergenzfreiheit ------------------------------------------------------------------------
+  !--- Gewichte fÃ¼r Divergenzfreiheit ------------------------------------------------------------------------
   REAL   , ALLOCATABLE   ::  weight(:,:,:)
   
    !--- Null-Raum-Vektor --------------------------------------------------------------------------------------
@@ -622,7 +624,7 @@ MODULE mod_vars
   !--- Indexverschiebung (Block --> global) ------------------------------------------------------------------
   INTEGER                ::  iShift, jShift, kShift
   
-  !--- Domaingrösse (Periodizität-bereinigt) -----------------------------------------------------------------
+  !--- DomaingrÃ¶sse (PeriodizitÃ¤t-bereinigt) -----------------------------------------------------------------
   INTEGER                ::  dim1, dim2, dim3
   
   !--- Druck / Konzentrationen (inklusive Rand) --------------------------------------------------------------
@@ -655,7 +657,7 @@ MODULE mod_vars
   INTEGER                ::  S11R, S22R, S33R
   INTEGER                ::  d11R, d22R, d33R
   
-  !--- Ueberlappungskonvention der Blöcke (Multigrid, siehe mod_setup) ---------------------------------------
+  !--- Ueberlappungskonvention der BlÃ¶cke (Multigrid, siehe mod_setup) ---------------------------------------
   INTEGER, PARAMETER     ::  ls1 = -1
   INTEGER, PARAMETER     ::  ls2 = -1
   INTEGER, PARAMETER     ::  ls3 = -1
@@ -845,7 +847,7 @@ MODULE mod_vars
   INTEGER                ::  direction
   
   !--- explizite Behandlung von Ecken bei Dirichlet-Randbedingungen ------------------------------------------
-  ! (Hintergrund: Der Druck ist an diesen Orten unbestimmt, so dass er dort künstlich zu Null gesetzt wird.)
+  ! (Hintergrund: Der Druck ist an diesen Orten unbestimmt, so dass er dort kÃ¼nstlich zu Null gesetzt wird.)
   LOGICAL, PARAMETER     ::  corner_yes = .TRUE.
 
 #ifndef FTOPY
@@ -872,13 +874,13 @@ MODULE mod_vars
   INTEGER                ::  n_it_Poisson
   INTEGER                ::  n_it_Helmh_vel
   
-  !--- erwartete Konvergenzrate (äussere Iteration) ----------------------------------------------------------
+  !--- erwartete Konvergenzrate (Ã¤ussere Iteration) ----------------------------------------------------------
   REAL   , TARGET        ::  precRatio0 (1:RK_steps)
   REAL   , TARGET        ::  precOffset0(1:RK_steps)
   REAL   , ALLOCATABLE   ::  precRatio  (:,:)
   REAL   , ALLOCATABLE   ::  precOffset (:,:)
   
-  !--- Null-Initialisierung (äussere Iteration) --------------------------------------------------------------
+  !--- Null-Initialisierung (Ã¤ussere Iteration) --------------------------------------------------------------
   LOGICAL, TARGET                ::  init_pre(1:RK_steps), init_vel(1:RK_steps)!, init_conc(1:RK_steps)
 
 #ifndef FTOPY
@@ -896,7 +898,7 @@ MODULE mod_vars
   INTEGER                ::  precond_Helmh_vel
   !INTEGER                ::  precond_Helmh_conc
   
-  !--- Anzahl Glättungen pro Gitterlevel (Multigrid) ---------------------------------------------------------
+  !--- Anzahl GlÃ¤ttungen pro Gitterlevel (Multigrid) ---------------------------------------------------------
   INTEGER                ::  n_relax_down, n_relax_up, n_relax_bottom
   
   !--- implizite Richtungen bei Linienrelaxation (Multigrid) -------------------------------------------------
@@ -907,7 +909,7 @@ MODULE mod_vars
   TYPE(C_PTR), bind(C, name='_impl_dir_c') :: impl_dirptr
 #endif
 
-  !--- Anzahl Glättungen pro Gitterlevel (Multigrid) ---------------------------------------------------------
+  !--- Anzahl GlÃ¤ttungen pro Gitterlevel (Multigrid) ---------------------------------------------------------
   LOGICAL                ::  weighting_yes
   
   
@@ -918,7 +920,7 @@ MODULE mod_vars
   REAL                   ::  max_div_init(1:2)
   INTEGER                ::  number_poisson
   
-  !--- Zähler ------------------------------------------------------------------------------------------------
+  !--- ZÃ¤hler ------------------------------------------------------------------------------------------------
   INTEGER                ::  countO(1:RK_steps)
   INTEGER                ::  countP(1:RK_steps,1:2)
   INTEGER                ::  countH(1:RK_steps,1:3)
@@ -939,19 +941,19 @@ MODULE mod_vars
   INTEGER                ::  COMM_SLICE2, COMM_BAR2
   INTEGER                ::  COMM_SLICE3, COMM_BAR3
   
-  !--- Dimension und Position der Blöcke innerhalb der Kommunikatoren (Gitter-Indizes) -----------------------
-  ! (für MPI_GATHERv, MPI_ALLGATHERv, vgl. iShift, jShift, kShift)
+  !--- Dimension und Position der BlÃ¶cke innerhalb der Kommunikatoren (Gitter-Indizes) -----------------------
+  ! (fÃ¼r MPI_GATHERv, MPI_ALLGATHERv, vgl. iShift, jShift, kShift)
   INTEGER, ALLOCATABLE   ::  bar1_size(:), bar1_offset(:)
   INTEGER, ALLOCATABLE   ::  bar2_size(:), bar2_offset(:)
   INTEGER, ALLOCATABLE   ::  bar3_size(:), bar3_offset(:)
   
-  !--- Ränge der Prozesse ------------------------------------------------------------------------------------
+  !--- RÃ¤nge der Prozesse ------------------------------------------------------------------------------------
   INTEGER                ::  rank
   INTEGER                ::  rank_bar1, rank_slice1
   INTEGER                ::  rank_bar2, rank_slice2
   INTEGER                ::  rank_bar3, rank_slice3
   
-  !--- Ränge der Nachbarprozesse (in kartesischem Gitter) ----------------------------------------------------
+  !--- RÃ¤nge der Nachbarprozesse (in kartesischem Gitter) ----------------------------------------------------
   INTEGER                ::  rank1L, rank1U
   INTEGER                ::  rank2L, rank2U
   INTEGER                ::  rank3L, rank3U
@@ -960,7 +962,7 @@ MODULE mod_vars
   INTEGER                ::  merror
   
   !--- Request-Handles ---------------------------------------------------------------------------------------
-  ! (müssen offenbar global angelegt werden) 
+  ! (mÃ¼ssen offenbar global angelegt werden) 
   INTEGER                ::  req1L, req1U
   INTEGER                ::  req2L, req2U
   INTEGER                ::  req3L, req3U
@@ -1012,7 +1014,7 @@ MODULE mod_vars
   TYPE(stats_group_t), pointer :: stats_group_first
 
   TYPE kalman_t
-     INTEGER :: i_data,flg,m,phase
+     INTEGER :: i_data,j_data,k_data,m,phase
      INTEGER, POINTER :: x(:),y(:),z(:)  !i,j,k of the grid node for each m component
      REAL, POINTER :: mean(:,:,:),covar(:,:,:) ! phases, m, 3 or 6
      REAL, POINTER :: muf(:),pf(:,:),obs_data(:),obs_covar(:,:),obs_oper(:,:),K(:,:) !kalman
@@ -1020,6 +1022,22 @@ MODULE mod_vars
   END TYPE kalman_t
 
   TYPE(kalman_t), pointer :: kalman_first
+
+  type(DistFlowMRIPadded), pointer :: mri_inst
+  type(DistSpaceTimeMRI), pointer :: mri_dest
+
+  ! MRI file paths
+  character(len=300) :: kalman_mri_input_file_path
+  character(len=300) :: kalman_mri_output_file_path
+
+  ! Attributes of input MRI (currently supplied through config due to compiler error in hpc-predict-io)
+  REAL*8 :: kalman_mri_input_attr_t_heart_cycle_period
+
+  ! MRI grid layout parameters
+  INTEGER, DIMENSION(3) :: kalman_num_data_voxels_per_process = (/-1, -1, -1/)
+  INTEGER :: kalman_num_time_refinements = -1
+  INTEGER, DIMENSION(3) :: kalman_num_spatial_refinements = (/-1, -1, -1/)
+  TYPE(DomainPadding) :: kalman_domain_padding
 
 
 #ifndef FTOPY
@@ -1102,8 +1120,8 @@ MODULE mod_vars
   INTEGER, PARAMETER     ::  b3L = -b3U
   
   !--- upwind (nicht-linear) ---------------------------------------------------------------------------------
-  ! (aktuell wird nicht zwischen auf- und abwärtsgerichteten Stencils unterschieden, um auch am Rand arbeiten
-  !  zu können, wo KEINE upwind-Differenzierung verwendet wird)
+  ! (aktuell wird nicht zwischen auf- und abwÃ¤rtsgerichteten Stencils unterschieden, um auch am Rand arbeiten
+  !  zu kÃ¶nnen, wo KEINE upwind-Differenzierung verwendet wird)
   INTEGER, PARAMETER     ::  n1L = b1L
   INTEGER, PARAMETER     ::  n2L = b2L
   INTEGER, PARAMETER     ::  n3L = b3L
@@ -1207,13 +1225,13 @@ MODULE mod_vars
   REAL                   ::  cFv2(b2L:b2U,0:N2)
   REAL                   ::  cFw3(b3L:b3U,0:N3)
 
-  !--- Integrator (nur für Druckgitter) ----------------------------------------------------------------------
+  !--- Integrator (nur fÃ¼r Druckgitter) ----------------------------------------------------------------------
   REAL                   ::  cInt1(b1L:b1U,0:N1)
   REAL                   ::  cInt2(b2L:b2U,0:N2)
   REAL                   ::  cInt3(b3L:b3U,0:N3)
   
   !--- 2. Ableitung (Multigrid) ------------------------------------------------------------------------------ 
-  ! Anmerkung: Die Koeffizientensätze unterscheiden sich z.T. lediglich durch die Randbedingungen.
+  ! Anmerkung: Die KoeffizientensÃ¤tze unterscheiden sich z.T. lediglich durch die Randbedingungen.
   REAL                   ::  cp11R(-1:1,0:N1,1:n_grids_max)
   REAL                   ::  cp22R(-1:1,0:N2,1:n_grids_max)
   REAL                   ::  cp33R(-1:1,0:N3,1:n_grids_max)
@@ -1302,8 +1320,8 @@ MODULE mod_vars
   REAL                   ::  pre(b1L:(N1+b1U),b2L:(N2+b2U),b3L:(N3+b3U))
   
   !--- Ausfluss-RB (Geschwindigkeitsfeld) --------------------------------------------------------------------
-  ! Da die RHS für die Konzentrationsfelder nicht über die Runge-Kutta-Zwischenschritte hinweg gespeichert 
-  ! werden, müssen mindestens die zugehörigen Randbedingungen gespeichert werden.
+  ! Da die RHS fÃ¼r die Konzentrationsfelder nicht Ã¼ber die Runge-Kutta-Zwischenschritte hinweg gespeichert 
+  ! werden, mÃ¼ssen mindestens die zugehÃ¶rigen Randbedingungen gespeichert werden.
   REAL                   ::  bc11(1:N2,1:N3,1:2), nlbc11(1:N2,1:N3,1:2)
   REAL                   ::  bc12(0:N1,1:N3,1:2), nlbc12(0:N1,1:N3,1:2)
   REAL                   ::  bc13(0:N1,1:N2,1:2), nlbc13(0:N1,1:N2,1:2)
@@ -1326,7 +1344,7 @@ MODULE mod_vars
   !--- Druckgradient (eine Komponente) -----------------------------------------------------------------------
   REAL                   ::  gpre(b1L:(N1+b1U),b2L:(N2+b2U),b3L:(N3+b3U))
   
-  !--- Gewichte für Divergenzfreiheit ------------------------------------------------------------------------
+  !--- Gewichte fÃ¼r Divergenzfreiheit ------------------------------------------------------------------------
   REAL                   ::  weight(1:N1,1:N2,1:N3)
   
   !--- Null-Raum-Vektor --------------------------------------------------------------------------------------
@@ -1454,7 +1472,7 @@ MODULE mod_vars
   !--- Indexverschiebung (Block --> global) ------------------------------------------------------------------
   INTEGER                ::  iShift, jShift, kShift
   
-  !--- Domaingrösse (Periodizität-bereinigt) -----------------------------------------------------------------
+  !--- DomaingrÃ¶sse (PeriodizitÃ¤t-bereinigt) -----------------------------------------------------------------
   INTEGER                ::  dim1, dim2, dim3
   
   !--- Druck / Konzentrationen (inklusive Rand) --------------------------------------------------------------
@@ -1487,7 +1505,7 @@ MODULE mod_vars
   INTEGER                ::  S11R, S22R, S33R
   INTEGER                ::  d11R, d22R, d33R
   
-  !--- Ueberlappungskonvention der Blöcke (Multigrid, siehe mod_setup) ---------------------------------------
+  !--- Ueberlappungskonvention der BlÃ¶cke (Multigrid, siehe mod_setup) ---------------------------------------
   INTEGER, PARAMETER     ::  ls1 = -1
   INTEGER, PARAMETER     ::  ls2 = -1
   INTEGER, PARAMETER     ::  ls3 = -1
@@ -1633,6 +1651,7 @@ MODULE mod_vars
   LOGICAL                ::  write_restart_yes
   LOGICAL                ::  write_lambda2_yes
   LOGICAL                ::  write_test_yes
+  LOGICAL                ::  write_covariance_yes !for writing covariance into xdmf file    defined in config.txt
   INTEGER                ::  num_windows !define in usr_stats and for write covariance into xdmf
   INTEGER                ::  intervals   !define number of intervals in the output of a periodic flow
   INTEGER                ::  phase       !define number of interval  in the output of a periodic flow
@@ -1642,7 +1661,7 @@ MODULE mod_vars
   INTEGER                ::  direction
   
   !--- explizite Behandlung von Ecken bei Dirichlet-Randbedingungen ------------------------------------------
-  ! (Hintergrund: Der Druck ist an diesen Orten unbestimmt, so dass er dort künstlich zu Null gesetzt wird.)
+  ! (Hintergrund: Der Druck ist an diesen Orten unbestimmt, so dass er dort kÃ¼nstlich zu Null gesetzt wird.)
   LOGICAL, PARAMETER     ::  corner_yes = .TRUE.
   
   !--- Systemzeit --------------------------------------------------------------------------------------------
@@ -1664,13 +1683,13 @@ MODULE mod_vars
   INTEGER                ::  n_it_Poisson
   INTEGER                ::  n_it_Helmh_vel
   
-  !--- erwartete Konvergenzrate (äussere Iteration) ----------------------------------------------------------
+  !--- erwartete Konvergenzrate (Ã¤ussere Iteration) ----------------------------------------------------------
   REAL                   ::  precRatio0 (1:RK_steps)
   REAL                   ::  precOffset0(1:RK_steps)
   REAL, ALLOCATABLE      ::  precRatio  (:,:)
   REAL, ALLOCATABLE      ::  precOffset (:,:)
   
-  !--- Null-Initialisierung (äussere Iteration) --------------------------------------------------------------
+  !--- Null-Initialisierung (Ã¤ussere Iteration) --------------------------------------------------------------
   LOGICAL                ::  init_pre(1:RK_steps), init_vel(1:RK_steps)!, init_conc(1:RK_steps)
   
   !--- Vorkonditionierung (Multigrid) ------------------------------------------------------------------------
@@ -1678,13 +1697,13 @@ MODULE mod_vars
   INTEGER                ::  precond_Poisson
   INTEGER                ::  precond_Helmh_vel
   
-  !--- Anzahl Glättungen pro Gitterlevel (Multigrid) ---------------------------------------------------------
+  !--- Anzahl GlÃ¤ttungen pro Gitterlevel (Multigrid) ---------------------------------------------------------
   INTEGER                ::  n_relax_down, n_relax_up, n_relax_bottom
   
   !--- implizite Richtungen bei Linienrelaxation (Multigrid) -------------------------------------------------
   INTEGER                ::  impl_dir(1:3)
   
-  !--- Anzahl Glättungen pro Gitterlevel (Multigrid) ---------------------------------------------------------
+  !--- Anzahl GlÃ¤ttungen pro Gitterlevel (Multigrid) ---------------------------------------------------------
   LOGICAL                ::  weighting_yes
   
   !===========================================================================================================
@@ -1694,7 +1713,7 @@ MODULE mod_vars
   REAL                   ::  max_div_init(1:2)
   INTEGER                ::  number_poisson
   
-  !--- Zähler ------------------------------------------------------------------------------------------------
+  !--- ZÃ¤hler ------------------------------------------------------------------------------------------------
   INTEGER                ::  countO(1:RK_steps)
   INTEGER                ::  countP(1:RK_steps,1:2)
   INTEGER                ::  countH(1:RK_steps,1:3)
@@ -1715,19 +1734,19 @@ MODULE mod_vars
   INTEGER                ::  COMM_SLICE2, COMM_BAR2
   INTEGER                ::  COMM_SLICE3, COMM_BAR3
   
-  !--- Dimension und Position der Blöcke innerhalb der Kommunikatoren (Gitter-Indizes) -----------------------
-  ! (für MPI_GATHERv, MPI_ALLGATHERv, vgl. iShift, jShift, kShift)
+  !--- Dimension und Position der BlÃ¶cke innerhalb der Kommunikatoren (Gitter-Indizes) -----------------------
+  ! (fÃ¼r MPI_GATHERv, MPI_ALLGATHERv, vgl. iShift, jShift, kShift)
   INTEGER                ::  bar1_size(1:NB1), bar1_offset(1:NB1)
   INTEGER                ::  bar2_size(1:NB2), bar2_offset(1:NB2)
   INTEGER                ::  bar3_size(1:NB3), bar3_offset(1:NB3)
   
-  !--- Ränge der Prozesse ------------------------------------------------------------------------------------
+  !--- RÃ¤nge der Prozesse ------------------------------------------------------------------------------------
   INTEGER                ::  rank
   INTEGER                ::  rank_bar1, rank_slice1
   INTEGER                ::  rank_bar2, rank_slice2
   INTEGER                ::  rank_bar3, rank_slice3
   
-  !--- Ränge der Nachbarprozesse (in kartesischem Gitter) ----------------------------------------------------
+  !--- RÃ¤nge der Nachbarprozesse (in kartesischem Gitter) ----------------------------------------------------
   INTEGER                ::  rank1L, rank1U
   INTEGER                ::  rank2L, rank2U
   INTEGER                ::  rank3L, rank3U
@@ -1736,7 +1755,7 @@ MODULE mod_vars
   INTEGER                ::  merror
   
   !--- Request-Handles ---------------------------------------------------------------------------------------
-  ! (müssen offenbar global angelegt werden) 
+  ! (mÃ¼ssen offenbar global angelegt werden) 
   INTEGER                ::  req1L, req1U
   INTEGER                ::  req2L, req2U
   INTEGER                ::  req3L, req3U
@@ -1788,7 +1807,7 @@ MODULE mod_vars
   TYPE(stats_group_t), pointer :: stats_group_first
 
   TYPE kalman_t
-     INTEGER :: i_data,flg,m,phase
+     INTEGER :: i_data,j_data,k_data,m,phase
      INTEGER, POINTER :: x(:),y(:),z(:)  !i,j,k of the grid node for each m component
      REAL, POINTER :: mean(:,:,:),covar(:,:,:) ! phases, m, 3 or 6
      REAL, POINTER :: muf(:),pf(:,:),obs_data(:),obs_covar(:,:),obs_oper(:,:),K(:,:) !kalman
@@ -1796,6 +1815,22 @@ MODULE mod_vars
   END TYPE kalman_t
 
   TYPE(kalman_t), pointer :: kalman_first
+
+  type(DistFlowMRIPadded), pointer :: mri_inst
+  type(DistSpaceTimeMRI), pointer :: mri_dest
+
+  ! MRI file paths
+  character(len=300) :: kalman_mri_input_file_path
+  character(len=300) :: kalman_mri_output_file_path
+
+  ! Attributes of input MRI (currently supplied through config due to compiler error in hpc-predict-io)
+  REAL*8 :: kalman_mri_input_attr_t_heart_cycle_period
+
+  ! MRI grid layout parameters
+  INTEGER, DIMENSION(3) :: kalman_num_data_voxels_per_process = (/-1, -1, -1/)
+  INTEGER :: kalman_num_time_refinements = -1
+  INTEGER, DIMENSION(3) :: kalman_num_spatial_refinements = (/-1, -1, -1/)
+  TYPE(DomainPadding) :: kalman_domain_padding
 
 
 #endif

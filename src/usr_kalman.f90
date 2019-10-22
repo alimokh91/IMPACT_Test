@@ -38,23 +38,22 @@
   USE usr_vars
   USE mod_lib
   USE mod_inout
-  USE mr_io_protocol
+  USE MPI
+  USE HDF5
+  USE mr_io_protocol, only: DistFlowMRIPadded
+  USE mr_io_parallel_spacetime 
 
   IMPLICIT NONE
 
-  INCLUDE 'mpif.h'
-
   TYPE(kalman_t), pointer :: klmn
   INTEGER :: i,j,k,ii,jj,kk
+  INTEGER, DIMENSION(2,5) :: bounds_kalman
   INTEGER :: m,n,l
   INTEGER :: n_procs
   INTEGER, ALLOCATABLE :: n_data_count(:)
   INTEGER, ALLOCATABLE :: i_data(:,:,:)
   INTEGER, ALLOCATABLE :: flag_data(:,:,:)
   REAL :: d_vol
-  REAL :: dist,dist_min
-  !REAL :: m_stats(1:906780,1:3)
-  REAL :: m_stats(1:111132,1:3)
   !added for writing turb_statxz_ with M1 M2 M3 ================================================================
   CHARACTER(LEN=2) ::  phs
   CHARACTER(LEN=3) ::  M1_char
@@ -62,108 +61,107 @@
   CHARACTER(LEN=3) ::  M3_char
   CHARACTER(LEN=50) :: read_dir,write_dir
 
-  CALL validate_input_kalman
+  call validate_input_kalman() 
+
   ALLOCATE(mean_gbl(1:intervals,b1L:(N1+b1U),b2L:(N2+b2U),b3L:(N3+b3U),1:3)); mean_gbl = 0. 
   ALLOCATE(covar_gbl(1:intervals,b1L:(N1+b1U),b2L:(N2+b2U),b3L:(N3+b3U),1:6)); covar_gbl = 0. 
   ALLOCATE(write_gain (b1L:(N1+b1U),b2L:(N2+b2U),b3L:(N3+b3U),1:6)); write_gain = 0.
 
   ALLOCATE(dtime_kalm_phases(1:intervals)); dtime_kalm_phases = 0.
 
-  dtime_kalm_phases(1:12) = 0.01
-  dtime_kalm_phases(13) = 0.03
-  dtime_kalm_phases(14:19) = 0.05
-  dtime_kalm_phases(20:21) = 0.1
-  dtime_kalm_phases(22) = 6./7. - 0.7 + 0.05
+  ALLOCATE(i_data(S1p:N1p,S2p:N2p,S3p:N3p)); i_data = 0
+  ALLOCATE(flag_data(S1p:N1p,S2p:N2p,S3p:N3p)); flag_data = 0
+  ALLOCATE(klm_flag(S1p:N1p,S2p:N2p,S3p:N3p)); klm_flag = 0
 
-  !n_data_tot = 906780
-  n_data_tot = 111132
+  if (associated(mri_inst).eqv..false.) then
+     nullify(mri_inst); allocate(mri_inst)
+     mri_inst%domain_padding = kalman_domain_padding
+     CALL mr_io_read_parallel_flow_padded(MPI_COMM_WORLD, MPI_INFO_NULL, (/NB1,NB2,NB3/), &
+          kalman_mri_input_file_path, mri_inst)
+     CALL h5open_f(herror) ! Required as hpc-predict-io closes HDF5 environment with h5close_f
+  end if
+  bounds_kalman(1,1:5) = lbound(mri_inst%mri%velocity_mean%array)
+  bounds_kalman(2,1:5) = ubound(mri_inst%mri%velocity_mean%array)
+
+  dtime_kalm_phases(1:intervals-1) = mri_inst%mri%t_coordinates(2:intervals) - mri_inst%mri%t_coordinates(1:intervals-1)
+  dtime_kalm_phases(intervals) = kalman_mri_input_attr_t_heart_cycle_period - &
+                                 mri_inst%mri%t_coordinates(intervals) + mri_inst%mri%t_coordinates(1)
+
   !===========================================================================================================
   !=== read the observed data (index, x, y, z) ===============================================================
   !===========================================================================================================
-  read_dir = './data/Results_HDF5_x2/'
-  !--------------------------------------------------------------------------------------------------------
-  CALL read_stats_hdf_2D(trim(read_dir)//'Coordinates','Coordinates',n_data_tot,3,1,1,n_data_tot,3,0,0,m_stats)
-  !===========================================================================================================
-
-  ALLOCATE(i_data(S1p:N1p,S2p:N2p,S3p:N3p)); i_data = 0
-  ALLOCATE(flag_data(S1p:N1p,S2p:N2p,S3p:N3p)); flag_data = 0
-
-  ALLOCATE(klm_flag(S1p:N1p,S2p:N2p,S3p:N3p)); klm_flag = 0
-  DO k = S3p, N3p
-     if ( x3p(k).gt.-17.0e-3 .and. x3p(k).lt.17.0e-3 ) then
-     DO j = S2p, N2p
-        if ( x2p(j).gt.-15.0e-3 .and. x2p(j).lt.35.0e-3 ) then
-        DO i = S1p, N1p
-           if ( x1p(i).gt.-17.0e-3 .and. x1p(i).lt.17.0e-3 ) then
+  l = 0
+  DO k = bounds_kalman(1,5), bounds_kalman(2,5)
+     DO j = bounds_kalman(1,4), bounds_kalman(2,4)
+        DO i = bounds_kalman(1,3), bounds_kalman(2,3)
            klm_flag = 1
-           dist_min = 10000.0
-           DO l = 1,n_data_tot
-              dist = (m_stats(l,1)-x1p(i))**2+(m_stats(l,2)-x2p(j))**2+(m_stats(l,3)-x3p(k))**2
-              if (dist.lt.dist_min) then
-                 i_data(i,j,k) = l
-                 dist_min = min(dist_min,dist)
-              end if
-           END DO
-           end if
+           l = l + 1
+           i_data((i-1)*kalman_num_spatial_refinements(1)+1:i*kalman_num_spatial_refinements(1)+1, &
+                  (j-1)*kalman_num_spatial_refinements(2)+1:j*kalman_num_spatial_refinements(2)+1, &
+                  (k-1)*kalman_num_spatial_refinements(3)+1:k*kalman_num_spatial_refinements(3)+1) = l
         END DO 
-        end if
      END DO
-     end if
   END DO
 
   !===========================================================================================================
   !=== construct matrices x_f, H, R, P_f =====================================================================
   !===========================================================================================================
   NULLIFY(kalman_first)
-  DO n = 1,n_data_tot
-     l = count(i_data(S1p:N1p,S2p:N2p,S3p:N3p).eq.n)
-     if (l.ne.0) then
-        if (.NOT.associated(kalman_first)) then
-           allocate(kalman_first)
-           klmn => kalman_first
-        else
-           allocate(klmn%next)
-           klmn => klmn%next
-        end if
-        klmn%i_data = n
-        klmn%m = l
-        NULLIFY(klmn%mean);      ALLOCATE(klmn%mean (1:intervals,1:klmn%m,1:3)); klmn%mean = 0.
-        NULLIFY(klmn%covar);     ALLOCATE(klmn%covar(1:intervals,1:klmn%m,1:6)); klmn%covar = 0.
-        NULLIFY(klmn%muf);       ALLOCATE(klmn%muf(1:3*klmn%m)); klmn%muf = 0.
-        NULLIFY(klmn%pf);        ALLOCATE(klmn%pf(1:3*klmn%m,1:3*klmn%m)); klmn%pf = 0.
-        NULLIFY(klmn%obs_data);  ALLOCATE(klmn%obs_data(1:3))
-        NULLIFY(klmn%obs_covar); ALLOCATE(klmn%obs_covar(1:3,1:3))
-        NULLIFY(klmn%obs_oper);  ALLOCATE(klmn%obs_oper(1:3,1:3*klmn%m)); klmn%obs_oper = 0.
-        NULLIFY(klmn%K);         ALLOCATE(klmn%K(1:3*klmn%m,1:3)); klmn%K = 0.
-        NULLIFY(klmn%x);         ALLOCATE(klmn%x(1:klmn%m))
-        NULLIFY(klmn%y);         ALLOCATE(klmn%y(1:klmn%m))
-        NULLIFY(klmn%z);         ALLOCATE(klmn%z(1:klmn%m))
-        l = 0
-        DO k = S3p, N3p
-           DO j = S2p, N2p
-              DO i = S1p, N1p
-                 if (klmn%i_data.eq.i_data(i,j,k)) then
-                    l = l + 1
-                    klmn%x(l) = i
-                    klmn%y(l) = j
-                    klmn%z(l) = k
-                    klmn%flg = flag_data(i,j,k)
-                 end if
+  n = 0
+  DO k = bounds_kalman(1,5), bounds_kalman(2,5)
+     DO j = bounds_kalman(1,4), bounds_kalman(2,4)
+        DO i = bounds_kalman(1,3), bounds_kalman(2,3)
+           n = n + 1
+           write(*,*) n
+           l = count(i_data(S1p:N1p,S2p:N2p,S3p:N3p).eq.n)
+           if (.NOT.associated(kalman_first)) then
+              allocate(kalman_first)
+              klmn => kalman_first
+           else
+              allocate(klmn%next)
+              klmn => klmn%next
+           end if
+           klmn%i_data = i
+           klmn%j_data = j
+           klmn%k_data = k
+           klmn%m = l
+           NULLIFY(klmn%mean);      ALLOCATE(klmn%mean (1:intervals,1:klmn%m,1:3)); klmn%mean = 0.
+           NULLIFY(klmn%covar);     ALLOCATE(klmn%covar(1:intervals,1:klmn%m,1:6)); klmn%covar = 0.
+           NULLIFY(klmn%muf);       ALLOCATE(klmn%muf(1:3*klmn%m)); klmn%muf = 0.
+           NULLIFY(klmn%pf);        ALLOCATE(klmn%pf(1:3*klmn%m,1:3*klmn%m)); klmn%pf = 0.
+           NULLIFY(klmn%obs_data);  ALLOCATE(klmn%obs_data(1:3))
+           NULLIFY(klmn%obs_covar); ALLOCATE(klmn%obs_covar(1:3,1:3))
+           NULLIFY(klmn%obs_oper);  ALLOCATE(klmn%obs_oper(1:3,1:3*klmn%m)); klmn%obs_oper = 0.
+           NULLIFY(klmn%K);         ALLOCATE(klmn%K(1:3*klmn%m,1:3)); klmn%K = 0.
+           NULLIFY(klmn%x);         ALLOCATE(klmn%x(1:klmn%m))
+           NULLIFY(klmn%y);         ALLOCATE(klmn%y(1:klmn%m))
+           NULLIFY(klmn%z);         ALLOCATE(klmn%z(1:klmn%m))
+           l = 0
+           DO kk = S3p, N3p
+              DO jj = S2p, N2p
+                 DO ii = S1p, N1p
+                    if (n.eq.i_data(ii,jj,kk)) then
+                       l = l + 1
+                       klmn%x(l) = ii
+                       klmn%y(l) = jj
+                       klmn%z(l) = kk
+                    end if
+                 END DO
               END DO
            END DO
-        END DO
-        d_vol = 0.
-        do l = 1,klmn%m
-           do i = 1,3
-              klmn%obs_oper(i,3*(l-1)+i) = dx1p(klmn%x(l))*dx2p(klmn%y(l))*dx3p(klmn%z(l))
+           d_vol = 0.
+           do l = 1,klmn%m
+              do ii = 1,3
+                 klmn%obs_oper(ii,3*(l-1)+ii) = dx1p(klmn%x(l))*dx2p(klmn%y(l))*dx3p(klmn%z(l))
+              end do
+              d_vol = d_vol + dx1p(klmn%x(l))*dx2p(klmn%y(l))*dx3p(klmn%z(l)) ! (dx3p = 1. for 2D)
            end do
-           d_vol = d_vol + dx1p(klmn%x(l))*dx2p(klmn%y(l))*dx3p(klmn%z(l)) ! (dx3p = 1. for 2D)
-        end do
-        klmn%covar(1:intervals,1:klmn%m,1:3) = 1.0e1
-        klmn%covar(1:intervals,1:klmn%m,4:6) = 1.0
-        klmn%obs_oper = klmn%obs_oper/d_vol
-        NULLIFY(klmn%next)
-     end if
+           klmn%covar(1:intervals,1:klmn%m,1:3) = 1.0e1
+           klmn%covar(1:intervals,1:klmn%m,4:6) = 1.0
+           klmn%obs_oper = klmn%obs_oper/d_vol
+           NULLIFY(klmn%next)
+        END DO
+     END DO
   END DO
   !===========================================================================================================
 
@@ -171,7 +169,7 @@
 
   write_kalm_count = 0
 
-  phase = 1 !intervals
+  phase = 1
   ALLOCATE(repetition(1:intervals)); repetition = 0
  
   !added for writing turb_statxz_ with M1 M2 M3===============================================================
@@ -273,7 +271,6 @@
   INTEGER :: INFO
   REAL    :: TKE(1:2), TKE_global(1:2), FKE(1:2), FKE_global(1:2)
   REAL    :: mean_xz_km_write(1:M2), mean_xz_km(S2p:N2p), mean_xz_km_global(S2p:N2p)
-  REAL    :: m_stats(1:n_data_tot,3),c_stats(1:n_data_tot,6)
   CHARACTER(LEN=2) :: phs
   CHARACTER(LEN=50) :: read_dir,write_dir
 
@@ -299,17 +296,8 @@
   !===========================================================================================================
 
   !===========================================================================================================
-  !=== read the observed data ================================================================================
-  !===========================================================================================================
-  CALL num_to_string(2,phase,phs)
-  read_dir = './data/Results_HDF5_x2/'
-  !--------------------------------------------------------------------------------------------------------
-  CALL read_stats_hdf_2D(trim(read_dir)//'Velocity_Mean_'//phs,'Velocity_Mean',n_data_tot,3,1,1,n_data_tot,3,0,0,m_stats)
-  !--------------------------------------------------------------------------------------------------------
-  CALL read_stats_hdf_2D(trim(read_dir)//'Covariance_'//phs,'Covariance',n_data_tot,6,1,1,n_data_tot,6,0,0,c_stats)
-  !===========================================================================================================
-  m_stats = m_stats/U_ref
-  c_stats = c_stats/(U_ref*U_ref)
+  !m_stats = m_stats/U_ref
+  !c_stats = c_stats/(U_ref*U_ref)
 
   !===========================================================================================================
   !=== turbulence statistics =================================================================================
@@ -381,18 +369,8 @@
   !--------------------------------------------------------------------------------------------------------
   !--- d_k and R_k ----------------------------------------------------------------------------------------
   !--------------------------------------------------------------------------------------------------------
-     klmn%obs_data(1) = m_stats(klmn%i_data,1)
-     klmn%obs_data(2) = m_stats(klmn%i_data,2)
-     klmn%obs_data(3) = m_stats(klmn%i_data,3)
-     klmn%obs_covar(1,1) = (1-klmn%flg)*c_stats(klmn%i_data,1) + klmn%flg*100.*c_stats(klmn%i_data,1)
-     klmn%obs_covar(2,2) = (1-klmn%flg)*c_stats(klmn%i_data,2) + klmn%flg*100.*c_stats(klmn%i_data,2)
-     klmn%obs_covar(3,3) = (1-klmn%flg)*c_stats(klmn%i_data,3) + klmn%flg*100.*c_stats(klmn%i_data,3)
-     klmn%obs_covar(1,2) = (1-klmn%flg)*c_stats(klmn%i_data,4) + klmn%flg*100.*c_stats(klmn%i_data,4)
-     klmn%obs_covar(1,3) = (1-klmn%flg)*c_stats(klmn%i_data,5) + klmn%flg*100.*c_stats(klmn%i_data,5)
-     klmn%obs_covar(2,3) = (1-klmn%flg)*c_stats(klmn%i_data,6) + klmn%flg*100.*c_stats(klmn%i_data,6)
-     klmn%obs_covar(2,1) = klmn%obs_covar(1,2)
-     klmn%obs_covar(3,1) = klmn%obs_covar(1,3)
-     klmn%obs_covar(3,2) = klmn%obs_covar(2,3)
+     klmn%obs_data(1:3) = mri_inst%mri%velocity_mean%array(1:3,phase,klmn%i_data,klmn%j_data,klmn%k_data)
+     klmn%obs_covar(1:3,1:3) = mri_inst%mri%velocity_cov%array(1:3,1:3,phase,klmn%i_data,klmn%j_data,klmn%k_data)
   !--------------------------------------------------------------------------------------------------------
   !----apply kalman filtering- ----------------------------------------------------------------------------
   !--------------------------------------------------------------------------------------------------------

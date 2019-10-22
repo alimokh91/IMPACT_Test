@@ -32,16 +32,13 @@ PROGRAM impact_debug
 
   IMPLICIT NONE
   
-  type(DistFlowMRIPadded) :: mri_inst
-  type(DistSpaceTimeMRI) :: mri_dest
-
   INTEGER :: i, ix, iy, iz, it, iv ! Helper indices for writing results
 
   integer :: lbound_v, lbound_t, lbound_x, lbound_y, lbound_z
   integer :: ubound_v, ubound_t, ubound_x, ubound_y, ubound_z
   real*8, dimension(:,:,:,:), allocatable :: pressure_voxel_velocity
 
-  INTEGER :: gdb = 0
+  INTEGER :: gdb = 1
   do while (gdb == 0)
     call sleep(2)
   end do
@@ -55,6 +52,7 @@ PROGRAM impact_debug
 
   ! Assign domain-padding read from config file (kalman_num_data_voxels_per_process can be used to infer the
   ! size of the data voxel grid per process)
+  nullify(mri_inst); allocate(mri_inst)
   mri_inst%domain_padding = kalman_domain_padding
   CALL mr_io_read_parallel_flow_padded(MPI_COMM_WORLD, MPI_INFO_NULL, (/NB1,NB2,NB3/), &
        kalman_mri_input_file_path, mri_inst)
@@ -135,6 +133,7 @@ PROGRAM impact_debug
 
 !  ! From hpc-predict-io test
   ! Allocate amount of data to be written - TODO: Fix time dimensions
+  nullify(mri_dest); allocate(mri_dest)
   allocate(mri_dest%t_coordinates(size(mri_inst%mri%t_coordinates)*kalman_num_time_refinements))
   allocate(mri_dest%x_coordinates(size(mri_inst%mri%x_coordinates)*kalman_num_spatial_refinements(1)))
   allocate(mri_dest%y_coordinates(size(mri_inst%mri%y_coordinates)*kalman_num_spatial_refinements(2)))
