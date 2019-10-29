@@ -42,7 +42,11 @@ kalman_mri_output_file_path                  {{ kalman_mri_output_file_path }}
 # MRI attributes currently have to be supplied through the config file due to compiler error in hpc-predict-io
 kalman_mri_input_attr_t_heart_cycle_period   {{ kalman_mri_input_attr_t_heart_cycle_period }}
 
-Re			3300.
+Re          4928.6
+mu_fluid    0.0056
+rho_fluid   1200.
+L_ref       0.023
+U_ref       1.
 
 #--- Extents --------------------------------------------------------------
 time_start		{{ time_start }}
@@ -150,6 +154,7 @@ dtime_out_scal          0.0
 # Delta time for Kalman-filtered sim.
 dtime_out_kalm      {{ dtime_out_kalm }}
 intervals           {{ n_intervals }}
+write_covariance_yes    T
 write_lambda2_yes       F
 write_force_yes         F
 write_xdmf_yes          T
@@ -190,19 +195,10 @@ parabola_yes            F
 
 #--- Immersed Boundary Method ----------------------------------------------
 fem_yes                 F
-
-mu_fluid                0.01
-rho_fluid               1.
-
 E_mod                   1E6
 nu_poiss                0.499
-
 ddf_type                1
-
 reach                   0.125
-
-L_ref                   0.1
-U_ref                   1.
 
 rho_solid               1.
 
