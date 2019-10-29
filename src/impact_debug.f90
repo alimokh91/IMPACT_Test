@@ -157,10 +157,10 @@ PROGRAM impact_debug
   mri_dest%x_dim = mri_inst%mri%x_dim*kalman_num_spatial_refinements(1)
   mri_dest%y_coordinates = 0.5*y2p(kalman_domain_padding%lhs(2)*kalman_num_spatial_refinements(2)+1:(kalman_domain_padding%lhs(2)+size(mri_inst%mri%y_coordinates))*kalman_num_spatial_refinements(2)+0) + &
                            0.5*y2p(kalman_domain_padding%lhs(2)*kalman_num_spatial_refinements(2)+2:(kalman_domain_padding%lhs(2)+size(mri_inst%mri%y_coordinates))*kalman_num_spatial_refinements(2)+1)
-  mri_dest%y_dim = mri_inst%mri%x_dim*kalman_num_spatial_refinements(2)
+  mri_dest%y_dim = mri_inst%mri%y_dim*kalman_num_spatial_refinements(2)
   mri_dest%z_coordinates = 0.5*y3p(kalman_domain_padding%lhs(3)*kalman_num_spatial_refinements(3)+1:(kalman_domain_padding%lhs(3)+size(mri_inst%mri%z_coordinates))*kalman_num_spatial_refinements(3)+0) + &
                            0.5*y3p(kalman_domain_padding%lhs(3)*kalman_num_spatial_refinements(3)+2:(kalman_domain_padding%lhs(3)+size(mri_inst%mri%z_coordinates))*kalman_num_spatial_refinements(3)+1)
-  mri_dest%z_dim = mri_inst%mri%x_dim*kalman_num_spatial_refinements(3)
+  mri_dest%z_dim = mri_inst%mri%z_dim*kalman_num_spatial_refinements(3)
 
   ! Local hyperslab dimensions - TODO: Fix time dimensions
   mri_dest%vector_feature%time_offset = mri_inst%mri%velocity_mean%time_offset*kalman_num_time_refinements

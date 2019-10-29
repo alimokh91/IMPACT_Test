@@ -991,7 +991,6 @@ MODULE mod_vars
   REAL, ALLOCATABLE, TARGET      ::  vel_old(:,:,:,:)        !< velocity of previous timestep (used in Picard iterations)
 
   INTEGER :: n_data,n_data_tot,data_shift
-  INTEGER, ALLOCATABLE :: klm_flag(:,:,:)
   REAL, ALLOCATABLE :: mean_gbl(:,:,:,:,:)
   REAL, ALLOCATABLE :: covar_gbl(:,:,:,:,:)
   REAL, ALLOCATABLE :: write_gain (:,:,:,:)
@@ -1784,7 +1783,6 @@ MODULE mod_vars
   REAL :: vel_old(b1L:(N1+b1U),b2L:(N2+b2U),b3L:(N3+b3U),1:3)        !< vel of previous timestep (used in Picard iterations)
 
   INTEGER :: n_data,n_data_tot,data_shift
-  INTEGER, ALLOCATABLE :: klm_flag(:,:,:)
   REAL, ALLOCATABLE :: mean_gbl(:,:,:,:,:)
   REAL, ALLOCATABLE :: covar_gbl(:,:,:,:,:)
   REAL, ALLOCATABLE :: write_gain (:,:,:,:)

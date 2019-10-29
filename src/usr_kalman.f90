@@ -34,9 +34,8 @@
   
   USE mod_dims
   USE mod_vars
-  USE usr_func
-  USE usr_vars
   USE mod_lib
+  USE usr_vars
   USE mod_inout
   USE MPI
   USE HDF5
@@ -47,128 +46,107 @@
 
   TYPE(kalman_t), pointer :: klmn
   INTEGER :: i,j,k,ii,jj,kk
-  INTEGER, DIMENSION(2,5) :: bounds_kalman
-  INTEGER :: m,n,l
-  INTEGER :: n_procs
-  INTEGER, ALLOCATABLE :: n_data_count(:)
-  INTEGER, ALLOCATABLE :: i_data(:,:,:)
-  INTEGER, ALLOCATABLE :: flag_data(:,:,:)
-  REAL :: d_vol
+  INTEGER :: m,n
+  INTEGER, DIMENSION(2,3) :: bounds_kalman
   !added for writing turb_statxz_ with M1 M2 M3 ================================================================
   CHARACTER(LEN=2) ::  phs
   CHARACTER(LEN=3) ::  M1_char
   CHARACTER(LEN=3) ::  M2_char
   CHARACTER(LEN=3) ::  M3_char
-  CHARACTER(LEN=50) :: read_dir,write_dir
+
+  if (rank.eq.0) write(0,*) "open kalman... "
+
+  ALLOCATE(covar_gbl(1:intervals,b1L:(N1+b1U),b2L:(N2+b2U),b3L:(N3+b3U),1:6)); covar_gbl = 0. 
+  ALLOCATE(mean_gbl(1:intervals,b1L:(N1+b1U),b2L:(N2+b2U),b3L:(N3+b3U),1:3)); mean_gbl = 0. 
+  ALLOCATE(write_gain (b1L:(N1+b1U),b2L:(N2+b2U),b3L:(N3+b3U),1:6)); write_gain = 0.
 
   call validate_input_kalman() 
 
-  ALLOCATE(mean_gbl(1:intervals,b1L:(N1+b1U),b2L:(N2+b2U),b3L:(N3+b3U),1:3)); mean_gbl = 0. 
-  ALLOCATE(covar_gbl(1:intervals,b1L:(N1+b1U),b2L:(N2+b2U),b3L:(N3+b3U),1:6)); covar_gbl = 0. 
-  ALLOCATE(write_gain (b1L:(N1+b1U),b2L:(N2+b2U),b3L:(N3+b3U),1:6)); write_gain = 0.
-
-  ALLOCATE(dtime_kalm_phases(1:intervals)); dtime_kalm_phases = 0.
-
-  ALLOCATE(i_data(S1p:N1p,S2p:N2p,S3p:N3p)); i_data = 0
-  ALLOCATE(flag_data(S1p:N1p,S2p:N2p,S3p:N3p)); flag_data = 0
-  ALLOCATE(klm_flag(S1p:N1p,S2p:N2p,S3p:N3p)); klm_flag = 0
-
+  !===========================================================================================================
+  !=== read the observed data (components, time, x, y, z) ====================================================
+  !===========================================================================================================
   if (associated(mri_inst).eqv..false.) then
      nullify(mri_inst); allocate(mri_inst)
      mri_inst%domain_padding = kalman_domain_padding
      CALL mr_io_read_parallel_flow_padded(MPI_COMM_WORLD, MPI_INFO_NULL, (/NB1,NB2,NB3/), &
           kalman_mri_input_file_path, mri_inst)
      CALL h5open_f(herror) ! Required as hpc-predict-io closes HDF5 environment with h5close_f
+ 
+     mri_inst%mri%velocity_mean%array = mri_inst%mri%velocity_mean%array/U_ref
+     mri_inst%mri%velocity_cov%array  = mri_inst%mri%velocity_cov%array/U_ref/U_ref
   end if
-  bounds_kalman(1,1:5) = lbound(mri_inst%mri%velocity_mean%array)
-  bounds_kalman(2,1:5) = ubound(mri_inst%mri%velocity_mean%array)
 
+  ALLOCATE(dtime_kalm_phases(1:intervals)); dtime_kalm_phases = 0.
   dtime_kalm_phases(1:intervals-1) = mri_inst%mri%t_coordinates(2:intervals) - mri_inst%mri%t_coordinates(1:intervals-1)
   dtime_kalm_phases(intervals) = kalman_mri_input_attr_t_heart_cycle_period - &
                                  mri_inst%mri%t_coordinates(intervals) + mri_inst%mri%t_coordinates(1)
-
   !===========================================================================================================
-  !=== read the observed data (index, x, y, z) ===============================================================
-  !===========================================================================================================
-  l = 0
-  DO k = bounds_kalman(1,5), bounds_kalman(2,5)
-     DO j = bounds_kalman(1,4), bounds_kalman(2,4)
-        DO i = bounds_kalman(1,3), bounds_kalman(2,3)
-           klm_flag = 1
-           l = l + 1
-           i_data((i-1)*kalman_num_spatial_refinements(1)+1:i*kalman_num_spatial_refinements(1)+1, &
-                  (j-1)*kalman_num_spatial_refinements(2)+1:j*kalman_num_spatial_refinements(2)+1, &
-                  (k-1)*kalman_num_spatial_refinements(3)+1:k*kalman_num_spatial_refinements(3)+1) = l
-        END DO 
-     END DO
-  END DO
 
   !===========================================================================================================
   !=== construct matrices x_f, H, R, P_f =====================================================================
   !===========================================================================================================
+  bounds_kalman(1,1) = lbound(mri_inst%mri%velocity_mean%array,3)
+  bounds_kalman(2,1) = ubound(mri_inst%mri%velocity_mean%array,3)
+  bounds_kalman(1,2) = lbound(mri_inst%mri%velocity_mean%array,4)
+  bounds_kalman(2,2) = ubound(mri_inst%mri%velocity_mean%array,4)
+  bounds_kalman(1,3) = lbound(mri_inst%mri%velocity_mean%array,5)
+  bounds_kalman(2,3) = ubound(mri_inst%mri%velocity_mean%array,5)
+
   NULLIFY(kalman_first)
-  n = 0
-  DO k = bounds_kalman(1,5), bounds_kalman(2,5)
-     DO j = bounds_kalman(1,4), bounds_kalman(2,4)
-        DO i = bounds_kalman(1,3), bounds_kalman(2,3)
-           n = n + 1
-           write(*,*) n
-           l = count(i_data(S1p:N1p,S2p:N2p,S3p:N3p).eq.n)
-           if (.NOT.associated(kalman_first)) then
-              allocate(kalman_first)
-              klmn => kalman_first
-           else
-              allocate(klmn%next)
-              klmn => klmn%next
-           end if
-           klmn%i_data = i
-           klmn%j_data = j
-           klmn%k_data = k
-           klmn%m = l
-           NULLIFY(klmn%mean);      ALLOCATE(klmn%mean (1:intervals,1:klmn%m,1:3)); klmn%mean = 0.
-           NULLIFY(klmn%covar);     ALLOCATE(klmn%covar(1:intervals,1:klmn%m,1:6)); klmn%covar = 0.
-           NULLIFY(klmn%muf);       ALLOCATE(klmn%muf(1:3*klmn%m)); klmn%muf = 0.
-           NULLIFY(klmn%pf);        ALLOCATE(klmn%pf(1:3*klmn%m,1:3*klmn%m)); klmn%pf = 0.
-           NULLIFY(klmn%obs_data);  ALLOCATE(klmn%obs_data(1:3))
-           NULLIFY(klmn%obs_covar); ALLOCATE(klmn%obs_covar(1:3,1:3))
-           NULLIFY(klmn%obs_oper);  ALLOCATE(klmn%obs_oper(1:3,1:3*klmn%m)); klmn%obs_oper = 0.
-           NULLIFY(klmn%K);         ALLOCATE(klmn%K(1:3*klmn%m,1:3)); klmn%K = 0.
-           NULLIFY(klmn%x);         ALLOCATE(klmn%x(1:klmn%m))
-           NULLIFY(klmn%y);         ALLOCATE(klmn%y(1:klmn%m))
-           NULLIFY(klmn%z);         ALLOCATE(klmn%z(1:klmn%m))
-           l = 0
-           DO kk = S3p, N3p
-              DO jj = S2p, N2p
-                 DO ii = S1p, N1p
-                    if (n.eq.i_data(ii,jj,kk)) then
-                       l = l + 1
-                       klmn%x(l) = ii
-                       klmn%y(l) = jj
-                       klmn%z(l) = kk
-                    end if
+  if (sum(bounds_kalman(2,1:3)).ne.0) then
+     m = (kalman_num_spatial_refinements(1)+1)*(kalman_num_spatial_refinements(2)+1)*(kalman_num_spatial_refinements(3)+1)  
+     DO k = bounds_kalman(1,3), bounds_kalman(2,3)
+        DO j = bounds_kalman(1,2), bounds_kalman(2,2)
+           DO i = bounds_kalman(1,1), bounds_kalman(2,1)
+              if (.NOT.associated(kalman_first)) then
+                 allocate(kalman_first)
+                 klmn => kalman_first
+              else
+                 allocate(klmn%next)
+                 klmn => klmn%next
+              end if
+              klmn%i_data = i
+              klmn%j_data = j
+              klmn%k_data = k
+              klmn%m = m
+              NULLIFY(klmn%mean);      ALLOCATE(klmn%mean (1:intervals,1:klmn%m,1:3)); klmn%mean = 0.
+              NULLIFY(klmn%covar);     ALLOCATE(klmn%covar(1:intervals,1:klmn%m,1:6)); klmn%covar = 0.
+              NULLIFY(klmn%muf);       ALLOCATE(klmn%muf(1:3*klmn%m)); klmn%muf = 0.
+              NULLIFY(klmn%pf);        ALLOCATE(klmn%pf(1:3*klmn%m,1:3*klmn%m)); klmn%pf = 0.
+              NULLIFY(klmn%obs_data);  ALLOCATE(klmn%obs_data(1:3))
+              NULLIFY(klmn%obs_covar); ALLOCATE(klmn%obs_covar(1:3,1:3))
+              NULLIFY(klmn%obs_oper);  ALLOCATE(klmn%obs_oper(1:3,1:3*klmn%m)); klmn%obs_oper = 0.
+              NULLIFY(klmn%K);         ALLOCATE(klmn%K(1:3*klmn%m,1:3)); klmn%K = 0.
+              NULLIFY(klmn%x);         ALLOCATE(klmn%x(1:klmn%m))
+              NULLIFY(klmn%y);         ALLOCATE(klmn%y(1:klmn%m))
+              NULLIFY(klmn%z);         ALLOCATE(klmn%z(1:klmn%m))
+              n = 0
+              DO kk = (k-1)*kalman_num_spatial_refinements(3)+1,k*kalman_num_spatial_refinements(3)+1
+                 DO jj = (j-1)*kalman_num_spatial_refinements(2)+1,j*kalman_num_spatial_refinements(2)+1
+                    DO ii = (i-1)*kalman_num_spatial_refinements(1)+1,i*kalman_num_spatial_refinements(1)+1
+                       n = n + 1
+                       klmn%x(n) = ii
+                       klmn%y(n) = jj
+                       klmn%z(n) = kk
+                    END DO
                  END DO
               END DO
-           END DO
-           d_vol = 0.
-           do l = 1,klmn%m
-              do ii = 1,3
-                 klmn%obs_oper(ii,3*(l-1)+ii) = dx1p(klmn%x(l))*dx2p(klmn%y(l))*dx3p(klmn%z(l))
+              do n = 1,klmn%m
+                 do ii = 1,3
+                    klmn%obs_oper(ii,3*(n-1)+ii) = 1.
+                 end do
               end do
-              d_vol = d_vol + dx1p(klmn%x(l))*dx2p(klmn%y(l))*dx3p(klmn%z(l)) ! (dx3p = 1. for 2D)
-           end do
-           klmn%covar(1:intervals,1:klmn%m,1:3) = 1.0e1
-           klmn%covar(1:intervals,1:klmn%m,4:6) = 1.0
-           klmn%obs_oper = klmn%obs_oper/d_vol
-           NULLIFY(klmn%next)
+              klmn%obs_oper = klmn%obs_oper/klmn%m
+              klmn%covar(1:intervals,1:klmn%m,1:3) = 1.0e1
+              klmn%covar(1:intervals,1:klmn%m,4:6) = 1.0
+              NULLIFY(klmn%next)
+           END DO
         END DO
      END DO
-  END DO
+  end if
   !===========================================================================================================
 
-  DEALLOCATE(i_data,flag_data)
-
   write_kalm_count = 0
-
   phase = 1
   ALLOCATE(repetition(1:intervals)); repetition = 0
  
@@ -202,14 +180,13 @@
   USE mod_vars
   USE usr_func
   USE usr_vars
+  USE MPI
 
   IMPLICIT NONE
   
-  INCLUDE 'mpif.h'
-
   TYPE(kalman_t), pointer :: klmn
 
-  DEALLOCATE(repetition,klm_flag)
+  DEALLOCATE(repetition)
   DEALLOCATE(mean_gbl,covar_gbl,write_gain)
   DEALLOCATE(dtime_kalm_phases)
 
@@ -261,18 +238,17 @@
   USE mod_inout
   USE usr_func
   USE usr_vars
+  USE MPI
+  USE HDF5
 
   IMPLICIT NONE
   
-  INCLUDE 'mpif.h'
-  
   TYPE(kalman_t), pointer :: klmn
   INTEGER :: i, j, k
+  INTEGER, DIMENSION(2,3) :: bounds_kalman
   INTEGER :: INFO
   REAL    :: TKE(1:2), TKE_global(1:2), FKE(1:2), FKE_global(1:2)
   REAL    :: mean_xz_km_write(1:M2), mean_xz_km(S2p:N2p), mean_xz_km_global(S2p:N2p)
-  CHARACTER(LEN=2) :: phs
-  CHARACTER(LEN=50) :: read_dir,write_dir
 
   phase = mod(write_kalm_count,intervals) + 1
 
@@ -285,7 +261,7 @@
 
   repetition(phase) = repetition(phase) + 1
 
-  IF (rank == 0) WRITE(*,'(a,i8,a,i8)') 'kalman repetition', repetition(phase), '   for phase', phase,' ...'
+  IF (rank == 0) WRITE(*,'(a,i8,a,i8,a)') 'kalman repetition', repetition(phase), '   for phase', phase,' ...'
 
   INFO = 0
   !===========================================================================================================
@@ -296,16 +272,12 @@
   !===========================================================================================================
 
   !===========================================================================================================
-  !m_stats = m_stats/U_ref
-  !c_stats = c_stats/(U_ref*U_ref)
-
-  !===========================================================================================================
   !=== turbulence statistics =================================================================================
   !===========================================================================================================
   klmn => kalman_first
   do while(associated(klmn))
   !--------------------------------------------------------------------------------------------------------
-  !--- <u_i>(t_k) -------------------------------------------------------------------------------------------
+  !--- <u_i>(t_k) -----------------------------------------------------------------------------------------
   !--------------------------------------------------------------------------------------------------------
      klmn%mean(phase,:,:) = klmn%mean(phase,:,:)*(repetition(phase)-1)
      do i = 1, klmn%m
@@ -315,7 +287,7 @@
      end do
      klmn%mean(phase,:,:) = klmn%mean(phase,:,:)/repetition(phase)
   !--------------------------------------------------------------------------------------------------------
-  !--- <u_i u_j>(t_k) ---------------------------------------------------------------------------------------
+  !--- <u_i u_j>(t_k) -------------------------------------------------------------------------------------
   !--------------------------------------------------------------------------------------------------------
      klmn%covar(phase,:,:) = klmn%covar(phase,:,:)*repetition(phase)
      do i = 1, klmn%m
@@ -347,7 +319,7 @@
   do while(associated(klmn))
      do i = 1, klmn%m
   !--------------------------------------------------------------------------------------------------------
-  !--- u(x,t) --------------------------------------------------------------------------------------------
+  !--- u(x,t) ---------------------------------------------------------------------------------------------
   !--------------------------------------------------------------------------------------------------------
         klmn%muf(3*(i-1)+1) = work1(klmn%x(i),klmn%y(i),klmn%z(i))
         klmn%muf(3*(i-1)+2) = work2(klmn%x(i),klmn%y(i),klmn%z(i))
@@ -376,9 +348,15 @@
   !--------------------------------------------------------------------------------------------------------
      CALL kalman_filter(klmn%muf,klmn%pf,klmn%obs_oper,klmn%obs_data,klmn%obs_covar, &
                         klmn%K,size(klmn%muf),size(klmn%obs_data),INFO)
-  !--------------------------------------------------------------------------------------------------------
-  !--- then update u_i(:,:,:) -----------------------------------------------------------------------------
-  !--------------------------------------------------------------------------------------------------------
+     klmn => klmn%next
+  end do
+  !===========================================================================================================
+
+  !===========================================================================================================
+  !=== then update u_i(:,:,:) ================================================================================
+  !===========================================================================================================
+  klmn => kalman_first
+  do while(associated(klmn))
      do i = 1, klmn%m
         work1(klmn%x(i),klmn%y(i),klmn%z(i)) = klmn%muf(3*(i-1)+1)
         work2(klmn%x(i),klmn%y(i),klmn%z(i)) = klmn%muf(3*(i-1)+2)
@@ -386,11 +364,9 @@
      end do
      klmn => klmn%next
   end do
-  !===========================================================================================================
-
-  !===========================================================================================================
-  ! === worki(:,:,:) --> vel(:,:,:,i) ========================================================================
-  !===========================================================================================================
+  !-----------------------------------------------------------------------------------------------------------
+  !--- worki(:,:,:) --> vel(:,:,:,i) -------------------------------------------------------------------------
+  !-----------------------------------------------------------------------------------------------------------
   CALL interpolate2_pre_vel(.TRUE.,1,work1,vel(b1L:(N1+b1U),b2L:(N2+b2U),b3L:(N3+b3U),1))
   CALL interpolate2_pre_vel(.TRUE.,2,work2,vel(b1L:(N1+b1U),b2L:(N2+b2U),b3L:(N3+b3U),2))
   CALL interpolate2_pre_vel(.TRUE.,3,work3,vel(b1L:(N1+b1U),b2L:(N2+b2U),b3L:(N3+b3U),3))
@@ -495,40 +471,55 @@
   !===========================================================================================================
   !=== integral energy for the Kalman window =================================================================
   !===========================================================================================================
+  bounds_kalman(1,1) = lbound(mri_inst%mri%velocity_mean%array,3)
+  bounds_kalman(2,1) = ubound(mri_inst%mri%velocity_mean%array,3)
+  bounds_kalman(1,2) = lbound(mri_inst%mri%velocity_mean%array,4)
+  bounds_kalman(2,2) = ubound(mri_inst%mri%velocity_mean%array,4)
+  bounds_kalman(1,3) = lbound(mri_inst%mri%velocity_mean%array,5)
+  bounds_kalman(2,3) = ubound(mri_inst%mri%velocity_mean%array,5)
+
   FKE = 0.
-  DO k = S3p, N3p
-     DO j = S2p, N2p
-        DO i = S1p, N1p
-           FKE(1) = FKE(1) + klm_flag(i,j,k)*dx1p(i)*dx2p(j)*dx3p(k)*(mean_gbl(phase,i,j,k,1)**2+mean_gbl(phase,i,j,k,2)**2+&
-                                                      mean_gbl(phase,i,j,k,3)**2)
-           !--------------------------------------------------------------------------------------------------------
-           !--- u'_i u'_i(t_k) -------------------------------------------------------------------------------------
-           !--------------------------------------------------------------------------------------------------------
-           FKE(2) = FKE(2) + klm_flag(i,j,k)*dx1p(i)*dx2p(j)*dx3p(k)*( (work1(i,j,k) - mean_gbl(phase,i,j,k,1))**2 + &
-                                                                       (work2(i,j,k) - mean_gbl(phase,i,j,k,2))**2 + &
-                                                                       (work3(i,j,k) - mean_gbl(phase,i,j,k,3))**2 )
+  if (sum(bounds_kalman(2,1:3)).ne.0) then
+  DO k = (bounds_kalman(1,3)-1)*kalman_num_spatial_refinements(3)+1,bounds_kalman(2,3)*kalman_num_spatial_refinements(3)+1
+     DO j = (bounds_kalman(1,2)-1)*kalman_num_spatial_refinements(2)+1,bounds_kalman(2,2)*kalman_num_spatial_refinements(2)+1
+        DO i = (bounds_kalman(1,1)-1)*kalman_num_spatial_refinements(1)+1,bounds_kalman(2,1)*kalman_num_spatial_refinements(1)+1
+           if ( k.le.N3p .and. j.le.N2p .and. i.le.N1p) then
+              FKE(1) = FKE(1) + dx1p(i)*dx2p(j)*dx3p(k)*(mean_gbl(phase,i,j,k,1)**2+mean_gbl(phase,i,j,k,2)**2+&
+                                                         mean_gbl(phase,i,j,k,3)**2)
+              !--------------------------------------------------------------------------------------------------------
+              !--- u'_i u'_i(t_k) -------------------------------------------------------------------------------------
+              !--------------------------------------------------------------------------------------------------------
+              FKE(2) = FKE(2) + dx1p(i)*dx2p(j)*dx3p(k)*( (work1(i,j,k) - mean_gbl(phase,i,j,k,1))**2 + &
+                                                          (work2(i,j,k) - mean_gbl(phase,i,j,k,2))**2 + &
+                                                          (work3(i,j,k) - mean_gbl(phase,i,j,k,3))**2 )
+           end if
         END DO
      END DO
   END DO
+  end if
   CALL MPI_ALLREDUCE(FKE,FKE_global,2,MPI_REAL8,MPI_SUM,COMM_CART,merror)
   FKE_global = FKE_global/2.
   
   TKE = 0.
-  DO k = S3p, N3p
-     DO j = S2p, N2p
-        DO i = S1p, N1p
-           TKE(1) = TKE(1) + klm_flag(i,j,k)*dx1p(i)*dx2p(j)*dx3p(k)*(mean_gbl(phase,i,j,k,1)**2+mean_gbl(phase,i,j,k,2)**2+&
-                                                      mean_gbl(phase,i,j,k,3)**2)
-           !--------------------------------------------------------------------------------------------------------
-           !--- <u'_i u'_i>(t_k) -----------------------------------------------------------------------------------
-           !--------------------------------------------------------------------------------------------------------
-           TKE(2) = TKE(2) + klm_flag(i,j,k)*dx1p(i)*dx2p(j)*dx3p(k)*( &
-                             (covar_gbl(phase,i,j,k,1) - mean_gbl(phase,i,j,k,1)*mean_gbl(phase,i,j,k,1) ) + &
-                             (covar_gbl(phase,i,j,k,2) - mean_gbl(phase,i,j,k,2)*mean_gbl(phase,i,j,k,2) ) + &
-                             (covar_gbl(phase,i,j,k,3) - mean_gbl(phase,i,j,k,3)*mean_gbl(phase,i,j,k,3) ) )
+  if (sum(bounds_kalman(2,1:3)).ne.0) then
+  DO k = (bounds_kalman(1,3)-1)*kalman_num_spatial_refinements(3)+1,bounds_kalman(2,3)*kalman_num_spatial_refinements(3)+1
+     DO j = (bounds_kalman(1,2)-1)*kalman_num_spatial_refinements(2)+1,bounds_kalman(2,2)*kalman_num_spatial_refinements(2)+1
+        DO i = (bounds_kalman(1,1)-1)*kalman_num_spatial_refinements(1)+1,bounds_kalman(2,1)*kalman_num_spatial_refinements(1)+1
+           if ( k.le.N3p .and. j.le.N2p .and. i.le.N1p) then
+              TKE(1) = TKE(1) + dx1p(i)*dx2p(j)*dx3p(k)*(mean_gbl(phase,i,j,k,1)**2+mean_gbl(phase,i,j,k,2)**2+&
+                                         mean_gbl(phase,i,j,k,3)**2)
+              !--------------------------------------------------------------------------------------------------------
+              !--- <u'_i u'_i>(t_k) -----------------------------------------------------------------------------------
+              !--------------------------------------------------------------------------------------------------------
+              TKE(2) = TKE(2) + dx1p(i)*dx2p(j)*dx3p(k)*( &
+                                (covar_gbl(phase,i,j,k,1) - mean_gbl(phase,i,j,k,1)*mean_gbl(phase,i,j,k,1) ) + &
+                                (covar_gbl(phase,i,j,k,2) - mean_gbl(phase,i,j,k,2)*mean_gbl(phase,i,j,k,2) ) + &
+                                (covar_gbl(phase,i,j,k,3) - mean_gbl(phase,i,j,k,3)*mean_gbl(phase,i,j,k,3) ) )
+           end if
         END DO
      END DO
   END DO
+  end if
   CALL MPI_ALLREDUCE(TKE,TKE_global,2,MPI_REAL8,MPI_SUM,COMM_CART,merror)
   TKE_global = TKE_global/2.
 
@@ -537,7 +528,6 @@
     WRITE(44,'(5E25.17)') time, FKE_global(1:2), TKE_global(1:2)
     CALL flush(44)
   END IF
-
 
   write_gain = 0.
   klmn => kalman_first
@@ -552,7 +542,6 @@
      end do
      klmn => klmn%next
   end do
-
   !===========================================================================================================
 
   RETURN
@@ -660,10 +649,7 @@
   IMPLICIT NONE
 
 
-  CHARACTER(len=80) :: text
-  CHARACTER(len=80) :: dummy
   CHARACTER(LEN=2) :: phase_char
-  INTEGER           :: ios
   TYPE(kalman_t), pointer :: klmn
   INTEGER :: i
   REAL    :: read_mean_gbl(b1L:(N1+b1U),b2L:(N2+b2U),b3L:(N3+b3U),1:3)
