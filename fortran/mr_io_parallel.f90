@@ -138,18 +138,18 @@ subroutine mr_io_parallel_spatial_hyperslap_compute_padded(mr_io_mpi_comm, mr_io
 !  write(0,*) "offset:            ",offset_file
 !  write(0,*) "shape:             ",dims_mem
 
-  dims_mem = dims_mem - max(offset_file + dims_mem - (dims_file_padded - domain_padding%rhs), (/0,0,0/))
-  dims_mem = dims_mem - max(domain_padding%lhs - offset_file, (/0,0,0/))
-  if(any(dims_mem <= (/0,0,0/))) then
-    dims_mem = (/0,0,0/)
-  end if
-
   do i=1,3
     if( (offset_file(i) < domain_padding%lhs(i)) .and. (offset_file(i) + dims_mem(i) >= domain_padding%lhs(i)) ) then
       offset_hyperslab(i) = modulo(domain_padding%lhs(i), &
                                    (dims_file_padded(i) + mr_io_mpi_cart_dims(i) - 1)/mr_io_mpi_cart_dims(i))
     end if
   end do
+
+  dims_mem = dims_mem - max(offset_file + dims_mem - (dims_file_padded - domain_padding%rhs), (/0,0,0/))
+  dims_mem = dims_mem - max(domain_padding%lhs - offset_file, (/0,0,0/))
+  if(any(dims_mem <= (/0,0,0/))) then
+    dims_mem = (/0,0,0/)
+  end if
 
   offset_file = max(offset_file - domain_padding%lhs ,(/0,0,0/))
 
