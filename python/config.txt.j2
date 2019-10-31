@@ -9,7 +9,7 @@ task			1
 
 restart_from		0
 
-n_timesteps         {{ n_timesteps }}
+n_timesteps             1000000
 
 # number of grid points in each direction
 M1          {{ M1 }}
@@ -42,7 +42,11 @@ kalman_mri_output_file_path                  {{ kalman_mri_output_file_path }}
 # MRI attributes currently have to be supplied through the config file due to compiler error in hpc-predict-io
 kalman_mri_input_attr_t_heart_cycle_period   {{ kalman_mri_input_attr_t_heart_cycle_period }}
 
-Re			3300.
+Re          4928.6
+mu_fluid    0.0056
+rho_fluid   1200.
+L_ref       0.023
+U_ref       1.
 
 #--- Extents --------------------------------------------------------------
 time_start		{{ time_start }}
@@ -56,14 +60,14 @@ L3			{{ L3 }}
 #--- boundary conditions ---------------------------------------------------
 
 # boundary condition in 1st direction lower/upper and so on (-1: periodic, 1: homogeneous Dirichlet)
-BC_1L_global		-1
-BC_1U_global	    -1
+BC_1L_global	-1
+BC_1U_global	-1
 
-BC_2L_global		 1
-BC_2U_global		 1
+BC_2L_global	-1
+BC_2U_global	-1
 
-BC_3L_global		-1
-BC_3U_global	    -1
+BC_3L_global	-1
+BC_3U_global    -1
 
 # Outlet boundary condition on surface (F:false)
 outlet11		F F F
@@ -75,7 +79,7 @@ outlet22		F F F
 outlet31		F F F
 outlet32		F F F
 
-forcing_mode		2
+forcing_mode		0
 
 # 1: x-direction
 bulkflow_dir		1
@@ -144,11 +148,13 @@ n_grids_limit		15
 write_stout_yes         T
 log_iteration_yes       T
 write_restart_yes       T
-dtime_out_vect          2.0
+dtime_out_vect          0.005
 # Delta time for saving data from DNS simulation for subsequent Kalman-filtered sim.
 dtime_out_scal          0.0
 # Delta time for Kalman-filtered sim.
-dtime_out_kalm          0.2
+dtime_out_kalm      {{ dtime_out_kalm }}
+intervals           {{ n_intervals }}
+write_covariance_yes    T
 write_lambda2_yes       F
 write_force_yes         F
 write_xdmf_yes          T
@@ -189,19 +195,10 @@ parabola_yes            F
 
 #--- Immersed Boundary Method ----------------------------------------------
 fem_yes                 F
-
-mu_fluid                0.01
-rho_fluid               1.
-
 E_mod                   1E6
 nu_poiss                0.499
-
 ddf_type                1
-
 reach                   0.125
-
-L_ref                   0.1
-U_ref                   1.
 
 rho_solid               1.
 
