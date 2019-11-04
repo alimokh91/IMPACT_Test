@@ -21,6 +21,7 @@ if echo ${MPI_MASTER_HOST} | grep -i gpucandoit > /dev/null; then
   MPI_WORKER_HOSTS=(gpucandoit.artorg.unibe.ch)
   MPI_MASTER_IMPACT_DIR="/media/Fast_and_Furious/derick/IMPACT/" 
   MPI_EXEC_COMMAND="module load mpich-3.2 hdf5-1.10.1; mpiexec"
+  MPI_EXEC_NUM_PROCESSES="-np $(( ${#MPI_WORKER_HOSTS[@]}*${NUM_MPI_PROCESSES_PER_HOST} ))"
   #"ssh derick@gpucandoit.artorg.unibe.ch bash -l -c "\"module load mpich-3.2 hdf5-1.10.1; mpiexec\"""
 elif echo ${MPI_MASTER_HOST} | grep -i daint > /dev/null; then
   MPI_WORKER_HOSTS=(nid04276 nid04277 nid04278 nid04279)
@@ -45,9 +46,8 @@ elif echo ${MPI_MASTER_HOST} | grep -i daint > /dev/null; then
 else
   MPI_WORKER_HOSTS=(localhost)
   MPI_EXEC_COMMAND="mpiexec"
+  MPI_EXEC_NUM_PROCESSES="-np $(( ${#MPI_WORKER_HOSTS[@]}*${NUM_MPI_PROCESSES_PER_HOST} ))"
 fi
-
-MPI_EXEC_NUM_PROCESSES="-np $(( ${#MPI_WORKER_HOSTS[@]}*${NUM_MPI_PROCESSES_PER_HOST} ))"
 
 IMPACT_DEBUG_INFO_DIR="/tmp/impact_debug_info"
 
