@@ -66,6 +66,8 @@ program mr_io_test_parallel_reader_flow_padded
 
     print *, mri_dest%intensity%array
 
+    print *, lbound(mri_dest%intensity%array)
+    print *, ubound(mri_dest%intensity%array)
 
     velocity_mean_shape = shape(mri_dest%velocity_mean%array)
 
@@ -80,6 +82,8 @@ program mr_io_test_parallel_reader_flow_padded
     print *, velocity_mean_shape(1)
     print *, mri_dest%velocity_mean%array
 
+    print *, lbound(mri_dest%velocity_mean%array)
+    print *, ubound(mri_dest%velocity_mean%array)
 
     velocity_cov_shape = shape(mri_dest%velocity_cov%array)
 
@@ -94,6 +98,8 @@ program mr_io_test_parallel_reader_flow_padded
     print *, velocity_cov_shape(1:2)
     print *, mri_dest%velocity_cov%array
 
+    print *, lbound(mri_dest%velocity_cov%array)
+    print *, ubound(mri_dest%velocity_cov%array)
 
     call MPI_Finalize(err)
         
