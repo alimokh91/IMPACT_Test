@@ -101,8 +101,8 @@ MODULE mod_timeint
   
   !--- Null-Raeume bestimmen ---------------------------------------------------------------------------------
   ! Steht hier, weil Korrekturvektor "th" nach "configuration" erst alloziert und bestimmt werden muss
-  ! ("initial_conditions_" werden danach als nÃ¤chstes gerufen, s.o.)
-  ! Alternative: eigene Subroutine fÃ¼r "th" kreieren ...
+  ! ("initial_conditions_" werden danach als nächstes gerufen, s.o.)
+  ! Alternative: eigene Subroutine für "th" kreieren ...
   IF (nullspace_yes) THEN
      CALL get_stencil_transp
      CALL get_nullspace
@@ -170,7 +170,7 @@ MODULE mod_timeint
   !--- Ausschreiben ------------------------------------------------------------------------------------------
   IF (write_xdmf_yes .AND. write_out_vect) CALL write_xdmf_xml ! bbecsek
   IF (write_out_scal) CALL compute_stats
-  IF (write_out_kalm .and. time.eq.time_start) CALL compute_kalman
+  !IF (write_out_kalm) CALL compute_kalman
   IF (write_out_vect) CALL write_fields
   !===========================================================================================================
   
@@ -235,9 +235,9 @@ MODULE mod_timeint
         IF (substep == 2) subtime = time + dtime*(aRK(1)+aRK(2)+bRK(2))
         IF (substep == 3) subtime = time + dtime
         
-        !--- rhs (ggf. Neumann-RB Ã¼berschreiben) -------------------------------------------------------------
+        !--- rhs (ggf. Neumann-RB überschreiben) -------------------------------------------------------------
         ! Muss vor Konzentrationen kommen, weil
-        !  - bcii fÃ¼r die no-flux-RB verwendet werden,
+        !  - bcii für die no-flux-RB verwendet werden,
         !  - die Konzentrationen die Eddy-Viscosity des Geschwindigkeitsfeldes benoetigen.
         CALL rhs_vel
         
@@ -247,7 +247,7 @@ MODULE mod_timeint
         !--- Umskalieren (Effizienz, initial guess) ----------------------------------------------------------
         IF (.NOT. init_pre(substep)) pre(S1p:N1p,S2p:N2p,S3p:N3p) = pre(S1p:N1p,S2p:N2p,S3p:N3p) * (aRK(substep)+bRK(substep)) * dtime
         
-        !--- LÃ¶ser -------------------------------------------------------------------------------------------
+        !--- Löser -------------------------------------------------------------------------------------------
         IF (timeint_mode == 1 .OR. thetaL == 1.) THEN
            CALL explicit
         ELSE
@@ -261,7 +261,7 @@ MODULE mod_timeint
         !--- physikalischer Druck ----------------------------------------------------------------------------
         pre(S1p:N1p,S2p:N2p,S3p:N3p) = pre(S1p:N1p,S2p:N2p,S3p:N3p) / (aRK(substep)+bRK(substep)) / dtime
         
-        !--- Undefinierte Ecken / Kanten auffÃ¼llen -----------------------------------------------------------
+        !--- Undefinierte Ecken / Kanten auffüllen -----------------------------------------------------------
         CALL fill_corners(pre)
 
         !--- ghost cell update (fuer RHS) --------------------------------------------------------------------
@@ -310,7 +310,7 @@ MODULE mod_timeint
      msec = ctime(8)
      
      IF (ctime(3) /= day) THEN
-        ! Anmerkung: Gilt nur fÃ¼r Jobs <= 24h
+        ! Anmerkung: Gilt nur für Jobs <= 24h
         elatime = msec+1000*(sec+60*(minu+60*hour)) - elatime + 24*60*60*1000
      ELSE
         elatime = msec+1000*(sec+60*(minu+60*hour)) - elatime

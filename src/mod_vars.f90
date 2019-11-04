@@ -837,9 +837,7 @@ MODULE mod_vars
   LOGICAL                ::  write_test_yes
   LOGICAL                ::  write_covariance_yes !for writing covariance into xdmf file    defined in config.txt
   INTEGER                ::  num_windows !define in usr_stats and for write covariance into xdmf
-  INTEGER                ::  intervals   !define number of intervals in the output of a periodic flow
-  INTEGER                ::  phase       !define number of interval  in the output of a periodic flow
-  INTEGER, ALLOCATABLE   ::  repetition(:) !define array of #phases for repetitions counter
+  INTEGER                ::  intervals   !define number of intervals in the output of a periodic flow 
 
   !--- globale Laufindizes -----------------------------------------------------------------------------------
   INTEGER                ::  direction
@@ -987,39 +985,6 @@ MODULE mod_vars
   INTEGER, ALLOCATABLE   ::  block_elem_sizes(:)     !< sizes (# of elements in each block ) 0 -> NB1*NB2*NB3
 
   REAL, ALLOCATABLE, TARGET      ::  vel_old(:,:,:,:)        !< velocity of previous timestep (used in Picard iterations)
-
-  INTEGER :: n_data,n_data_tot,data_shift
-  INTEGER, ALLOCATABLE :: klm_flag(:,:,:)
-  REAL, ALLOCATABLE :: mean_gbl(:,:,:,:,:)
-  REAL, ALLOCATABLE :: covar_gbl(:,:,:,:,:)
-  REAL, ALLOCATABLE :: write_gain (:,:,:,:)
-
-  TYPE stats_t
-     INTEGER :: i_data,m
-     INTEGER, POINTER :: x(:),y(:),z(:)  !i,j,k of the grid node for each m component
-     REAL, POINTER :: mean_xyz(:),covar_xyz(:),mean_xyzt(:,:),covar_xyzt(:,:) !stats
-     REAL, POINTER :: wgt(:) !stats
-     TYPE(stats_t), POINTER :: next
-  END TYPE stats_t
-
-  TYPE stats_group_t
-     INTEGER :: group_id,phase
-     INTEGER :: n_data,n_data_tot,data_shift
-     TYPE(stats_t), pointer :: stats_first
-     TYPE(stats_group_t), POINTER :: next
-  END TYPE stats_group_t
-
-  TYPE(stats_group_t), pointer :: stats_group_first
-
-  TYPE kalman_t
-     INTEGER :: i_data,flg,m,phase
-     INTEGER, POINTER :: x(:),y(:),z(:)  !i,j,k of the grid node for each m component
-     REAL, POINTER :: mean(:,:,:),covar(:,:,:) ! phases, m, 3 or 6
-     REAL, POINTER :: muf(:),pf(:,:),obs_data(:),obs_covar(:,:),obs_oper(:,:),K(:,:) !kalman
-     TYPE(kalman_t), POINTER :: next
-  END TYPE kalman_t
-
-  TYPE(kalman_t), pointer :: kalman_first
 
 
 #ifndef FTOPY
@@ -1633,11 +1598,7 @@ MODULE mod_vars
   LOGICAL                ::  write_restart_yes
   LOGICAL                ::  write_lambda2_yes
   LOGICAL                ::  write_test_yes
-  INTEGER                ::  num_windows !define in usr_stats and for write covariance into xdmf
-  INTEGER                ::  intervals   !define number of intervals in the output of a periodic flow
-  INTEGER                ::  phase       !define number of interval  in the output of a periodic flow
-  INTEGER, ALLOCATABLE   ::  repetition(:) !define array of #phases for repetitions counter
-
+  
   !--- globale Laufindizes -----------------------------------------------------------------------------------
   INTEGER                ::  direction
   
@@ -1763,40 +1724,6 @@ MODULE mod_vars
 
   REAL :: fd(b1L:(N1+b1U),b2L:(N2+b2U),b3L:(N3+b3U),1:3)
   REAL :: vel_old(b1L:(N1+b1U),b2L:(N2+b2U),b3L:(N3+b3U),1:3)        !< vel of previous timestep (used in Picard iterations)
-
-  INTEGER :: n_data,n_data_tot,data_shift
-  INTEGER, ALLOCATABLE :: klm_flag(:,:,:)
-  REAL, ALLOCATABLE :: mean_gbl(:,:,:,:,:)
-  REAL, ALLOCATABLE :: covar_gbl(:,:,:,:,:)
-  REAL, ALLOCATABLE :: write_gain (:,:,:,:)
-
-  TYPE stats_t
-     INTEGER :: i_data,m
-     INTEGER, POINTER :: x(:),y(:),z(:)  !i,j,k of the grid node for each m component
-     REAL, POINTER :: mean_xyz(:),covar_xyz(:),mean_xyzt(:,:),covar_xyzt(:,:) !stats
-     REAL, POINTER :: wgt(:) !stats
-     TYPE(stats_t), POINTER :: next
-  END TYPE stats_t
-
-  TYPE stats_group_t
-     INTEGER :: group_id,phase
-     INTEGER :: n_data,n_data_tot,data_shift
-     TYPE(stats_t), pointer :: stats_first
-     TYPE(stats_group_t), POINTER :: next
-  END TYPE stats_group_t
-
-  TYPE(stats_group_t), pointer :: stats_group_first
-
-  TYPE kalman_t
-     INTEGER :: i_data,flg,m,phase
-     INTEGER, POINTER :: x(:),y(:),z(:)  !i,j,k of the grid node for each m component
-     REAL, POINTER :: mean(:,:,:),covar(:,:,:) ! phases, m, 3 or 6
-     REAL, POINTER :: muf(:),pf(:,:),obs_data(:),obs_covar(:,:),obs_oper(:,:),K(:,:) !kalman
-     TYPE(kalman_t), POINTER :: next
-  END TYPE kalman_t
-
-  TYPE(kalman_t), pointer :: kalman_first
-
 
 #endif
 

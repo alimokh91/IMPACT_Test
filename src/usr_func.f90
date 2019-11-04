@@ -657,14 +657,90 @@ MODULE usr_func
   DO k = S31, N31
      DO j = S21, N21
         DO i = S11, N11
+          !--- forcing in x-direction ---
+          IF (fringe_dir .EQ. 1) THEN
+            IF (D3_channel_parab_yes .AND. dimens == 3) THEN
+              CALL fringe_coeff(fringe_amp , fringe_start , fringe_end , fringe_rise , &
+                    fringe_fall , x1u(i) , lamb_fringe)
+   
+              CALL poiseuille_parabola(y2p(1), &
+                                       y2p(M2), x2p(j), parab)
+              CALL poiseuille_parabola(y3p(1), &
+                                       y3p(M3), x3p(k), parab2)
+              
+              nl(i,j,k,1) = nl(i,j,k,1) - lamb_fringe*(9.*parab*parab2/4. - vel(i,j,k,1))*smooth_step(step_yes, subtime/t_rampup)
+              
+            ELSE
+               !--- only force within desired bounds ---
+               IF (dimens .NE. 3) fringe_center(3) = x3p(k) ! transform circle equation to interval
+               IF (((x2p(j) - fringe_center(2))**2 + (x3p(k) - fringe_center(3))**2) .LE. fringe_radius**2) THEN
+
+                 CALL fringe_coeff(fringe_amp , fringe_start , fringe_end , fringe_rise , &
+                       fringe_fall , x1u(i) , lamb_fringe)
+
+                 IF (dimens .EQ. 3 .AND. parabola_yes) THEN
+                   CALL poiseuille_paraboloid(x2p(j), x3p(k), fringe_center(2), &
+                         fringe_center(3), fringe_radius, parab)
+                 ELSE IF (parabola_yes) THEN
+                   CALL poiseuille_parabola(fringe_center(2) - fringe_radius, &
+                                            fringe_center(2) + fringe_radius, x2p(j), parab)
+                 ELSE IF (pressure_yes) THEN
+                   CALL periodic_pressure(subtime, p)
+                 END IF
+
+                 IF (parabola_yes .AND. dimens == 2) THEN
+                   nl(i,j,k,1) = nl(i,j,k,1) - lamb_fringe*(1.5*parab - vel(i,j,k,1))*smooth_step(step_yes, subtime/t_rampup)
+                   nl(i,j,k,1) = nl(i,j,k,1) - (lamb_fringe/fringe_amp) * L1/(fringe_end - fringe_start) * 8/((2. * fringe_radius)**2.) / Re
+                 ELSE IF (parabola_yes .AND. dimens == 3) THEN
+                   nl(i,j,k,1) = nl(i,j,k,1) - lamb_fringe*(2.*parab - vel(i,j,k,1))*smooth_step(step_yes, subtime/t_rampup)
+                 ELSE IF (pressure_yes) THEN
+                   nl(i,j,k,1) = nl(i,j,k,1) - (lamb_fringe / fringe_amp) * p /(fringe_end - fringe_start) / (rho_fluid*U_ref**2.)
+                 ELSE 
+                   nl(i,j,k,1) = nl(i,j,k,1) - lamb_fringe*(1. - vel(i,j,k,1))*smooth_step(step_yes, subtime/t_rampup)
+                 END IF
+
+                 !nl(i,j,k,1) = nl(i,j,k,1) - lamb_fringe*(fitted_pressure(MOD(subtime,1.)) - pre(i,j,k)) &
+                 !                / (rho_fluid*U_ref**2.) &
+                 !                / (fringe_end - fringe_start) &
+                 !                * (2./(pi*fringe_radius**4.)) * parab
+                 !nl(i,j,k,1) = nl(i,j,k,1) - lamb_fringe*(  (2./(pi*fringe_radius**4.))*parab &
+                 !              * fitted_flow(MOD(subtime,1.))/(U_ref*L_ref**2) - vel(i,j,k,1) )  !&
+                 !              * smooth_step(step_yes, subtime/t_rampup)! Poiseuille profile 
+
+                 !nl(i,j,k,1) = nl(i,j,k,1) - lamb_fringe*( (L1/ (( fringe_end-fringe_start )))*(2./Re)  )! poiseuille channel 
+               END IF
+            END IF !3D_channel
+          END IF
           !--- forcing in y-direction ---
           IF (fringe_dir .EQ. 2) THEN
-             !--- only force within desired bounds ---
-             IF (((x1p(i) - fringe_center(1))**2 + (x3p(k) - fringe_center(3))**2) .LE. fringe_radius**2) THEN
-               CALL fringe_coeff(fringe_amp , fringe_start , fringe_end , fringe_rise , &
-                     fringe_fall , x2p(j) , lamb_fringe)
-               nl(i,j,k,1) = nl(i,j,k,1) - lamb_fringe*( 0. - vel(i,j,k,1) )
-             END IF
+            IF (D3_channel_parab_yes .AND. dimens == 3) THEN
+              CALL fringe_coeff(fringe_amp , fringe_start , fringe_end , fringe_rise , &
+                    fringe_fall , x2p(j) , lamb_fringe)
+              nl(i,j,k,1) = nl(i,j,k,1) - lamb_fringe*( 0. - vel(i,j,k,1) )
+            ELSE
+               !--- only force within desired bounds ---
+               IF (dimens .NE. 3) fringe_center(3) = x3p(k) ! transforms circle equation to interval
+               IF (((x1p(i) - fringe_center(1))**2 + (x3p(k) - fringe_center(3))**2) .LE. fringe_radius**2) THEN
+                 CALL fringe_coeff(fringe_amp , fringe_start , fringe_end , fringe_rise , &
+                       fringe_fall , x2p(j) , lamb_fringe)
+                 nl(i,j,k,1) = nl(i,j,k,1) - lamb_fringe*( 0. - vel(i,j,k,1) )
+               END IF
+            END IF !3D_channel
+          END IF
+          !--- forcing in z-direction ---
+          IF (fringe_dir .EQ. 3 .AND. dimens .EQ. 3) THEN
+            IF (D3_channel_parab_yes .AND. dimens == 3) THEN
+              CALL fringe_coeff(fringe_amp , fringe_start , fringe_end , fringe_rise , &
+                    fringe_fall , x3p(k) , lamb_fringe)
+              nl(i,j,k,1) = nl(i,j,k,1) - lamb_fringe*( 0. - vel(i,j,k,1) )
+            ELSE
+               !--- only force within desired bounds ---
+               IF (((x1p(i) - fringe_center(1))**2 + (x2p(j) - fringe_center(2))**2) .LE. fringe_radius**2) THEN
+                 CALL fringe_coeff(fringe_amp , fringe_start , fringe_end , fringe_rise , &
+                       fringe_fall , x3p(k) , lamb_fringe)
+                 nl(i,j,k,1) = nl(i,j,k,1) - lamb_fringe*( 0. - vel(i,j,k,1) )
+               END IF
+            END IF
           END IF
         END DO
      END DO
@@ -673,14 +749,81 @@ MODULE usr_func
   DO k = S32, N32
      DO j = S22, N22
         DO i = S12, N12
+          !--- forcing in x-direction ---
+          IF (fringe_dir .EQ. 1) THEN
+            IF (D3_channel_parab_yes .AND. dimens == 3) THEN
+              CALL fringe_coeff(fringe_amp , fringe_start , fringe_end , fringe_rise , &
+                    fringe_fall , x1p(i) , lamb_fringe)
+              nl(i,j,k,2) = nl(i,j,k,2) - lamb_fringe*( 0. - vel(i,j,k,2) )
+            ELSE
+               !--- only force within desired bounds ---
+               IF (dimens .NE. 3) fringe_center(3) = x3p(k) ! transform circle equation to interval
+               IF (((x2p(j) - fringe_center(2))**2 + (x3p(k) - fringe_center(3))**2) .LE. fringe_radius**2) THEN
+                 CALL fringe_coeff(fringe_amp , fringe_start , fringe_end , fringe_rise , &
+                       fringe_fall , x1p(i) , lamb_fringe)
+                 nl(i,j,k,2) = nl(i,j,k,2) - lamb_fringe*( 0. - vel(i,j,k,2) )
+               END IF
+            END IF
+          END IF
           !--- forcing in y-direction ---
           IF (fringe_dir .EQ. 2) THEN
-             !--- only force within desired bounds ---
-             IF (((x1p(i) - fringe_center(1))**2 + (x3p(k) - fringe_center(3))**2) .LE. fringe_radius**2) THEN
-               CALL fringe_coeff(fringe_amp , fringe_start , fringe_end , fringe_rise , &
-                     fringe_fall , x2v(j) , lamb_fringe)
-               nl(i,j,k,2) = nl(i,j,k,2) - lamb_fringe*( 0. - vel(i,j,k,2) )
-             END IF
+            IF (D3_channel_parab_yes .AND. dimens == 3) THEN
+              CALL fringe_coeff(fringe_amp , fringe_start , fringe_end , fringe_rise , &
+                    fringe_fall , x2v(j) , lamb_fringe)
+   
+              CALL poiseuille_parabola(y1p(1), &
+                                       y1p(M1), x1p(i), parab)
+              CALL poiseuille_parabola(y3p(1), &
+                                       y3p(M3), x3p(k), parab2)
+              
+              nl(i,j,k,2) = nl(i,j,k,2) - lamb_fringe*(9.*parab*parab2/4. - vel(i,j,k,2))*smooth_step(step_yes, subtime/t_rampup)
+              
+            ELSE
+               !--- only force within desired bounds ---
+               IF (dimens .NE. 3) fringe_center(3) = x3p(k) ! transforms circle equation to interval
+               IF (((x1p(i) - fringe_center(1))**2 + (x3p(k) - fringe_center(3))**2) .LE. fringe_radius**2) THEN
+                 CALL fringe_coeff(fringe_amp , fringe_start , fringe_end , fringe_rise , &
+                       fringe_fall , x2v(j) , lamb_fringe)
+
+                 IF (dimens .EQ. 3 .AND. parabola_yes) THEN
+                   CALL poiseuille_paraboloid(x1p(i), x3p(k), fringe_center(1), &
+                         fringe_center(3), fringe_radius, parab)
+                 ELSE IF (parabola_yes) THEN
+                   CALL poiseuille_parabola(fringe_center(1) - fringe_radius, &
+                                            fringe_center(1) + fringe_radius, x1p(i), parab)
+                 ELSE IF (pressure_yes) THEN
+                   CALL periodic_pressure(subtime, p)
+                 END IF
+
+                 IF (parabola_yes .AND. dimens == 2) THEN
+                   nl(i,j,k,2) = nl(i,j,k,2) - lamb_fringe*(1.5*parab - vel(i,j,k,2))*smooth_step(step_yes, subtime/t_rampup)
+                   nl(i,j,k,2) = nl(i,j,k,2) - (lamb_fringe/fringe_amp) * L2/(fringe_end - fringe_start) * 8/((2. * fringe_radius)**2.) / Re
+                 ELSE IF (parabola_yes .AND. dimens == 3) THEN
+                   nl(i,j,k,2) = nl(i,j,k,2) - lamb_fringe*(2.0*parab - vel(i,j,k,2))*smooth_step(step_yes, subtime/t_rampup)
+                 ELSE IF (pressure_yes) THEN
+                   nl(i,j,k,2) = nl(i,j,k,2) - (lamb_fringe / fringe_amp) * p /(fringe_end - fringe_start) / (rho_fluid*U_ref**2.)
+                 ELSE
+                   nl(i,j,k,2) = nl(i,j,k,2) - lamb_fringe*(1. - vel(i,j,k,2))*smooth_step(step_yes, subtime/t_rampup)
+                 END IF
+
+                 !nl(i,j,k,2) = nl(i,j,k,2) - lamb_fringe*( (L2/ (( fringe_end-fringe_start )))*(2./Re)  )! poiseuille channel 
+               END IF
+            END IF
+          END IF
+          !--- forcing in z-direction ---
+          IF (fringe_dir .EQ. 3 .AND. dimens .EQ. 3) THEN
+            IF (D3_channel_parab_yes .AND. dimens == 3) THEN
+              CALL fringe_coeff(fringe_amp , fringe_start , fringe_end , fringe_rise , &
+                    fringe_fall , x3p(k) , lamb_fringe)
+              nl(i,j,k,2) = nl(i,j,k,2) - lamb_fringe*( 0. - vel(i,j,k,2) ) 
+            ELSE
+               !--- only force within desired bounds ---
+               IF (((x1p(i) - fringe_center(1))**2 + (x2p(j) - fringe_center(2))**2) .LE. fringe_radius**2) THEN
+                 CALL fringe_coeff(fringe_amp , fringe_start , fringe_end , fringe_rise , &
+                       fringe_fall , x3p(k) , lamb_fringe)
+                 nl(i,j,k,2) = nl(i,j,k,2) - lamb_fringe*( 0. - vel(i,j,k,2) ) 
+               END IF
+            END IF
           END IF
         END DO
      END DO
@@ -690,14 +833,72 @@ MODULE usr_func
     DO k = S33, N33
       DO j = S23, N23
         DO i = S13, N13
+          !--- forcing in x-direction ---
+          IF (fringe_dir .EQ. 1) THEN
+            IF (D3_channel_parab_yes .AND. dimens == 3) THEN
+              CALL fringe_coeff(fringe_amp , fringe_start , fringe_end , fringe_rise , &
+                    fringe_fall , x1p(i) , lamb_fringe)
+              nl(i,j,k,3) = nl(i,j,k,3) - lamb_fringe*( 0. - vel(i,j,k,3) )
+            ELSE
+               !--- only force within desired bounds ---
+               IF (((x2p(j) - fringe_center(2))**2 + (x3p(k) - fringe_center(3))**2) .LE. fringe_radius**2) THEN
+                 CALL fringe_coeff(fringe_amp , fringe_start , fringe_end , fringe_rise , &
+                       fringe_fall , x1p(i) , lamb_fringe)
+                 nl(i,j,k,3) = nl(i,j,k,3) - lamb_fringe*( 0. - vel(i,j,k,3) )
+               END IF
+            END IF
+          END IF
           !--- forcing in y-direction ---
           IF (fringe_dir .EQ. 2) THEN
-             !--- only force within desired bounds ---
-             IF (((x1p(i) - fringe_center(1))**2 + (x3p(k) - fringe_center(3))**2) .LE. fringe_radius**2) THEN
-                 CALL fringe_coeff(fringe_amp , fringe_start , fringe_end , fringe_rise , &
-                       fringe_fall , x2p(j) , lamb_fringe)
-                 nl(i,j,k,3) = nl(i,j,k,3) - lamb_fringe*( 0. - vel(i,j,k,3) )
-             END IF
+            IF (D3_channel_parab_yes .AND. dimens == 3) THEN
+                CALL fringe_coeff(fringe_amp , fringe_start , fringe_end , fringe_rise , &
+                      fringe_fall , x2p(j) , lamb_fringe)
+                nl(i,j,k,3) = nl(i,j,k,3) - lamb_fringe*( 0. - vel(i,j,k,3) )
+            ELSE
+               !--- only force within desired bounds ---
+               IF (((x1p(i) - fringe_center(1))**2 + (x3p(k) - fringe_center(3))**2) .LE. fringe_radius**2) THEN
+                   CALL fringe_coeff(fringe_amp , fringe_start , fringe_end , fringe_rise , &
+                         fringe_fall , x2p(j) , lamb_fringe)
+                   nl(i,j,k,3) = nl(i,j,k,3) - lamb_fringe*( 0. - vel(i,j,k,3) )
+               END IF
+            END IF
+          END IF
+          !--- forcing in z-direction ---
+          IF (fringe_dir .EQ. 3) THEN
+            IF (D3_channel_parab_yes .AND. dimens == 3) THEN
+              CALL fringe_coeff(fringe_amp , fringe_start , fringe_end , fringe_rise , &
+                    fringe_fall , x3w(k) , lamb_fringe)
+   
+              CALL poiseuille_parabola(y1p(1), &
+                                       y1p(M1), x1p(i), parab)
+              CALL poiseuille_parabola(y2p(1), &
+                                       y2p(M2), x2p(j), parab2)
+              
+              nl(i,j,k,3) = nl(i,j,k,3) - lamb_fringe*(9.*parab*parab2/4. - vel(i,j,k,3))*smooth_step(step_yes, subtime/t_rampup)
+              
+            ELSE
+            !--- only force within desired bounds ---
+            IF (((x1p(i) - fringe_center(1))**2 + (x2p(j) - fringe_center(2))**2) .LE. fringe_radius**2) THEN
+                CALL fringe_coeff(fringe_amp , fringe_start , fringe_end , fringe_rise , &
+                      fringe_fall , x3w(k) , lamb_fringe)
+                ! something for nl(i,j,k,3) ...
+              IF (parabola_yes) THEN
+                CALL poiseuille_paraboloid(x1p(i), x2p(j), fringe_center(1), &
+                      fringe_center(2), fringe_radius, parab)
+              ELSE IF (pressure_yes) THEN
+                CALL periodic_pressure(subtime, p)
+              END IF
+
+              IF (parabola_yes) THEN
+                nl(i,j,k,3) = nl(i,j,k,3) - lamb_fringe*(2.*parab - vel(i,j,k,3))*smooth_step(step_yes, subtime/t_rampup)
+!                nl(i,j,k,3) = nl(i,j,k,3) - (lamb_fringe/fringe_amp) * L3/(fringe_end - fringe_start) * 8/((2. * fringe_radius)**2.) / Re
+              ELSE IF (pressure_yes) THEN
+                nl(i,j,k,3) = nl(i,j,k,3) - (lamb_fringe / fringe_amp) * p / (fringe_end - fringe_start) / (rho_fluid*U_ref**2.)
+              ELSE
+                nl(i,j,k,3) = nl(i,j,k,3) - lamb_fringe*(1. - vel(i,j,k,3))*smooth_step(step_yes, subtime/t_rampup)
+              END IF
+            END IF
+            END IF
           END IF
         END DO
       END DO
