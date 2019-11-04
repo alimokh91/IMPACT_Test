@@ -111,6 +111,7 @@
         end do
      end do
      klmn%obs_oper = klmn%obs_oper/klmn%m
+     NULLIFY(klmn%next)
   end if
   !===========================================================================================================
 
@@ -282,79 +283,80 @@
   !===========================================================================================================
   write_gain = 0.
   klmn => kalman_first
-  DO k = bounds_kalman(1,3), bounds_kalman(2,3)
-    DO j = bounds_kalman(1,2), bounds_kalman(2,2)
-      DO i = bounds_kalman(1,1), bounds_kalman(2,1)
-        n = 0
-        DO kk = (k-1)*kalman_num_spatial_refinements(3)+1,k*kalman_num_spatial_refinements(3)+1
-          DO jj = (j-1)*kalman_num_spatial_refinements(2)+1,j*kalman_num_spatial_refinements(2)+1
-            DO ii = (i-1)*kalman_num_spatial_refinements(1)+1,i*kalman_num_spatial_refinements(1)+1
-              n = n + 1
-  !===========================================================================================================
-  !=== Fill the matrices and the vectors involved in the kalman filter algorithm =============================
-  !===========================================================================================================
-  !--------------------------------------------------------------------------------------------------------
-  !--- u(x,t) ---------------------------------------------------------------------------------------------
-  !--------------------------------------------------------------------------------------------------------
-              klmn%muf(3*(n-1)+1) = work1(ii,jj,kk)
-              klmn%muf(3*(n-1)+2) = work2(ii,jj,kk)
-              klmn%muf(3*(n-1)+3) = work3(ii,jj,kk)
-  !--------------------------------------------------------------------------------------------------------
-  !--- fill the state vector muf and the covariance matrix pf ---------------------------------------------
-  !--- <u'_i u'_j>(t_k) = <u_i u_j>(t_k) - <u_i>(t_k) <u_j>(t_k) ------------------------------------------
-  !--------------------------------------------------------------------------------------------------------
-              klmn%pf(3*(n-1)+1,3*(n-1)+1) = covar_gbl(phase,ii,jj,kk,1) - mean_gbl(phase,ii,jj,kk,1)*mean_gbl(phase,ii,jj,kk,1)
-              klmn%pf(3*(n-1)+2,3*(n-1)+2) = covar_gbl(phase,ii,jj,kk,2) - mean_gbl(phase,ii,jj,kk,2)*mean_gbl(phase,ii,jj,kk,2)
-              klmn%pf(3*(n-1)+3,3*(n-1)+3) = covar_gbl(phase,ii,jj,kk,3) - mean_gbl(phase,ii,jj,kk,3)*mean_gbl(phase,ii,jj,kk,3)
-              klmn%pf(3*(n-1)+1,3*(n-1)+2) = covar_gbl(phase,ii,jj,kk,4) - mean_gbl(phase,ii,jj,kk,1)*mean_gbl(phase,ii,jj,kk,2)
-              klmn%pf(3*(n-1)+1,3*(n-1)+3) = covar_gbl(phase,ii,jj,kk,5) - mean_gbl(phase,ii,jj,kk,1)*mean_gbl(phase,ii,jj,kk,3)
-              klmn%pf(3*(n-1)+2,3*(n-1)+3) = covar_gbl(phase,ii,jj,kk,6) - mean_gbl(phase,ii,jj,kk,2)*mean_gbl(phase,ii,jj,kk,3)
-              klmn%pf(3*(n-1)+2,3*(n-1)+1) = klmn%pf(3*(n-1)+1,3*(n-1)+2)
-              klmn%pf(3*(n-1)+3,3*(n-1)+1) = klmn%pf(3*(n-1)+1,3*(n-1)+3)
-              klmn%pf(3*(n-1)+3,3*(n-1)+2) = klmn%pf(3*(n-1)+2,3*(n-1)+3)
+  do while(associated(klmn))
+    DO k = bounds_kalman(1,3), bounds_kalman(2,3)
+      DO j = bounds_kalman(1,2), bounds_kalman(2,2)
+        DO i = bounds_kalman(1,1), bounds_kalman(2,1)
+          n = 0
+          DO kk = (k-1)*kalman_num_spatial_refinements(3)+1,k*kalman_num_spatial_refinements(3)+1
+            DO jj = (j-1)*kalman_num_spatial_refinements(2)+1,j*kalman_num_spatial_refinements(2)+1
+              DO ii = (i-1)*kalman_num_spatial_refinements(1)+1,i*kalman_num_spatial_refinements(1)+1
+                n = n + 1
+    !===========================================================================================================
+    !=== Fill the matrices and the vectors involved in the kalman filter algorithm =============================
+    !===========================================================================================================
+    !--------------------------------------------------------------------------------------------------------
+    !--- u(x,t) ---------------------------------------------------------------------------------------------
+    !--------------------------------------------------------------------------------------------------------
+                klmn%muf(3*(n-1)+1) = work1(ii,jj,kk)
+                klmn%muf(3*(n-1)+2) = work2(ii,jj,kk)
+                klmn%muf(3*(n-1)+3) = work3(ii,jj,kk)
+    !--------------------------------------------------------------------------------------------------------
+    !--- fill the state vector muf and the covariance matrix pf ---------------------------------------------
+    !--- <u'_i u'_j>(t_k) = <u_i u_j>(t_k) - <u_i>(t_k) <u_j>(t_k) ------------------------------------------
+    !--------------------------------------------------------------------------------------------------------
+                klmn%pf(3*(n-1)+1,3*(n-1)+1) = covar_gbl(phase,ii,jj,kk,1) - mean_gbl(phase,ii,jj,kk,1)*mean_gbl(phase,ii,jj,kk,1)
+                klmn%pf(3*(n-1)+2,3*(n-1)+2) = covar_gbl(phase,ii,jj,kk,2) - mean_gbl(phase,ii,jj,kk,2)*mean_gbl(phase,ii,jj,kk,2)
+                klmn%pf(3*(n-1)+3,3*(n-1)+3) = covar_gbl(phase,ii,jj,kk,3) - mean_gbl(phase,ii,jj,kk,3)*mean_gbl(phase,ii,jj,kk,3)
+                klmn%pf(3*(n-1)+1,3*(n-1)+2) = covar_gbl(phase,ii,jj,kk,4) - mean_gbl(phase,ii,jj,kk,1)*mean_gbl(phase,ii,jj,kk,2)
+                klmn%pf(3*(n-1)+1,3*(n-1)+3) = covar_gbl(phase,ii,jj,kk,5) - mean_gbl(phase,ii,jj,kk,1)*mean_gbl(phase,ii,jj,kk,3)
+                klmn%pf(3*(n-1)+2,3*(n-1)+3) = covar_gbl(phase,ii,jj,kk,6) - mean_gbl(phase,ii,jj,kk,2)*mean_gbl(phase,ii,jj,kk,3)
+                klmn%pf(3*(n-1)+2,3*(n-1)+1) = klmn%pf(3*(n-1)+1,3*(n-1)+2)
+                klmn%pf(3*(n-1)+3,3*(n-1)+1) = klmn%pf(3*(n-1)+1,3*(n-1)+3)
+                klmn%pf(3*(n-1)+3,3*(n-1)+2) = klmn%pf(3*(n-1)+2,3*(n-1)+3)
+              END DO
             END DO
           END DO
-        END DO
-  !--------------------------------------------------------------------------------------------------------
-  !--- d_k and R_k ----------------------------------------------------------------------------------------
-  !--------------------------------------------------------------------------------------------------------
-        klmn%obs_data(1:3) = mri_inst%mri%velocity_mean%array(1:3,phase,i,j,k)
-        klmn%obs_covar(1:3,1:3) = mri_inst%mri%velocity_cov%array(1:3,1:3,phase,i,j,k)
-  !--------------------------------------------------------------------------------------------------------
-  !--- apply kalman filtering- ----------------------------------------------------------------------------
-  !--------------------------------------------------------------------------------------------------------
-        CALL kalman_filter(klmn%muf,klmn%pf,klmn%obs_oper,klmn%obs_data,klmn%obs_covar, &
-                           klmn%K,size(klmn%muf),size(klmn%obs_data),INFO)
-
-        n = 0
-        DO kk = (k-1)*kalman_num_spatial_refinements(3)+1,k*kalman_num_spatial_refinements(3)+1
-          DO jj = (j-1)*kalman_num_spatial_refinements(2)+1,j*kalman_num_spatial_refinements(2)+1
-            DO ii = (i-1)*kalman_num_spatial_refinements(1)+1,i*kalman_num_spatial_refinements(1)+1
-              n = n + 1
-  !--------------------------------------------------------------------------------------------------------
-  !--- store u_i(:,:,:) of analysis step ------------------------------------------------------------------
-  !--------------------------------------------------------------------------------------------------------
-              if ( x2p(jj).ge.-15.0e-3 .and. x2p(jj).le.30.0e-3 ) then
+    !--------------------------------------------------------------------------------------------------------
+    !--- d_k and R_k ----------------------------------------------------------------------------------------
+    !--------------------------------------------------------------------------------------------------------
+          klmn%obs_data(1:3) = mri_inst%mri%velocity_mean%array(1:3,phase,i,j,k)
+          klmn%obs_covar(1:3,1:3) = mri_inst%mri%velocity_cov%array(1:3,1:3,phase,i,j,k)
+    !--------------------------------------------------------------------------------------------------------
+    !--- apply kalman filtering- ----------------------------------------------------------------------------
+    !--------------------------------------------------------------------------------------------------------
+          CALL kalman_filter(klmn%muf,klmn%pf,klmn%obs_oper,klmn%obs_data,klmn%obs_covar, &
+                             klmn%K,size(klmn%muf),size(klmn%obs_data),INFO)
+  
+          n = 0
+          DO kk = (k-1)*kalman_num_spatial_refinements(3)+1,k*kalman_num_spatial_refinements(3)+1
+            DO jj = (j-1)*kalman_num_spatial_refinements(2)+1,j*kalman_num_spatial_refinements(2)+1
+              DO ii = (i-1)*kalman_num_spatial_refinements(1)+1,i*kalman_num_spatial_refinements(1)+1
+                n = n + 1
+    !--------------------------------------------------------------------------------------------------------
+    !--- store u_i(:,:,:) of analysis step ------------------------------------------------------------------
+    !--------------------------------------------------------------------------------------------------------
                 work11(ii,jj,kk) = klmn%muf(3*(n-1)+1)
                 work22(ii,jj,kk) = klmn%muf(3*(n-1)+2)
                 work33(ii,jj,kk) = klmn%muf(3*(n-1)+3)
-  !--------------------------------------------------------------------------------------------------------
-  !--- write Kalman gain field ----------------------------------------------------------------------------
-  !--------------------------------------------------------------------------------------------------------
+    !--------------------------------------------------------------------------------------------------------
+    !--- write Kalman gain field ----------------------------------------------------------------------------
+    !--------------------------------------------------------------------------------------------------------
                 write_gain(ii,jj,kk,1) = klmn%K(3*(n-1)+1,1)
                 write_gain(ii,jj,kk,2) = klmn%K(3*(n-1)+2,2)
                 write_gain(ii,jj,kk,3) = klmn%K(3*(n-1)+3,3)
                 write_gain(ii,jj,kk,4) = klmn%K(3*(n-1)+1,2)
                 write_gain(ii,jj,kk,5) = klmn%K(3*(n-1)+1,3)
                 write_gain(ii,jj,kk,6) = klmn%K(3*(n-1)+2,3)
-              end if
+              END DO
             END DO
           END DO
+  
         END DO
-
       END DO
     END DO
-  END DO
+    klmn => klmn%next
+  end do
   !===========================================================================================================
 
   !===========================================================================================================
@@ -554,7 +556,6 @@
 
   CHARACTER(LEN=3) :: next_restart_char
   CHARACTER(LEN=2) :: phase_char
-  TYPE(kalman_t), pointer :: klmn
   INTEGER :: i
   REAL :: write_mean_gbl(b1L:(N1+b1U),b2L:(N2+b2U),b3L:(N3+b3U),1:3)
   REAL :: write_covar_gbl(b1L:(N1+b1U),b2L:(N2+b2U),b3L:(N3+b3U),1:6)
@@ -608,7 +609,6 @@
 
 
   CHARACTER(LEN=2) :: phase_char
-  TYPE(kalman_t), pointer :: klmn
   INTEGER :: i
   REAL    :: read_mean_gbl(b1L:(N1+b1U),b2L:(N2+b2U),b3L:(N3+b3U),1:3)
   REAL    :: read_covar_gbl(b1L:(N1+b1U),b2L:(N2+b2U),b3L:(N3+b3U),1:6)
