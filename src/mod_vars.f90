@@ -991,9 +991,10 @@ MODULE mod_vars
   REAL, ALLOCATABLE, TARGET      ::  vel_old(:,:,:,:)        !< velocity of previous timestep (used in Picard iterations)
 
   INTEGER :: n_data,n_data_tot,data_shift
+  REAL, ALLOCATABLE :: write_gain (:,:,:,:)
   REAL, ALLOCATABLE :: mean_gbl(:,:,:,:,:)
   REAL, ALLOCATABLE :: covar_gbl(:,:,:,:,:)
-  REAL, ALLOCATABLE :: write_gain (:,:,:,:)
+  REAL, ALLOCATABLE :: init_covar(:)
 
   TYPE stats_t
      INTEGER :: i_data,m
@@ -1013,9 +1014,7 @@ MODULE mod_vars
   TYPE(stats_group_t), pointer :: stats_group_first
 
   TYPE kalman_t
-     INTEGER :: i_data,j_data,k_data,m,phase
-     INTEGER, POINTER :: x(:),y(:),z(:)  !i,j,k of the grid node for each m component
-     REAL, POINTER :: mean(:,:,:),covar(:,:,:) ! phases, m, 3 or 6
+     INTEGER :: m
      REAL, POINTER :: muf(:),pf(:,:),obs_data(:),obs_covar(:,:),obs_oper(:,:),K(:,:) !kalman
      TYPE(kalman_t), POINTER :: next
   END TYPE kalman_t

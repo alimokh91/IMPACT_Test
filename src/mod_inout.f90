@@ -3626,7 +3626,6 @@ MODULE mod_inout
       IF (dtime_out_kalm .GT. 0.0) THEN
         CALL num_to_string(2,phase,id)
         write_dir = './kf_result/phase_'//id//'/'
-          write(*,*) id
           !--- Mean -------------------------------------------------------------------------------------------------------------------------------------------------------
           !--- data_X
           WRITE(xmf,fmt1) '        <Attribute Name="Mean_X" Center="Node">'
