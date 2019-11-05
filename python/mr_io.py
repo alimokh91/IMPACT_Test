@@ -33,7 +33,7 @@ class SpatialMRI:
         with h5py.File(path, "w") as f:
             scalar_feature_transposed = self.scalar_feature.transpose()
             grp = f.create_group(SpatialMRI.group_name)
-            ds = grp.create_dataset("scalar_feature", scalar_feature_transposed.shape, data=scalar_feature_transposed, dtype=scalar_feature_transposed.dtype)
+            ds = grp.create_dataset("scalar_feature", scalar_feature_transposed.shape, data=scalar_feature_transposed, dtype="float64")
 
     def read_hdf5(path: str):
         """Read MRI from file at path as hpc-predict-io HDF5-format"""
@@ -83,20 +83,20 @@ def write_group_attribute(grp, name, value):
     
 def write_space_time_coordinates(grp, geometry, time):
     for i, coord_name in enumerate(["x_coordinates", "y_coordinates", "z_coordinates"]):
-        grp.create_dataset(coord_name, geometry[i].shape, data=geometry[i], dtype=geometry[i].dtype)
+        grp.create_dataset(coord_name, geometry[i].shape, data=geometry[i], dtype="float64")
     grp.create_dataset("t_coordinates", time.shape, data=time, dtype=time.dtype)
     
 def write_space_time_voxel_scalar_feature(grp, name, voxel_feature):
     voxel_feature_transposed = voxel_feature.transpose((2,1,0,3))
-    ds = grp.create_dataset(name, voxel_feature_transposed.shape, data=voxel_feature_transposed, dtype=voxel_feature_transposed.dtype)
+    ds = grp.create_dataset(name, voxel_feature_transposed.shape, data=voxel_feature_transposed, dtype="float64")
     
 def write_space_time_voxel_vector_feature(grp, name, voxel_feature):
     voxel_feature_transposed = voxel_feature.transpose((2,1,0,3,4))
-    ds = grp.create_dataset(name, voxel_feature_transposed.shape, data=voxel_feature_transposed, dtype=voxel_feature_transposed.dtype)
+    ds = grp.create_dataset(name, voxel_feature_transposed.shape, data=voxel_feature_transposed, dtype="float64")
     
 def write_space_time_voxel_matrix_feature(grp, name, voxel_feature):
     voxel_feature_transposed = voxel_feature.transpose((2,1,0,3,5,4))
-    ds = grp.create_dataset(name, voxel_feature_transposed.shape, data=voxel_feature_transposed, dtype=voxel_feature_transposed.dtype)
+    ds = grp.create_dataset(name, voxel_feature_transposed.shape, data=voxel_feature_transposed, dtype="float64")
 
 class SpaceTimeMRI:
     """MRI datatype for time-dependent vectorial measurements in 3d including axis information
