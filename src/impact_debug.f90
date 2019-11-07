@@ -35,10 +35,11 @@ PROGRAM impact_debug
   type(DistFlowMRIPadded) :: mri_inst
   type(DistSpaceTimeMRI) :: mri_dest
 
-  INTEGER :: i, ix, iy, iz, it, iv ! Helper indices for writing results
+  INTEGER :: i, j, ix, iy, iz, it, iv ! Helper indices for writing results
 
   integer :: lbound_v, lbound_t, lbound_x, lbound_y, lbound_z
   integer :: ubound_v, ubound_t, ubound_x, ubound_y, ubound_z
+  real*8 :: impact_t_step
   real*8, dimension(:,:,:,:), allocatable :: pressure_voxel_velocity
 
   INTEGER :: gdb = 0
@@ -148,7 +149,14 @@ PROGRAM impact_debug
   ! Write coordinates - TODO: Fix time dimensions values
   ! time
   do i=0,size(mri_inst%mri%t_coordinates)-1  ! TODO: Fill with exact time (stepping) values
-      mri_dest%t_coordinates(i*kalman_num_time_refinements+1:(i+1)*kalman_num_time_refinements) = mri_inst%mri%t_coordinates(i+1)
+    if (i < size(mri_inst%mri%t_coordinates)-1) then
+      impact_t_step = (mri_inst%mri%t_coordinates(i+2) - mri_inst%mri%t_coordinates(i+1))/kalman_num_time_refinements
+    else
+      impact_t_step = (kalman_mri_input_attr_t_heart_cycle_period - mri_inst%mri%t_coordinates(i+1) + mri_inst%mri%t_coordinates(1))/kalman_num_time_refinements 
+    end if
+    do j=0,kalman_num_time_refinements-1
+      mri_dest%t_coordinates(i*kalman_num_time_refinements+j+1:i*kalman_num_time_refinements+j+1) = mri_inst%mri%t_coordinates(i+1) + j*impact_t_step
+    end do
   end do
   mri_dest%t_dim = mri_inst%mri%t_dim*kalman_num_time_refinements
 
