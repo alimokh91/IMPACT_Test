@@ -39,18 +39,17 @@ MODULE mod_timeint
   
   IMPLICIT NONE
   
-  INTEGER                ::  m
   REAL                   ::  min_dx, Re_Ko 
  
-  
   !--- Startvektor -------------------------------------------------------------------------------------------
   ! Hier bereits notwendig, um weitere Konzentrationen zuschalten zu koennen (BC werden aber weiter unten initialisiert!).
                          CALL initial_conditions_vel
-  
+
   !--- diverse Files <F6>ffnen ----------------------------------------------------------------------------------
-  IF (dtime_out_scal /= 0.) CALL open_stats
+  NULLIFY(kalman_first)
   IF (dtime_out_kalm /= 0.) CALL open_kalman
-  
+  IF (dtime_out_scal /= 0.) CALL open_stats
+
   IF (restart == 0) THEN
      time          = time_start
      time_out_vect = time_start
@@ -72,8 +71,8 @@ MODULE mod_timeint
      IF (dtime_out_kalm == 0.) write_out_kalm = .FALSE.
   ELSE
                                CALL read_restart
-     IF (dtime_out_scal /= 0.) CALL read_restart_stats
      IF (dtime_out_kalm /= 0.) CALL read_restart_kalman
+     IF (dtime_out_scal /= 0.) CALL read_restart_stats
      
      IF (rank == 0 .AND. write_stout_yes) THEN
         WRITE(*,'(a,1E13.5)') '             time =', time
@@ -165,14 +164,6 @@ MODULE mod_timeint
      CALL flush(99)
   END IF
   
-  
-  !--- Ausschreiben ------------------------------------------------------------------------------------------
-  IF (write_xdmf_yes .AND. write_out_vect) CALL write_xdmf_xml ! bbecsek
-  IF (write_out_scal) CALL compute_stats
-  IF (write_out_kalm .and. time.eq.time_start) CALL compute_kalman
-  IF (write_out_vect) CALL write_fields
-  !===========================================================================================================
-  
   !--- ghost cell update -------------------------------------------------------------------------------
   CALL exchange_all_all(.TRUE.,vel)
 
@@ -180,6 +171,13 @@ MODULE mod_timeint
   ! vel(:,:,:,i) --> worki(:,:,:)
   CALL interpolate_vel(.FALSE.) ! TEST!!! Wurde teilweise schon bei Zeitschritt-Bestimmung erledigt!
 
+  !--- Ausschreiben ------------------------------------------------------------------------------------------
+  IF (write_xdmf_yes .AND. write_out_vect) CALL write_xdmf_xml ! bbecsek
+  IF (write_out_kalm .and. time.eq.time_start) CALL compute_kalman
+  IF (dtime_out_scal /= 0. .and. time.eq.time_start) CALL compute_stats
+  IF (write_out_vect) CALL write_fields
+  !===========================================================================================================
+  
   !===========================================================================================================
   !=== Zeitintegration =======================================================================================
   !===========================================================================================================
@@ -284,8 +282,8 @@ MODULE mod_timeint
      
      !--- Ausschreiben ---------------------------------------------------------------------------------------
      IF (write_xdmf_yes .AND. write_out_vect) CALL write_xdmf_xml ! bbecsek
-     IF (write_out_scal) CALL compute_stats
-     IF (write_out_kalm) CALL compute_kalman
+     IF (write_out_kalm ) CALL compute_kalman
+     IF (dtime_out_scal /= 0.) CALL compute_stats
      IF (write_out_vect) CALL write_fields
      
      !--------------------------------------------------------------------------------------------------------

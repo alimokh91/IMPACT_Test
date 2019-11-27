@@ -17,13 +17,11 @@ MODULE usr_func
   USE mod_exchange
   USE usr_vars
   USE ISO_C_BINDING !bbecsek
-  USE mod_solvers !kschlegel
-  USE mod_inout !kschlegel
-  USE HDF5 !kschlegel
+  USE mod_solvers
+  USE mod_inout 
+  USE HDF5
+  USE MPI
 
-
-  !USE mpi  
-  
   PRIVATE
   
   PUBLIC smooth_step !bbecsek
@@ -69,8 +67,6 @@ MODULE usr_func
   PUBLIC open_log_iterations_fortran, close_log_iterations_fortran
   PUBLIC save_old_velocity, restore_old_velocity
 
-  INCLUDE 'mpif.h'
-  
   CONTAINS
   
 !pgi$g unroll = n:8

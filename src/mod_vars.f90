@@ -801,11 +801,11 @@ MODULE mod_vars
   
   INTEGER , TARGET       ::  stride_large(1:3), stride_med(1:3), stride_small(1:3)
   LOGICAL                ::  write_large, write_med, write_small
-	INTEGER                ::  interval
-	REAL                   ::  time_out_vect, dtime_out_vect
+  INTEGER                ::  interval
+  REAL                   ::  time_out_vect, dtime_out_vect
   REAL                   ::  time_out_scal, dtime_out_scal
   REAL                   ::  time_out_kalm, dtime_out_kalm
-	REAL   , ALLOCATABLE   ::  dtime_kalm_phases(:)
+  REAL   , ALLOCATABLE   ::  dtime_phases(:), dtime_kalm_phases(:)
   
   LOGICAL                ::  write_out_kalm, write_out_scal, write_out_vect
   LOGICAL                ::  new_dtime, finish_yes
@@ -838,7 +838,6 @@ MODULE mod_vars
   LOGICAL                ::  write_lambda2_yes
   LOGICAL                ::  write_test_yes
   LOGICAL                ::  write_covariance_yes !for writing covariance into xdmf file    defined in config.txt
-  INTEGER                ::  num_windows !define in usr_stats and for write covariance into xdmf
   INTEGER                ::  intervals   !define number of intervals in the output of a periodic flow
   INTEGER                ::  phase       !define number of interval  in the output of a periodic flow
   INTEGER, ALLOCATABLE   ::  repetition(:) !define array of #phases for repetitions counter
@@ -990,28 +989,8 @@ MODULE mod_vars
 
   REAL, ALLOCATABLE, TARGET      ::  vel_old(:,:,:,:)        !< velocity of previous timestep (used in Picard iterations)
 
-  INTEGER :: n_data,n_data_tot,data_shift
-  REAL, ALLOCATABLE :: write_gain (:,:,:,:)
-  REAL, ALLOCATABLE :: mean_gbl(:,:,:,:,:)
-  REAL, ALLOCATABLE :: covar_gbl(:,:,:,:,:)
-  REAL, ALLOCATABLE :: init_covar(:)
-
-  TYPE stats_t
-     INTEGER :: i_data,m
-     INTEGER, POINTER :: x(:),y(:),z(:)  !i,j,k of the grid node for each m component
-     REAL, POINTER :: mean_xyz(:),covar_xyz(:),mean_xyzt(:,:),covar_xyzt(:,:) !stats
-     REAL, POINTER :: wgt(:) !stats
-     TYPE(stats_t), POINTER :: next
-  END TYPE stats_t
-
-  TYPE stats_group_t
-     INTEGER :: group_id,phase
-     INTEGER :: n_data,n_data_tot,data_shift
-     TYPE(stats_t), pointer :: stats_first
-     TYPE(stats_group_t), POINTER :: next
-  END TYPE stats_group_t
-
-  TYPE(stats_group_t), pointer :: stats_group_first
+  REAL, ALLOCATABLE :: mean_f(:,:,:,:,:), covar_f(:,:,:,:,:), write_gain (:,:,:,:)
+  REAL, ALLOCATABLE :: mean_gbl(:,:,:,:,:), covar_gbl(:,:,:,:,:)
 
   TYPE kalman_t
      INTEGER :: m
@@ -1022,6 +1001,7 @@ MODULE mod_vars
   TYPE(kalman_t), pointer :: kalman_first
 
   type(DistFlowMRIPadded), pointer :: mri_inst
+  type(DistFlowMRI), pointer :: mri_flow
   type(DistSpaceTimeMRI), pointer :: mri_dest
 
   ! MRI file paths
@@ -1619,12 +1599,12 @@ MODULE mod_vars
   INTEGER                ::  Int_dtime, Int_lev_pre
   
   INTEGER                ::  stride_large(1:3), stride_med(1:3), stride_small(1:3)
-  LOGICAL                ::  write_large, write_med, write_small
-	INTEGER                ::  interval
+  LOGICAL                ::  write_large, write_med, write_small 
+  INTEGER                ::  interval
   REAL                   ::  time_out_vect, dtime_out_vect
   REAL                   ::  time_out_scal, dtime_out_scal
   REAL                   ::  time_out_kalm, dtime_out_kalm 
-	REAL   , ALLOCATABLE   ::  dtime_kalm_phases(:)
+  REAL   , ALLOCATABLE   ::  dtime_phases(:), dtime_kalm_phases(:)
   
   LOGICAL                ::  write_out_kalm, write_out_scal, write_out_vect
   LOGICAL                ::  new_dtime, finish_yes
@@ -1650,7 +1630,6 @@ MODULE mod_vars
   LOGICAL                ::  write_lambda2_yes
   LOGICAL                ::  write_test_yes
   LOGICAL                ::  write_covariance_yes !for writing covariance into xdmf file    defined in config.txt
-  INTEGER                ::  num_windows !define in usr_stats and for write covariance into xdmf
   INTEGER                ::  intervals   !define number of intervals in the output of a periodic flow
   INTEGER                ::  phase       !define number of interval  in the output of a periodic flow
   INTEGER, ALLOCATABLE   ::  repetition(:) !define array of #phases for repetitions counter
@@ -1781,32 +1760,11 @@ MODULE mod_vars
   REAL :: fd(b1L:(N1+b1U),b2L:(N2+b2U),b3L:(N3+b3U),1:3)
   REAL :: vel_old(b1L:(N1+b1U),b2L:(N2+b2U),b3L:(N3+b3U),1:3)        !< vel of previous timestep (used in Picard iterations)
 
-  INTEGER :: n_data,n_data_tot,data_shift
-  REAL, ALLOCATABLE :: mean_gbl(:,:,:,:,:)
-  REAL, ALLOCATABLE :: covar_gbl(:,:,:,:,:)
-  REAL, ALLOCATABLE :: write_gain (:,:,:,:)
-
-  TYPE stats_t
-     INTEGER :: i_data,m
-     INTEGER, POINTER :: x(:),y(:),z(:)  !i,j,k of the grid node for each m component
-     REAL, POINTER :: mean_xyz(:),covar_xyz(:),mean_xyzt(:,:),covar_xyzt(:,:) !stats
-     REAL, POINTER :: wgt(:) !stats
-     TYPE(stats_t), POINTER :: next
-  END TYPE stats_t
-
-  TYPE stats_group_t
-     INTEGER :: group_id,phase
-     INTEGER :: n_data,n_data_tot,data_shift
-     TYPE(stats_t), pointer :: stats_first
-     TYPE(stats_group_t), POINTER :: next
-  END TYPE stats_group_t
-
-  TYPE(stats_group_t), pointer :: stats_group_first
+  REAL, ALLOCATABLE :: mean_f(:,:,:,:,:), covar_f(:,:,:,:,:), write_gain (:,:,:,:)
+  REAL, ALLOCATABLE :: mean_gbl(:,:,:,:,:), covar_gbl(:,:,:,:,:)
 
   TYPE kalman_t
-     INTEGER :: i_data,j_data,k_data,m,phase
-     INTEGER, POINTER :: x(:),y(:),z(:)  !i,j,k of the grid node for each m component
-     REAL, POINTER :: mean(:,:,:),covar(:,:,:) ! phases, m, 3 or 6
+     INTEGER :: m
      REAL, POINTER :: muf(:),pf(:,:),obs_data(:),obs_covar(:,:),obs_oper(:,:),K(:,:) !kalman
      TYPE(kalman_t), POINTER :: next
   END TYPE kalman_t
@@ -1814,6 +1772,7 @@ MODULE mod_vars
   TYPE(kalman_t), pointer :: kalman_first
 
   type(DistFlowMRIPadded), pointer :: mri_inst
+  type(DistFlowMRI), pointer :: mri_flow
   type(DistSpaceTimeMRI), pointer :: mri_dest
 
   ! MRI file paths
