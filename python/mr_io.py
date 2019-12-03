@@ -259,6 +259,21 @@ class SegmentedFlowMRI:
         self.velocity_cov= velocity_cov
         self.segmentation_prob = segmentation_prob
 
+    def __init__(self, flow_mri: FlowMRI, segmentation_prob: np.ndarray):
+        """Voxel-based parameters must be specified in (x,y,z,t,i)-order, Fortran will treat it in (i,t,x,y,z)-order.
+           The index i is used as the component index (i.e. between 0..2 for mean and 0..5 for covariance of velocity field)
+        """
+        validate_spacetime_scalar_feature(SegmentedFlowMRI, flow_mri.geometry, flow_mri.time, segmentation_prob)
+
+        self.geometry = flow_mri.geometry
+        self.time = flow_mri.time
+        self.time_heart_cycle_period = flow_mri.time_heart_cycle_period
+        self.intensity= flow_mri.intensity
+        self.velocity_mean = flow_mri.velocity_mean
+        self.velocity_cov= flow_mri.velocity_cov
+        self.segmentation_prob = segmentation_prob
+
+
     def write_hdf5(self, path: str):
         """Write this MRI to hpc-predict-io HDF5-format at path"""
         # file handling
