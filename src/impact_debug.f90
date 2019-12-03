@@ -32,7 +32,7 @@ PROGRAM impact_debug
 
   IMPLICIT NONE
   
-  type(DistFlowMRIPadded) :: mri_inst
+  type(DistSegmentedFlowMRIPadded) :: mri_inst
   type(DistSpaceTimeMRI) :: mri_dest
 
   INTEGER :: i, j, ix, iy, iz, it, iv ! Helper indices for writing results
@@ -57,7 +57,7 @@ PROGRAM impact_debug
   ! Assign domain-padding read from config file (kalman_num_data_voxels_per_process can be used to infer the
   ! size of the data voxel grid per process)
   mri_inst%domain_padding = kalman_domain_padding
-  CALL mr_io_read_parallel_flow_padded(MPI_COMM_WORLD, MPI_INFO_NULL, (/NB1,NB2,NB3/), &
+  CALL mr_io_read_parallel_segmentedflow_padded(MPI_COMM_WORLD, MPI_INFO_NULL, (/NB1,NB2,NB3/), &
        kalman_mri_input_file_path, mri_inst)
   CALL h5open_f(herror) ! Required as hpc-predict-io closes HDF5 environment with h5close_f
  
@@ -105,6 +105,12 @@ PROGRAM impact_debug
   write(0,*) "   local lbound: ",lbound(mri_inst%mri%velocity_cov%array)
   write(0,*) "   local ubound: ",ubound(mri_inst%mri%velocity_cov%array)
   write(0,*) "   MRI offset:   ",0,0,mri_inst%mri%velocity_cov%time_offset,mri_inst%mri%velocity_cov%offset
+
+  write(0,*) "## MRI: segmentation probability field ##"
+  write(0,*) "   local  shape: ",shape(mri_inst%mri%segmentation_prob%array)
+  write(0,*) "   local lbound: ",lbound(mri_inst%mri%segmentation_prob%array)
+  write(0,*) "   local ubound: ",ubound(mri_inst%mri%segmentation_prob%array)
+  write(0,*) "   MRI offset:   ",mri_inst%mri%segmentation_prob%time_offset,mri_inst%mri%segmentation_prob%offset
 
 ! Main part of IMPACT currently commented out for demonstrating MRI I/O
 
