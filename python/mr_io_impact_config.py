@@ -1,5 +1,5 @@
 import os
-from mr_io import FlowMRI
+import mr_io
 from mr_io_domain_decomp import spatial_hyperslab_dims
 from jinja2 import Environment, FileSystemLoader
 import numpy as np
@@ -27,8 +27,10 @@ def main():
     args = parser.parse_args()
 
     # Read MRI
-    mri = FlowMRI.read_hdf5(args.input_mri)
-    
+    mri = mr_io.read_hdf5(args.input_mri)
+    if not (isinstance(mri, mr_io.FlowMRI) or isinstance(mri, mr_io.SegmentedFlowMRI)):
+        raise ValueError("MRI must be of type FlowMRI or SegmentedFlowMRI to generate IMPACT configuration.")
+ 
     for i in range(3):
         if len(mri.geometry[i]) == 1:
             raise(ValueError("MRI grid must have more than one voxel along each axis (has %d along %d-th)" % (len(mri.geometry[i]),i)))
