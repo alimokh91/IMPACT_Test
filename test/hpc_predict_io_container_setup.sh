@@ -25,24 +25,23 @@ elif echo ${MPI_MASTER_HOST} | grep -i daint > /dev/null; then
     MOUNT_OPT="--mount=type=bind,source=${MOUNT_HOST_DIR},destination=${MOUNT_CONTAINER_DIR}"
 
     MPIEXEC_CMD=()
-    MPIEXEC_CMD_COMPILE=()
+    MPI_NUM_NODES=(${MPI_NUM_PROCS[0]} $(python -c "print(min(${SLURM_JOB_NUM_NODES}-1, ${MPI_NUM_PROCS[1]}))"))
     for i in $(seq 0 1); do
-        MPIEXEC_CMD+=("srun -N ${MPI_NUM_PROCS[$i]} -n ${MPI_NUM_PROCS[$i]}")
-        MPIEXEC_CMD_COMPILE+=("srun -N 1 -n 1")
+        MPIEXEC_CMD+=("srun -N ${MPI_NUM_NODES[$i]} -n ${MPI_NUM_PROCS[$i]}")
     done
     CONTAINER_RUN_CMD="sarus run --mpi"
     CONTAINER_ENTRYPOINT=()
     for i in $(seq 0 1); do
         CONTAINER_ENTRYPOINT+=("bash -c")
     done
+    MPIEXEC_CMD_SINGLE="srun -N 1 -n 1"
+    CONTAINER_ENTRYPOINT_LOCAL="bash -c"
 else
     MOUNT_OPT="-v ${MOUNT_HOST_DIR}:${MOUNT_CONTAINER_DIR}"
 
     MPIEXEC_CMD=()
-    MPIEXEC_CMD_COMPILE=()
     for i in $(seq 0 1); do
         MPIEXEC_CMD+=("")
-        MPIEXEC_CMD_COMPILE+=("")
     done
     CONTAINER_RUN_CMD="docker run -u $(id -u ${USER}):$(id -g ${USER})"
     #with strace: CONTAINER_RUN_CMD="docker run" #" -u $(id -u ${USER}):$(id -g ${USER})"
@@ -50,5 +49,6 @@ else
     for i in $(seq 0 1); do
         CONTAINER_ENTRYPOINT+=("mpiexec -np ${MPI_NUM_PROCS[$i]} bash -c")
     done
+    MPIEXEC_CMD_SINGLE=""
     CONTAINER_ENTRYPOINT_LOCAL="bash -c"
 fi
