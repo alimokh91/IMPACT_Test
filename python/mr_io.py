@@ -4,6 +4,8 @@ import logging
 import numpy as np
 from typing import List
 
+from mr_io_locking_utils import LockedFileH5Reader, LockedFileExclusiveH5Writer
+
 class SpatialMRI:
     """MRI datatype for fixed-time scalar measurements in 3d without axis information
     
@@ -27,19 +29,34 @@ class SpatialMRI:
     def write_hdf5(self, path: str):
         """Write this MRI to hpc-predict-io HDF5-format at path"""
         # file handling
-        if os.path.isfile(path):
+        if os.path.exists(path):
             raise FileExistsError("Tried to open file %s, which exists already" % path)
     
-        with h5py.File(path, "w") as f:
-            scalar_feature_transposed = self.scalar_feature.transpose()
-            grp = f.create_group(SpatialMRI.group_name)
-            ds = grp.create_dataset("scalar_feature", scalar_feature_transposed.shape, data=scalar_feature_transposed, dtype="float64")
+        # with h5py.File(path, "w") as f:
+        #     scalar_feature_transposed = self.scalar_feature.transpose()
+        #     grp = f.create_group(SpatialMRI.group_name)
+        #     ds = grp.create_dataset("scalar_feature", scalar_feature_transposed.shape, data=scalar_feature_transposed, dtype="float64")
+        lock = LockedFileExclusiveH5Writer(path)
+        lock.open()
+        f = lock.file()
+        scalar_feature_transposed = self.scalar_feature.transpose()
+        grp = f.create_group(SpatialMRI.group_name)
+        ds = grp.create_dataset("scalar_feature", scalar_feature_transposed.shape, data=scalar_feature_transposed, dtype="float64")
+        lock.close()
+
 
     def read_hdf5(path: str):
         """Read MRI from file at path as hpc-predict-io HDF5-format"""
-        with h5py.File(path, "r") as f:
-            # here comes the actual deserialization code
-            return SpatialMRI(scalar_feature=f[SpatialMRI.group_name]["scalar_feature"][()].transpose())
+        # with h5py.File(path, "r") as f:
+        #     # here comes the actual deserialization code
+        #     return SpatialMRI(scalar_feature=f[SpatialMRI.group_name]["scalar_feature"][()].transpose())
+        lock = LockedFileH5Reader(path)
+        lock.open()
+        f = lock.file()
+        # here comes the actual deserialization code
+        mri = SpatialMRI(scalar_feature=f[SpatialMRI.group_name]["scalar_feature"][()].transpose())
+        lock.close()
+        return mri
 
 
 def validate_spacetime_coordinates(geometry, time):
@@ -128,23 +145,43 @@ class SpaceTimeMRI:
     def write_hdf5(self, path: str):
         """Write this MRI to hpc-predict-io HDF5-format at path"""
         # file handling
-        if os.path.isfile(path):
+        if os.path.exists(path):
             raise FileExistsError("Tried to open file %s, which exists already" % path)
     
-        with h5py.File(path, "w") as f:
-            # here comes the actual serialization code (transposition to use Fortran memory layout)
-            grp = f.create_group(SpaceTimeMRI.group_name)
-            write_space_time_coordinates(grp, self.geometry, self.time)
-            write_space_time_voxel_vector_feature(grp, "vector_feature", self.vector_feature)
+        # with h5py.File(path, "w") as f:
+        #     # here comes the actual serialization code (transposition to use Fortran memory layout)
+        #     grp = f.create_group(SpaceTimeMRI.group_name)
+        #     write_space_time_coordinates(grp, self.geometry, self.time)
+        #     write_space_time_voxel_vector_feature(grp, "vector_feature", self.vector_feature)
+
+        lock = LockedFileExclusiveH5Writer(path)
+        lock.open()
+        f = lock.file()
+        # here comes the actual serialization code (transposition to use Fortran memory layout)
+        grp = f.create_group(SpaceTimeMRI.group_name)
+        write_space_time_coordinates(grp, self.geometry, self.time)
+        write_space_time_voxel_vector_feature(grp, "vector_feature", self.vector_feature)
+        lock.close()
 
     def read_hdf5(path: str):
         """Read MRI from file at path as hpc-predict-io HDF5-format"""
-        with h5py.File(path, "r") as f:
-            # here comes the actual deserialization code
-            return SpaceTimeMRI(geometry=[f[SpaceTimeMRI.group_name][coord_name][()] \
-                                          for coord_name in ["x_coordinates", "y_coordinates", "z_coordinates"]],
-                                time=f[SpaceTimeMRI.group_name]["t_coordinates"][()],
-                                vector_feature=f[SpaceTimeMRI.group_name]["vector_feature"][()].transpose((2,1,0,3,4)))
+        # with h5py.File(path, "r") as f:
+        #     # here comes the actual deserialization code
+        #     return SpaceTimeMRI(geometry=[f[SpaceTimeMRI.group_name][coord_name][()] \
+        #                                   for coord_name in ["x_coordinates", "y_coordinates", "z_coordinates"]],
+        #                         time=f[SpaceTimeMRI.group_name]["t_coordinates"][()],
+        #                         vector_feature=f[SpaceTimeMRI.group_name]["vector_feature"][()].transpose((2,1,0,3,4)))
+
+        lock = LockedFileH5Reader(path)
+        lock.open()
+        f = lock.file()
+        # here comes the actual deserialization code
+        mri = SpaceTimeMRI(geometry=[f[SpaceTimeMRI.group_name][coord_name][()] \
+                                      for coord_name in ["x_coordinates", "y_coordinates", "z_coordinates"]],
+                            time=f[SpaceTimeMRI.group_name]["t_coordinates"][()],
+                            vector_feature=f[SpaceTimeMRI.group_name]["vector_feature"][()].transpose((2,1,0,3,4)))
+        lock.close()
+        return mri
 
 
 class FlowMRI:
@@ -187,35 +224,66 @@ class FlowMRI:
     def write_hdf5(self, path: str):
         """Write this MRI to hpc-predict-io HDF5-format at path"""
         # file handling
-        if os.path.isfile(path):
+        if os.path.exists(path):
             raise FileExistsError("Tried to open file %s, which exists already" % path)
     
-        with h5py.File(path, "w") as f:
-            # here comes the actual serialization code (transposition to use Fortran memory layout)
-            grp = f.create_group(FlowMRI.group_name)
-            write_group_attribute(grp, "t_heart_cycle_period", self.time_heart_cycle_period)
-            write_space_time_coordinates(grp, self.geometry, self.time)
-            write_space_time_voxel_scalar_feature(grp, "intensity", self.intensity)
-            write_space_time_voxel_vector_feature(grp, "velocity_mean", self.velocity_mean)
-            write_space_time_voxel_matrix_feature(grp, "velocity_cov", self.velocity_cov)
+        # with h5py.File(path, "w") as f:
+        #     # here comes the actual serialization code (transposition to use Fortran memory layout)
+        #     grp = f.create_group(FlowMRI.group_name)
+        #     write_group_attribute(grp, "t_heart_cycle_period", self.time_heart_cycle_period)
+        #     write_space_time_coordinates(grp, self.geometry, self.time)
+        #     write_space_time_voxel_scalar_feature(grp, "intensity", self.intensity)
+        #     write_space_time_voxel_vector_feature(grp, "velocity_mean", self.velocity_mean)
+        #     write_space_time_voxel_matrix_feature(grp, "velocity_cov", self.velocity_cov)
+
+        lock = LockedFileExclusiveH5Writer(path)
+        lock.open()
+        f = lock.file()
+        # here comes the actual serialization code (transposition to use Fortran memory layout)
+        grp = f.create_group(FlowMRI.group_name)
+        write_group_attribute(grp, "t_heart_cycle_period", self.time_heart_cycle_period)
+        write_space_time_coordinates(grp, self.geometry, self.time)
+        write_space_time_voxel_scalar_feature(grp, "intensity", self.intensity)
+        write_space_time_voxel_vector_feature(grp, "velocity_mean", self.velocity_mean)
+        write_space_time_voxel_matrix_feature(grp, "velocity_cov", self.velocity_cov)
+        lock.close()
+
 
     def read_hdf5(path: str):
         """Read MRI from file at path as hpc-predict-io HDF5-format"""
-        with h5py.File(path, "r") as f:
-            # here comes the actual deserialization code
-            if "t_heart_cycle_period" not in f[FlowMRI.group_name].attrs:
-                logging.warning("Reading a FlowMRI with t_heart_cycle_period not set - using None in Python object.")
-                time_heart_cycle_period = None
-            else:
-                time_heart_cycle_period = f[FlowMRI.group_name].attrs["t_heart_cycle_period"]
-            return FlowMRI(geometry=[f[FlowMRI.group_name][coord_name][()] \
-                                          for coord_name in ["x_coordinates", "y_coordinates", "z_coordinates"]],
-                                time=f[FlowMRI.group_name]["t_coordinates"][()],
-                                time_heart_cycle_period=time_heart_cycle_period,
-                                intensity=f[FlowMRI.group_name]["intensity"][()].transpose((2,1,0,3)),
-                                velocity_mean=f[FlowMRI.group_name]["velocity_mean"][()].transpose((2,1,0,3,4)),
-                                velocity_cov=f[FlowMRI.group_name]["velocity_cov"][()].transpose((2,1,0,3,5,4)))
+        # with h5py.File(path, "r") as f:
+        #     # here comes the actual deserialization code
+        #     if "t_heart_cycle_period" not in f[FlowMRI.group_name].attrs:
+        #         logging.warning("Reading a FlowMRI with t_heart_cycle_period not set - using None in Python object.")
+        #         time_heart_cycle_period = None
+        #     else:
+        #         time_heart_cycle_period = f[FlowMRI.group_name].attrs["t_heart_cycle_period"]
+        #     return FlowMRI(geometry=[f[FlowMRI.group_name][coord_name][()] \
+        #                                   for coord_name in ["x_coordinates", "y_coordinates", "z_coordinates"]],
+        #                         time=f[FlowMRI.group_name]["t_coordinates"][()],
+        #                         time_heart_cycle_period=time_heart_cycle_period,
+        #                         intensity=f[FlowMRI.group_name]["intensity"][()].transpose((2,1,0,3)),
+        #                         velocity_mean=f[FlowMRI.group_name]["velocity_mean"][()].transpose((2,1,0,3,4)),
+        #                         velocity_cov=f[FlowMRI.group_name]["velocity_cov"][()].transpose((2,1,0,3,5,4)))
 
+        lock = LockedFileH5Reader(path)
+        lock.open()
+        f = lock.file()
+        # here comes the actual deserialization code
+        if "t_heart_cycle_period" not in f[FlowMRI.group_name].attrs:
+            logging.warning("Reading a FlowMRI with t_heart_cycle_period not set - using None in Python object.")
+            time_heart_cycle_period = None
+        else:
+            time_heart_cycle_period = f[FlowMRI.group_name].attrs["t_heart_cycle_period"]
+        mri = FlowMRI(geometry=[f[FlowMRI.group_name][coord_name][()] \
+                                      for coord_name in ["x_coordinates", "y_coordinates", "z_coordinates"]],
+                            time=f[FlowMRI.group_name]["t_coordinates"][()],
+                            time_heart_cycle_period=time_heart_cycle_period,
+                            intensity=f[FlowMRI.group_name]["intensity"][()].transpose((2,1,0,3)),
+                            velocity_mean=f[FlowMRI.group_name]["velocity_mean"][()].transpose((2,1,0,3,4)),
+                            velocity_cov=f[FlowMRI.group_name]["velocity_cov"][()].transpose((2,1,0,3,5,4)))
+        lock.close()
+        return mri
 
 #TODO: Refactor this into class hierarchy with FlowMRI
 class SegmentedFlowMRI:
@@ -263,37 +331,70 @@ class SegmentedFlowMRI:
     def write_hdf5(self, path: str):
         """Write this MRI to hpc-predict-io HDF5-format at path"""
         # file handling
-        if os.path.isfile(path):
+        if os.path.exists(path):
             raise FileExistsError("Tried to open file %s, which exists already" % path)
     
-        with h5py.File(path, "w") as f:
-            # here comes the actual serialization code (transposition to use Fortran memory layout)
-            grp = f.create_group(SegmentedFlowMRI.group_name)
-            write_group_attribute(grp, "t_heart_cycle_period", self.time_heart_cycle_period)
-            write_space_time_coordinates(grp, self.geometry, self.time)
-            write_space_time_voxel_scalar_feature(grp, "intensity", self.intensity)
-            write_space_time_voxel_vector_feature(grp, "velocity_mean", self.velocity_mean)
-            write_space_time_voxel_matrix_feature(grp, "velocity_cov", self.velocity_cov)
-            write_space_time_voxel_scalar_feature(grp, "segmentation_prob", self.segmentation_prob)
+        # with h5py.File(path, "w") as f:
+        #     # here comes the actual serialization code (transposition to use Fortran memory layout)
+        #     grp = f.create_group(SegmentedFlowMRI.group_name)
+        #     write_group_attribute(grp, "t_heart_cycle_period", self.time_heart_cycle_period)
+        #     write_space_time_coordinates(grp, self.geometry, self.time)
+        #     write_space_time_voxel_scalar_feature(grp, "intensity", self.intensity)
+        #     write_space_time_voxel_vector_feature(grp, "velocity_mean", self.velocity_mean)
+        #     write_space_time_voxel_matrix_feature(grp, "velocity_cov", self.velocity_cov)
+        #     write_space_time_voxel_scalar_feature(grp, "segmentation_prob", self.segmentation_prob)
+
+        lock = LockedFileExclusiveH5Writer(path)
+        lock.open()
+        f = lock.file()
+        # here comes the actual serialization code (transposition to use Fortran memory layout)
+        grp = f.create_group(SegmentedFlowMRI.group_name)
+        write_group_attribute(grp, "t_heart_cycle_period", self.time_heart_cycle_period)
+        write_space_time_coordinates(grp, self.geometry, self.time)
+        write_space_time_voxel_scalar_feature(grp, "intensity", self.intensity)
+        write_space_time_voxel_vector_feature(grp, "velocity_mean", self.velocity_mean)
+        write_space_time_voxel_matrix_feature(grp, "velocity_cov", self.velocity_cov)
+        write_space_time_voxel_scalar_feature(grp, "segmentation_prob", self.segmentation_prob)
+        lock.close()
+
 
     def read_hdf5(path: str):
         """Read MRI from file at path as hpc-predict-io HDF5-format"""
-        with h5py.File(path, "r") as f:
-            # here comes the actual deserialization code
-            if "t_heart_cycle_period" not in f[SegmentedFlowMRI.group_name].attrs:
-                logging.warning("Reading a SegmentedFlowMRI with t_heart_cycle_period not set - using None in Python object.")
-                time_heart_cycle_period = None
-            else:
-                time_heart_cycle_period = f[SegmentedFlowMRI.group_name].attrs["t_heart_cycle_period"]
-            return SegmentedFlowMRI(geometry=[f[SegmentedFlowMRI.group_name][coord_name][()] \
-                                          for coord_name in ["x_coordinates", "y_coordinates", "z_coordinates"]],
-                                time=f[SegmentedFlowMRI.group_name]["t_coordinates"][()],
-                                time_heart_cycle_period=time_heart_cycle_period,
-                                intensity=f[SegmentedFlowMRI.group_name]["intensity"][()].transpose((2,1,0,3)),
-                                velocity_mean=f[SegmentedFlowMRI.group_name]["velocity_mean"][()].transpose((2,1,0,3,4)),
-                                velocity_cov=f[SegmentedFlowMRI.group_name]["velocity_cov"][()].transpose((2,1,0,3,5,4)),
-                                segmentation_prob=f[SegmentedFlowMRI.group_name]["segmentation_prob"][()].transpose((2,1,0,3)))
+        # with h5py.File(path, "r") as f:
+        #     # here comes the actual deserialization code
+        #     if "t_heart_cycle_period" not in f[SegmentedFlowMRI.group_name].attrs:
+        #         logging.warning("Reading a SegmentedFlowMRI with t_heart_cycle_period not set - using None in Python object.")
+        #         time_heart_cycle_period = None
+        #     else:
+        #         time_heart_cycle_period = f[SegmentedFlowMRI.group_name].attrs["t_heart_cycle_period"]
+        #     return SegmentedFlowMRI(geometry=[f[SegmentedFlowMRI.group_name][coord_name][()] \
+        #                                   for coord_name in ["x_coordinates", "y_coordinates", "z_coordinates"]],
+        #                         time=f[SegmentedFlowMRI.group_name]["t_coordinates"][()],
+        #                         time_heart_cycle_period=time_heart_cycle_period,
+        #                         intensity=f[SegmentedFlowMRI.group_name]["intensity"][()].transpose((2,1,0,3)),
+        #                         velocity_mean=f[SegmentedFlowMRI.group_name]["velocity_mean"][()].transpose((2,1,0,3,4)),
+        #                         velocity_cov=f[SegmentedFlowMRI.group_name]["velocity_cov"][()].transpose((2,1,0,3,5,4)),
+        #                         segmentation_prob=f[SegmentedFlowMRI.group_name]["segmentation_prob"][()].transpose((2,1,0,3)))
 
+        lock = LockedFileH5Reader(path)
+        lock.open()
+        f = lock.file()
+        # here comes the actual deserialization code
+        if "t_heart_cycle_period" not in f[SegmentedFlowMRI.group_name].attrs:
+            logging.warning("Reading a SegmentedFlowMRI with t_heart_cycle_period not set - using None in Python object.")
+            time_heart_cycle_period = None
+        else:
+            time_heart_cycle_period = f[SegmentedFlowMRI.group_name].attrs["t_heart_cycle_period"]
+        mri = SegmentedFlowMRI(geometry=[f[SegmentedFlowMRI.group_name][coord_name][()] \
+                                      for coord_name in ["x_coordinates", "y_coordinates", "z_coordinates"]],
+                            time=f[SegmentedFlowMRI.group_name]["t_coordinates"][()],
+                            time_heart_cycle_period=time_heart_cycle_period,
+                            intensity=f[SegmentedFlowMRI.group_name]["intensity"][()].transpose((2,1,0,3)),
+                            velocity_mean=f[SegmentedFlowMRI.group_name]["velocity_mean"][()].transpose((2,1,0,3,4)),
+                            velocity_cov=f[SegmentedFlowMRI.group_name]["velocity_cov"][()].transpose((2,1,0,3,5,4)),
+                            segmentation_prob=f[SegmentedFlowMRI.group_name]["segmentation_prob"][()].transpose((2,1,0,3)))
+        lock.close()
+        return mri
 
 def read_hdf5(path: str):
     """Read MRI from file at path as hpc-predict-io HDF5-format"""

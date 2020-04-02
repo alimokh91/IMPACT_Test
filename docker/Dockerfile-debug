@@ -1,0 +1,26 @@
+FROM lukasgd/hpc-predict-io-test-mpi-hdf5-debug:latest
+
+RUN rm -r /src/hpc-predict/hpc-predict-io
+
+# Copy hpc-predict source code in
+#VOLUME ["/src/hpc-predict"]
+COPY . /src/hpc-predict/hpc-predict-io
+
+
+# Compile the Fortran part of hpc-predict-io (without IMPACT tests) and setup python venv
+RUN cd /src/hpc-predict/hpc-predict-io \
+    && mkdir build install \
+    && cd build \
+    && source scl_source enable devtoolset-7 \
+    && cmake -DCMAKE_Fortran_COMPILER=mpifort \
+      -DCMAKE_C_COMPILER=mpicc \
+      -DCMAKE_CXX_COMPILER=mpicc \
+      -DHDF5_ROOT=/usr/ \
+      -DCMAKE_INSTALL_PREFIX=../install \
+      ../ \
+    && make install \
+    && cd /src/hpc-predict/hpc-predict-io/python \
+    && python3 -m venv venv \
+    && source venv/bin/activate \
+    && pip install --upgrade pip \
+    && pip install -r requirements.txt

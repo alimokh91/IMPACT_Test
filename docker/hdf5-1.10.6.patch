@@ -1,0 +1,12 @@
+diff -Naur hdf5-1.10.6/src/H5FDmpio.c hdf5-1.10.6-patched/src/H5FDmpio.c
+--- hdf5-1.10.6/src/H5FDmpio.c	2019-12-19 17:38:30.000000000 +0100
++++ hdf5-1.10.6-patched/src/H5FDmpio.c	2020-03-25 18:37:57.716647909 +0100
+@@ -973,7 +973,7 @@
+     if(flags & H5F_ACC_CREAT)
+         mpi_amode |= MPI_MODE_CREATE;
+     if(flags & H5F_ACC_EXCL)
+-        mpi_amode |= MPI_MODE_EXCL;
++        mpi_amode |= MPI_MODE_EXCL | MPI_MODE_UNIQUE_OPEN;
+ 
+ #ifdef H5FDmpio_DEBUG
+     /* Check for debug commands in the info parameter */

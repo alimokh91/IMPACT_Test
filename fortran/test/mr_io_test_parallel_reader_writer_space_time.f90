@@ -32,7 +32,7 @@ program mr_io_test_parallel_reader_writer_space_time
     print *, vector_feature_shape(2)
 
     print *, vector_feature_shape(1)
-    print *, mri_dest%vector_feature%array
+    !print *, mri_dest%vector_feature%array
 
     call mr_io_write_parallel_spacetime(MPI_COMM_WORLD, MPI_INFO_NULL, out_path, mri_dest)
 

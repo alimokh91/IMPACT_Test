@@ -3,6 +3,10 @@ module mr_io_parallel
 use hdf5
 use mr_io_protocol
 use mr_io, only : mr_io_handle_hdf5_error, mr_io_handle_argument_error
+use mr_io_locking_utils, only: mr_io_h5_parallel_reader_open_f, &
+                               mr_io_h5_parallel_reader_close_f, &
+                               mr_io_h5_parallel_writer_open_f, &
+                               mr_io_h5_parallel_writer_close_f
 
 use mpi !include 'mpif.h'
 
@@ -369,19 +373,20 @@ subroutine mr_io_read_parallel_spatial(mr_io_mpi_comm, mr_io_mpi_info, mr_io_mpi
   CALL h5open_f(error)
   mr_io_handle_error(error)
 
-  ! Setup file access property list with parallel I/O access.
-  CALL h5pcreate_f(H5P_FILE_ACCESS_F, plist_id, error)
-  mr_io_handle_error(error)
-  
-  CALL h5pset_fapl_mpio_f(plist_id, mr_io_mpi_comm, mr_io_mpi_info, error)
-  mr_io_handle_error(error)
-
-  ! Open existing file collectively 
-  CALL h5fopen_f(trim(path), H5F_ACC_RDWR_F, file_id, error, access_prp = plist_id)
-  mr_io_handle_error(error)
-
-  CALL h5pclose_f(plist_id, error)
-  mr_io_handle_error(error)
+!  ! Setup file access property list with parallel I/O access.
+!  CALL h5pcreate_f(H5P_FILE_ACCESS_F, plist_id, error)
+!  mr_io_handle_error(error)
+!
+!  CALL h5pset_fapl_mpio_f(plist_id, mr_io_mpi_comm, mr_io_mpi_info, error)
+!  mr_io_handle_error(error)
+!
+!  ! Open existing file collectively
+!  CALL h5fopen_f(trim(path), H5F_ACC_RDWR_F, file_id, error, access_prp = plist_id)
+!  mr_io_handle_error(error)
+!
+!  CALL h5pclose_f(plist_id, error)
+!  mr_io_handle_error(error)
+  file_id = mr_io_h5_parallel_reader_open_f(mr_io_mpi_comm, mr_io_mpi_info, path)
   
   ! Open an existing group
   CALL h5gopen_f(file_id, SpatialMRI_group_name, grp_id, error)
@@ -400,7 +405,8 @@ subroutine mr_io_read_parallel_spatial(mr_io_mpi_comm, mr_io_mpi_info, mr_io_mpi
   mr_io_handle_error(error)
 
   ! Close the file.
-  CALL h5fclose_f(file_id, error)
+!  CALL h5fclose_f(file_id, error)
+  error = mr_io_h5_parallel_reader_close_f(file_id)
   mr_io_handle_error(error)
 
   ! Close FORTRAN interface.
@@ -566,19 +572,20 @@ subroutine mr_io_write_parallel_spatial(mr_io_mpi_comm, mr_io_mpi_info, path, mr
   CALL h5open_f(error)
   mr_io_handle_error(error)
 
-  ! Create a file collectively 
-  CALL h5pcreate_f(H5P_FILE_ACCESS_F, plist_id, error)
-  mr_io_handle_error(error)
-  
-  CALL h5pset_fapl_mpio_f(plist_id, mr_io_mpi_comm, mr_io_mpi_info, error)
-  mr_io_handle_error(error)
+!  ! Create a file collectively
+!  CALL h5pcreate_f(H5P_FILE_ACCESS_F, plist_id, error)
+!  mr_io_handle_error(error)
+!
+!  CALL h5pset_fapl_mpio_f(plist_id, mr_io_mpi_comm, mr_io_mpi_info, error)
+!  mr_io_handle_error(error)
+!
+!  CALL h5fcreate_f(trim(path), H5F_ACC_TRUNC_F, file_id, error, access_prp = plist_id)
+!  mr_io_handle_error(error)
+!
+!  CALL h5pclose_f(plist_id, error)
+!  mr_io_handle_error(error)
+  file_id = mr_io_h5_parallel_writer_open_f(mr_io_mpi_comm, mr_io_mpi_info, path)
 
-  CALL h5fcreate_f(trim(path), H5F_ACC_TRUNC_F, file_id, error, access_prp = plist_id)
-  mr_io_handle_error(error)
-
-  CALL h5pclose_f(plist_id, error)
-  mr_io_handle_error(error)
-  
   ! Create a new group collectively  
   CALL h5pcreate_f(H5P_GROUP_CREATE_F, plist_id, error) ! FIXME: Not completely sure about flag
   mr_io_handle_error(error)
@@ -605,7 +612,8 @@ subroutine mr_io_write_parallel_spatial(mr_io_mpi_comm, mr_io_mpi_info, path, mr
   mr_io_handle_error(error)
 
   ! Close the file.
-  CALL h5fclose_f(file_id, error)
+!  CALL h5fclose_f(file_id, error)
+  error = mr_io_h5_parallel_writer_close_f(file_id)
   mr_io_handle_error(error)
 
   ! Close FORTRAN interface.

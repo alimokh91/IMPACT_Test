@@ -1,5 +1,9 @@
 import numpy as np
-from mr_io_domain_decomp import spatial_hyperslab_dims, spatial_hyperslab_loc, DomainPadding
+from mr_io_domain_decomp import spatial_hyperslab_dims,\
+                                spatial_hyperslab_loc,\
+                                DomainPadding
+from mr_io_locking_utils import LockedFileReader
+import os
 
 def validate_group_name(test_inst, fort_group_name):
     test_inst.assertEqual(fort_group_name, type(test_inst).mri_group_name)        
@@ -97,3 +101,22 @@ def spatial_hyperslab_loc_test(cls, mpi_rank, mpi_cart_dims, voxel_feature):
                                    pad_vox_rhs=cls.num_pad_vox_rhs) \
                      if hasattr(cls, "num_pad_vox_lhs") else None
     return spatial_hyperslab_loc(mpi_rank, mpi_cart_dims, voxel_feature.shape, domain_padding=domain_padding)
+
+
+def read_out(filename_out):
+    out_reader_lock = LockedFileReader(filename_out)
+    out_reader_lock.open()
+    out = out_reader_lock.file()
+    out_lines = [l.strip(' \n') for l in out.readlines()]
+    out_reader_lock.close()
+    return out_lines
+
+def print_err(filename_err):
+    if os.stat(filename_err).st_size > 0:
+        err_reader_lock = LockedFileReader(filename_err)
+        err_reader_lock.open()
+        err_content = err_reader_lock.file().read()
+        if len(err_content) > 0:
+            print("Std error of Fortran process:")
+            print(err_content)
+        err_reader_lock.close()
