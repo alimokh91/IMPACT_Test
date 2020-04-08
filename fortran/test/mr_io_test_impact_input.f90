@@ -4,12 +4,17 @@ program mr_io_test_impact_input
   USE mod_vars
   USE usr_vars
   USE mr_io_parallel_spacetime
+  USE mr_io_locking_utils
   USE mr_io_protocol
 
   implicit none
 
   integer, dimension(3) :: impact_offset = (/-1,-1,-1/)
   integer, dimension(3) :: impact_shape = (/-1,-1,-1/)
+  integer :: st
+
+  ! TODO: lock output file:
+  st = mr_io_lock_stdout_stderr()
 
   ! For interactive testing
 !  INTEGER :: mr_io_test_mpi_rank = -1
@@ -93,6 +98,8 @@ program mr_io_test_impact_input
 
   CALL impact_core_finalize
 
+  ! TODO: flush & unlock output file
+  st = mr_io_unlock_stdout_stderr()
 
   contains
     subroutine find_impact_hyperslab(xp, yp, offset, ishape)

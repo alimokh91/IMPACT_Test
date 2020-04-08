@@ -1,4 +1,4 @@
-FROM nvidia/cuda:9.2-devel-centos7
+FROM nvidia/cuda:10.2-devel-centos7
 
 # Update all packages and install the development toolset (newer version of GNU gcc and tools)
 RUN yum -y update \

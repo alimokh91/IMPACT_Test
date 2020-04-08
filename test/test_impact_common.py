@@ -1,10 +1,7 @@
 import subprocess as sp
 
-def start_impact_fortran(test_inst):
-    test_cls = type(test_inst)
-
-    ## Write configuration file for impact
-    config_command = "python python/mr_io_impact_config.py --input-mri %s --output-mri %s --sr %d %d %d --padding %f %f %f --tr %d --config %s --output %s --np %d  1> %s 2> %s" % \
+def get_config_args(test_cls):
+    return "-m mr_io_impact_config --input-mri %s --output-mri %s --sr %d %d %d --padding %f %f %f --tr %d --config %s --output %s --np %d  1> %s 2> %s" % \
                            (test_cls.filename_mri_in,
                             test_cls.filename_mri_out,
                             test_cls.sr[0],
@@ -19,11 +16,23 @@ def start_impact_fortran(test_inst):
                             test_cls.mpi_proc,
                             test_cls.filename_out_rank % ("config_writer"),
                             test_cls.filename_err_rank % ("config_writer"))
+
+def get_impact_args(test_cls):
+    return "%s 1> %s 2> %s" % \
+                           (test_cls.config_output,
+                            test_cls.filename_out_rank % ("${PMI_RANK}"),
+                            test_cls.filename_err_rank % ("${PMI_RANK}"))
+
+def start_impact_fortran(test_inst):
+    test_cls = type(test_inst)
+
+    ## Write configuration file for impact
+    config_command = get_config_args(test_cls)
                            
     print("IMPACT config generator command:")
     print(config_command)
     config_run = sp.run( 
-         ["bash","-c",config_command],
+         ["bash","-c","python " + config_command],
                             stdout=sp.PIPE, stderr=sp.PIPE, check=True)
 
 
