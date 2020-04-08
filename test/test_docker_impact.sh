@@ -12,10 +12,10 @@ if [[ -z $(echo ${MPI_MASTER_HOST} | grep -i daint) ]]; then
 fi
 
 mkdir tmp
-#function clean_up_test_data {
-#  rm -r tmp
-#}
-#trap clean_up_test_data EXIT
+function clean_up_test_data {
+  rm -r tmp
+}
+trap clean_up_test_data EXIT
 
 ./test_impact_driver.sh
 

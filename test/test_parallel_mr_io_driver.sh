@@ -23,8 +23,8 @@ function run_test() {
 
   filename_exec=${FORTRAN_TEST_BINARY_PATH}/${fortran_exec_name}
   filename_mri=${fortran_exec_name}.h5
-  # filename_out=${fortran_exec_name}_\$\{PMI_RANK\}.out
-  # filename_err=${fortran_exec_name}_\$\{PMI_RANK\}.err
+  # filename_out=${fortran_exec_name}_\$\{${MPI_RANK}\}.out
+  # filename_err=${fortran_exec_name}_\$\{${MPI_RANK}\}.err
 
   IFS='.' read -r python_module test_class <<<"$1"
   python_cmd_get_fortran_args="from ${python_module} import get_fortran_args, ${test_class}; print(get_fortran_args(${test_class}))"
@@ -33,6 +33,7 @@ function run_test() {
     HPC_PREDICT_IO_TEST_MRI_PATH=${filename_mri} \
     HPC_PREDICT_IO_TEST_MPI_FORTRAN_PROCS=${HPC_PREDICT_IO_TEST_MPI_FORTRAN_PROCS} \
     PYTHONPATH=/src/hpc-predict/hpc-predict-io/python:/src/hpc-predict/hpc-predict-io/test \
+    MPI_RANK=${MPI_RANK} MPI_SIZE=${MPI_SIZE} \
     python -c \"${python_cmd_get_fortran_args}\"")
 
   BASH_CMD=()
@@ -44,7 +45,7 @@ function run_test() {
   BASH_CMD+=("cd ${MOUNT_CONTAINER_DIR} && \
     ${filename_exec} ${fortran_args}")
 #    source scl_source enable devtoolset-7 && \
-#    strace -o ${fortran_exec_name}_\${PMI_RANK}.strace ${filename_exec} ${fortran_args}") # 1> ${filename_out} 2> ${filename_err}")
+#    strace -o ${fortran_exec_name}_\${${MPI_RANK}}.strace ${filename_exec} ${fortran_args}") # 1> ${filename_out} 2> ${filename_err}")
 
   #BASH_CMD+=("source ~/src/hpc-predict/hpc-predict-io/python/venv/bin/activate && \
   #  HPC_PREDICT_IO_TEST_MRI_PATH=${filename_mri} python test/test_parallel_mr_io_container.py")

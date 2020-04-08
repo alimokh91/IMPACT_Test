@@ -20,6 +20,6 @@ function clean_up_test_data {
 }
 trap clean_up_test_data EXIT
 
-./test_sequential_mr_io_driver.sh
+#./test_sequential_mr_io_driver.sh
 ./test_parallel_mr_io_driver.sh
 

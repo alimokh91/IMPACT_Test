@@ -21,8 +21,8 @@ def write_hdf5_read_in_fortran(test_inst):
                             (" %d %d %d %d %d %d " % (*test_cls.num_pad_vox_lhs, *test_cls.num_pad_vox_rhs) \
                              if hasattr(test_cls, "num_pad_vox_lhs") else "") + \
                             " 1> %s 2> %s" % \
-                            (test_cls.filename_out_rank % ("${PMI_RANK}"),
-                            test_cls.filename_err_rank % ("${PMI_RANK}"))
+                            (test_cls.filename_out_rank % ("${%s}" % os.environ["MPI_RANK"]),
+                            test_cls.filename_err_rank % ("${%s}" % os.environ["MPI_RANK"]))
     fort = sp.run(["mpiexec","-np", "%d" % (test_cls.mpi_proc), \
                    "bash", "-c", fort_command],
                    stdout=sp.PIPE, stderr=sp.PIPE, check=True)

@@ -52,8 +52,8 @@ def get_fortran_args(test_cls):
         fort_args += " %d %d %d %d " % (test_cls.tr, *test_cls.sr)
 
     fort_args += " 1> %s 2> %s" % \
-                 (test_cls.filename_out_rank % ("${PMI_RANK}"),
-                  test_cls.filename_err_rank % ("${PMI_RANK}"))
+                 (test_cls.filename_out_rank % ("${%s}" % os.environ["MPI_RANK"]),
+                  test_cls.filename_err_rank % ("${%s}" % os.environ["MPI_RANK"]))
 
     return fort_args
 

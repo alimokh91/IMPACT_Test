@@ -52,3 +52,24 @@ else
     MPIEXEC_CMD_SINGLE=""
     CONTAINER_ENTRYPOINT_LOCAL="bash -c"
 fi
+
+# Set MPI environment variable names specific to MPI version
+if echo ${MPI_MASTER_HOST} | grep -i daint  > /dev/null; then
+  echo "Using MPICH..." 
+  MPI_RANK=SLURM_PROCID
+  MPI_SIZE=SLURM_NPROCS
+else
+  MPI_EXEC_VERSION_STDOUT=$(bash -l -c "mpiexec --version")
+  if echo "${MPI_EXEC_VERSION_STDOUT}" | grep -i openmpi > /dev/null; then
+    echo "Using OpenMPI..."
+    MPI_RANK=PMIX_RANK
+    MPI_SIZE=PMIX_SIZE
+  elif echo "${MPI_EXEC_VERSION_STDOUT}" | grep -i mpich > /dev/null; then
+    echo "Using MPICH..." 
+    MPI_RANK=PMI_RANK
+    MPI_SIZE=PMI_SIZE
+  else
+    echo "Failed to identify MPI installation from 'mpiexec --version' - exiting."
+    exit 1
+  fi
+fi

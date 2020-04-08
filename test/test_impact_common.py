@@ -1,3 +1,4 @@
+import os
 import subprocess as sp
 
 def get_config_args(test_cls):
@@ -20,8 +21,8 @@ def get_config_args(test_cls):
 def get_impact_args(test_cls):
     return "%s 1> %s 2> %s" % \
                            (test_cls.config_output,
-                            test_cls.filename_out_rank % ("${PMI_RANK}"),
-                            test_cls.filename_err_rank % ("${PMI_RANK}"))
+                            test_cls.filename_out_rank % ("${%s}" % os.environ["MPI_RANK"]),
+                            test_cls.filename_err_rank % ("${%s}" % os.environ["MPI_RANK"]))
 
 def start_impact_fortran(test_inst):
     test_cls = type(test_inst)
@@ -48,20 +49,20 @@ def start_impact_fortran(test_inst):
         print("IMPACT config generator returned err:")
         print(f.read())
 
-#         fort_command = "xterm -geometry 73x31+$(( 100 + 600*(${PMI_RANK}/%d/%d) ))+$(( 100 + 1500*((${PMI_RANK}/%d) %% %d) + 600*(${PMI_RANK} %% %d) )) -e gdb fortran/test/mr_io_test_impact_input %s  1> %s 2> %s" % \
+#         fort_command = "xterm -geometry 73x31+$(( 100 + 600*(${os.environ["MPI_RANK"]}/%d/%d) ))+$(( 100 + 1500*((${os.environ["MPI_RANK"]}/%d) %% %d) + 600*(${os.environ["MPI_RANK"]} %% %d) )) -e gdb fortran/test/mr_io_test_impact_input %s  1> %s 2> %s" % \
 #                                (block_dims[1],block_dims[2],
 #                                 block_dims[2],
 #                                 block_dims[1],
 #                                 block_dims[2],
 #                                 test_cls.config_output,
-#                                 test_cls.filename_out_rank % ("${PMI_RANK}"),
-#                                 test_cls.filename_err_rank % ("${PMI_RANK}"))
+#                                 test_cls.filename_out_rank % ("${%s}" % os.environ["MPI_RANK"]),
+#                                 test_cls.filename_err_rank % ("${%s}" % os.environ["MPI_RANK"]))
     # FIXME: the command line parameters here are currently unused!
     fort_command = "%s %s 1> %s 2> %s" % \
                            (test_cls.filename_exec,
                             test_cls.config_output,
-                            test_cls.filename_out_rank % ("${PMI_RANK}"),
-                            test_cls.filename_err_rank % ("${PMI_RANK}"))
+                            test_cls.filename_out_rank % ("${%s}" % os.environ["MPI_RANK"]),
+                            test_cls.filename_err_rank % ("${%s}" % os.environ["MPI_RANK"]))
     
     print(fort_command)
     fort = sp.run(["mpiexec","-np", "%d" % (test_cls.mpi_proc), \
