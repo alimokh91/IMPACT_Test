@@ -106,8 +106,10 @@ def spatial_hyperslab_loc_test(cls, mpi_rank, mpi_cart_dims, voxel_feature):
 def read_out(filename_out):
     out_reader_lock = LockedFileReader(filename_out)
     out_reader_lock.open()
-    out = out_reader_lock.file()
-    out_lines = [l.strip(' \n') for l in out.readlines()]
+    out_content = out_reader_lock.file().read()
+    out_lines = [l.strip(' \n') for l in out_content.split('\n')]
+    print("STDOUT of Fortran process (%s):" % filename_out)
+    print('\n'.join(l if len(l) < 160 else l[:125]+" ... "+l[-30:] for l in out_lines))
     out_reader_lock.close()
     return out_lines
 
@@ -117,6 +119,6 @@ def print_err(filename_err):
         err_reader_lock.open()
         err_content = err_reader_lock.file().read()
         if len(err_content) > 0:
-            print("Std error of Fortran process:")
+            print("STDERR of Fortran process (%s):" % filename_err)
             print(err_content)
         err_reader_lock.close()
