@@ -1,0 +1,71 @@
+FROM nvidia/cuda:10.2-devel-ubuntu18.04
+
+# Update all packages and install the development toolset (newer version of GNU gcc and tools)
+RUN apt-get update  && apt-get install -y --no-install-recommends \
+       wget gfortran libblas-dev liblapack-dev zlib1g-dev python-dev python3-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install MPI
+RUN cd /tmp \
+    && echo "Using $(which gfortran)" \
+    && gfortran --version \
+    && wget -q http://www.mpich.org/static/downloads/3.1.4/mpich-3.1.4.tar.gz \
+    && tar xf mpich-3.1.4.tar.gz \
+    && cd mpich-3.1.4 \
+    && ./configure --enable-g=debug --enable-fast=O0 --prefix=/usr \
+    && make -j3 \
+    && make install \
+    && ldconfig 
+    #\
+    #&& cd .. \
+    #&& rm -rf mpich-3.1.4 \
+    #&& rm -f mpich-3.1.4.tar.gz
+
+# Install HDF5
+RUN cd /tmp \
+    && wget -q https://hdf-wordpress-1.s3.amazonaws.com/wp-content/uploads/manual/HDF5/HDF5_1_10_6/source/hdf5-1.10.6.tar.gz \
+    && tar xf hdf5-1.10.6.tar.gz \
+    && cd hdf5-1.10.6 \
+    && FC=mpifort CC=mpicc ./configure --enable-build-mode=debug --enable-symbols=yes --enable-profiling=yes --enable-parallel --enable-fortran --prefix=/usr \
+    && make -j3 \
+    && make install \
+    && ldconfig 
+    #\
+    #&& cd .. \
+    #&& rm -rf hdf5-1.10.6 \
+    #&& rm -f hdf5-1.10.6.tar.gz
+
+# Install CMake
+RUN cd /tmp \
+    && wget -q https://cmake.org/files/v3.12/cmake-3.12.3.tar.gz \
+    && tar -xf cmake-3.12.3.tar.gz \
+    && cd cmake-3.12.3 \
+    && ./configure --prefix=/usr \
+    && make -j3 \
+    && make install 
+    #\
+    #&& cd /tmp \
+    #&& rm -Rf cmake-3.12.3*
+
+# Copy hpc-predict source code in
+#VOLUME ["/src/hpc-predict"]
+COPY . /src/hpc-predict/hpc-predict-io
+
+RUN apt-get update && apt-get install -y strace python3-venv
+ 
+# Compile the Fortran part of hpc-predict-io (without IMPACT tests) and setup python venv
+RUN bash -c "cd /src/hpc-predict/hpc-predict-io \
+    && mkdir build install \
+    && cd build \
+    && cmake -DCMAKE_Fortran_COMPILER=mpifort \
+      -DCMAKE_C_COMPILER=mpicc \
+      -DCMAKE_CXX_COMPILER=mpicxx \
+      -DHDF5_ROOT=/usr/ \
+      -DCMAKE_INSTALL_PREFIX=../install \
+      ../ \
+    && make VERBOSE=1 install \
+    && cd /src/hpc-predict/hpc-predict-io/python \
+    && python3 -m venv venv \
+    && source venv/bin/activate \
+    && pip install --upgrade pip \
+    && pip install -r requirements.txt"

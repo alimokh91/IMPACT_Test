@@ -38,14 +38,21 @@ function run_test() {
 
   BASH_CMD=()
   BASH_CMD+=("source /src/hpc-predict/hpc-predict-io/python/venv/bin/activate && cd ${MOUNT_CONTAINER_DIR} && \
-    HPC_PREDICT_IO_TEST_MRI_PATH=${filename_mri} \
-    HPC_PREDICT_IO_TEST_MPI_FORTRAN_PROCS=${HPC_PREDICT_IO_TEST_MPI_FORTRAN_PROCS} \
-    PYTHONPATH=/src/hpc-predict/hpc-predict-io/python:/src/hpc-predict/hpc-predict-io/test \
+    export HPC_PREDICT_IO_TEST_MRI_PATH=${filename_mri} && \
+    export HPC_PREDICT_IO_TEST_MPI_FORTRAN_PROCS=${HPC_PREDICT_IO_TEST_MPI_FORTRAN_PROCS} && \
+    export PYTHONPATH=/src/hpc-predict/hpc-predict-io/python:/src/hpc-predict/hpc-predict-io/test && \
+    strace -o ${fortran_exec_name}.strace \
     python -m unittest -v $1") #/src/hpc-predict/hpc-predict-io/test/test_parallel_mr_io_container.py")
+#    source scl_source enable devtoolset-7 && \
+#    strace -o ${fortran_exec_name}.strace \
+#    python -m unittest -v $1") #/src/hpc-predict/hpc-predict-io/test/test_parallel_mr_io_container.py")
   BASH_CMD+=("cd ${MOUNT_CONTAINER_DIR} && \
+    strace -o ${fortran_exec_name}_\${${MPI_RANK}}.strace \
     ${filename_exec} ${fortran_args}")
 #    source scl_source enable devtoolset-7 && \
-#    strace -o ${fortran_exec_name}_\${${MPI_RANK}}.strace ${filename_exec} ${fortran_args}") # 1> ${filename_out} 2> ${filename_err}")
+#    strace -o ${fortran_exec_name}_\${${MPI_RANK}}.strace \
+#    ${filename_exec} ${fortran_args}")
+
 
   #BASH_CMD+=("source ~/src/hpc-predict/hpc-predict-io/python/venv/bin/activate && \
   #  HPC_PREDICT_IO_TEST_MRI_PATH=${filename_mri} python test/test_parallel_mr_io_container.py")
