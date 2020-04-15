@@ -27,9 +27,9 @@ elif echo ${MPI_MASTER_HOST} | grep -i daint > /dev/null; then
     MPIEXEC_CMD=()
     MPI_NUM_NODES=(${MPI_NUM_PROCS[0]} $(python -c "print(min(${SLURM_JOB_NUM_NODES}-1, ${MPI_NUM_PROCS[1]}))"))
     for i in $(seq 0 1); do
-        MPIEXEC_CMD+=("srun -N ${MPI_NUM_NODES[$i]} -n ${MPI_NUM_PROCS[$i]}")
+        MPIEXEC_CMD+=("srun -N ${MPI_NUM_NODES[$i]} -n ${MPI_NUM_PROCS[$i]}") # --mpi=pmi2") # use mpi flag to choose process manager if using host MPI
     done
-    CONTAINER_RUN_CMD="sarus run" # --mpi"
+    CONTAINER_RUN_CMD="sarus run --mpi" # use --mpi to replace container-MPI with MPI from host 
     CONTAINER_ENTRYPOINT=()
     for i in $(seq 0 1); do
         CONTAINER_ENTRYPOINT+=("bash -c")
