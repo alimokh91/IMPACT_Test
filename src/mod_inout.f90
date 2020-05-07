@@ -2574,7 +2574,7 @@ MODULE mod_inout
      CALL h5aclose_f(attr_id,herror)
   ELSE
      CALL h5dcreate_f(file_id,name,H5T_NATIVE_DOUBLE,memspace,attr_id,herror)
-     CALL H5dwrite_f(attr_id,H5T_NATIVE_DOUBLE,value,dim_mem,herror,memspace,H5S_ALL_F,H5P_DEFAULT_F)
+     CALL H5dwrite_f(attr_id,H5T_NATIVE_DOUBLE,value,dim_mem,herror,memspace)!,H5S_ALL_F,H5P_DEFAULT_F)
      CALL h5dclose_f(attr_id ,herror)
   END IF
   
@@ -2626,7 +2626,7 @@ MODULE mod_inout
      CALL h5aclose_f(attr_id,herror)
   ELSE
      CALL h5dcreate_f(file_id,name,H5T_NATIVE_INTEGER,memspace,attr_id,herror)
-     CALL H5dwrite_f(attr_id,H5T_NATIVE_INTEGER,value,dim_mem,herror,memspace,H5S_ALL_F,H5P_DEFAULT_F)
+     CALL H5dwrite_f(attr_id,H5T_NATIVE_INTEGER,value,dim_mem,herror,memspace)!,H5S_ALL_F,H5P_DEFAULT_F)
      CALL h5dclose_f(attr_id ,herror)
   END IF
   
@@ -2689,7 +2689,7 @@ MODULE mod_inout
      CALL h5aclose_f(attr_id,herror)
   ELSE
      CALL h5dcreate_f(file_id,name,H5T_NATIVE_INTEGER,memspace,attr_id,herror)
-     CALL H5dwrite_f(attr_id,H5T_NATIVE_INTEGER,value,dim_mem,herror,memspace,H5S_ALL_F,H5P_DEFAULT_F)
+     CALL H5dwrite_f(attr_id,H5T_NATIVE_INTEGER,value,dim_mem,herror,memspace)!,H5S_ALL_F,H5P_DEFAULT_F)
      CALL h5dclose_f(attr_id ,herror)
   END IF
   
@@ -2732,7 +2732,7 @@ MODULE mod_inout
      CALL h5aclose_f(attr_id,herror)
   ELSE
      CALL h5dopen_f(file_id,name,attr_id,herror)
-     IF (rank == 0) CALL H5dread_f(attr_id,H5T_NATIVE_DOUBLE,value,dim_mem,herror,H5S_ALL_F,H5S_ALL_F,H5P_DEFAULT_F)
+     IF (rank == 0) CALL H5dread_f(attr_id,H5T_NATIVE_DOUBLE,value,dim_mem,herror) !,H5S_ALL_F,H5S_ALL_F,H5P_DEFAULT_F)
      CALL h5dclose_f(attr_id,herror)
   END IF
   
@@ -2781,7 +2781,7 @@ MODULE mod_inout
      CALL h5aclose_f(attr_id,herror)
   ELSE
      CALL h5dopen_f(file_id,name,attr_id,herror)
-     IF (rank == 0) CALL H5dread_f(attr_id,H5T_NATIVE_INTEGER,value,dim_mem,herror,H5S_ALL_F,H5S_ALL_F,H5P_DEFAULT_F)
+     IF (rank == 0) CALL H5dread_f(attr_id,H5T_NATIVE_INTEGER,value,dim_mem,herror)!,H5S_ALL_F,H5S_ALL_F,H5P_DEFAULT_F)
      CALL h5dclose_f(attr_id,herror)
   END IF
   
@@ -2831,7 +2831,7 @@ MODULE mod_inout
      CALL h5aclose_f(attr_id,herror)
   ELSE
      CALL h5dopen_f(file_id,name,attr_id,herror)
-     IF (rank == 0) CALL H5dread_f(attr_id,H5T_NATIVE_INTEGER,value,dim_mem,herror,H5S_ALL_F,H5S_ALL_F,H5P_DEFAULT_F)
+     IF (rank == 0) CALL H5dread_f(attr_id,H5T_NATIVE_INTEGER,value,dim_mem,herror) !,H5S_ALL_F,H5S_ALL_F,H5P_DEFAULT_F)
      CALL h5dclose_f(attr_id,herror)
   END IF
   

@@ -42,10 +42,11 @@ PROGRAM impact_debug
   real*8 :: impact_t_step
   real*8, dimension(:,:,:,:), allocatable :: pressure_voxel_velocity
 
-  INTEGER :: gdb = 0
-  do while (gdb == 0)
-    call sleep(2)
-  end do
+  ! Debug barrier (set gdb = 0 only if debugging as it creates a barrier on each process)
+  !INTEGER :: gdb = 0
+  !do while (gdb == 0)
+  !  call sleep(2)
+  !end do
   
   !--- Set configuration / topology --------------------------------------------------------------------------
   CALL configuration
