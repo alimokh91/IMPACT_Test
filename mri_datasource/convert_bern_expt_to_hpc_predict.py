@@ -5,7 +5,7 @@ import glob
 import argparse
 import logging
 import functools
-from mr_io import FlowMRI # Requires adding ../python to PYTHONPATH
+from mr_io import SegmentedFlowMRI # Requires adding ../python to PYTHONPATH
 import json
 import pdb
 
@@ -307,10 +307,12 @@ velocity_mean = np.stack(velocity_mean, axis=3)
 velocity_cov = np.stack(velocity_cov, axis=3)
 
 # Write flow MRI
-flow_mri = FlowMRI(geometry=geometry,
-                   time=time,
-		   time_heart_cycle_period=heart_cycle_period,
-                   intensity=np.zeros(velocity_mean.shape[:-1]),
-                   velocity_mean=velocity_mean,
-                   velocity_cov=velocity_cov)
-flow_mri.write_hdf5(output_filename)
+segmented_flow_mri = SegmentedFlowMRI(
+    geometry=geometry,
+   time=time,
+time_heart_cycle_period=heart_cycle_period,
+   intensity=np.zeros(velocity_mean.shape[:-1]),
+   velocity_mean=velocity_mean,
+   velocity_cov=velocity_cov,
+   segmentation_prob=np.ones(velocity_mean.shape[:-1]))
+segmented_flow_mri.write_hdf5(output_filename)

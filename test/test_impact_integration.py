@@ -68,8 +68,8 @@ def remove_test_files(test_inst):
             [test_cls.filename_err_rank % (mpi_rank) for mpi_rank in range(test_cls.mpi_proc)] + \
             test_cls.impact_noise # IMPACT files that are written without asking
     for f in files:
-        pass
-#        os.remove(f)
+        # pass
+        os.remove(f)
     
 
 class TestImpactInput(unittest.TestCase): # FIXME: coordinates test...

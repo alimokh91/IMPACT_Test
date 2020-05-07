@@ -14,8 +14,23 @@ program mr_io_test_parallel_reader_writer_flow
     integer, dimension(5) :: velocity_mean_shape
     integer, dimension(6) :: velocity_cov_shape
 
+!    INTEGER :: gdb = 0
+!    integer rank
+!
+!    call MPI_Init(err)
+!
+!    call MPI_COMM_RANK(MPI_COMM_WORLD, rank, err)
+!    if (rank == 0) then
+!    print *, "Rank 0 is running on process ID is ", getpid()
+!    do while (gdb == 0)
+!        call sleep(2)
+!    end do
+!    end if
+!
+!    ! End of debugging
+
     call MPI_Init(err)
-    
+
     call mr_io_test_parse_args_parallel_reader_writer()
 
     call mr_io_read_parallel_flow(MPI_COMM_WORLD, MPI_INFO_NULL, mr_io_test_mpi_cart_dims, in_path, mri_dest)

@@ -6,7 +6,8 @@ use mr_io, only : mr_io_handle_hdf5_error, mr_io_handle_argument_error
 use mr_io_locking_utils, only: mr_io_h5_parallel_reader_open_f, &
                                mr_io_h5_parallel_reader_close_f, &
                                mr_io_h5_parallel_writer_open_f, &
-                               mr_io_h5_parallel_writer_close_f
+                               mr_io_h5_parallel_writer_close_f, &
+                               stdin, stdout, stderr
 
 use mpi !include 'mpif.h'
 
@@ -81,6 +82,14 @@ subroutine mr_io_parallel_spatial_hyperslap_compute(mr_io_mpi_comm, mr_io_mpi_ca
         dims_mem(i) =  modulo(dims_file(i), dims_mem(i))
     endif
   end do
+
+  ! Debug-logging
+  !write(stderr,*) "mr_io_parallel_spatial_hyperslap_compute (MPI rank/size, dims_file, offset_file, dims_mem)"
+  !write(stderr,*) "mr_io_mpi_rank =      ",mr_io_mpi_rank
+  !write(stderr,*) "mr_io_mpi_cart_dims = ",mr_io_mpi_cart_dims
+  !write(stderr,*) "dims_file =           ",dims_file
+  !write(stderr,*) "offset_file =         ",offset_file
+  !write(stderr,*) "dim_mem =             ",dims_mem 
 
 end subroutine mr_io_parallel_spatial_hyperslap_compute
 

@@ -1,5 +1,4 @@
 build
 install
-mri_datasource
 python/venv
 test/tmp

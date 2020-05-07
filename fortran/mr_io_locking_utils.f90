@@ -18,7 +18,6 @@ use, intrinsic :: iso_fortran_env, only : stdin=>input_unit, &
 
 implicit none
 private
-
 public :: mr_io_h5_reader_open_f
 public :: mr_io_h5_reader_close_f
 public :: mr_io_h5_writer_open_f
@@ -29,6 +28,9 @@ public :: mr_io_h5_parallel_reader_close_f
 public :: mr_io_h5_parallel_writer_open_f
 public :: mr_io_h5_parallel_writer_close_f
 
+public :: stdin
+public :: stdout
+public :: stderr
 public :: mr_io_lock_stdout_stderr
 public :: mr_io_unlock_stdout_stderr
 

@@ -80,9 +80,10 @@ program mr_io_test_parallel_reader_space_time
     print *, velocity_cov_shape(1:2)
     print *, mri_dest%velocity_cov%array
 
+
+    call MPI_Finalize(err)
+
     ! TODO: flush & unlock output file
     st = mr_io_unlock_stdout_stderr()
 
-    call MPI_Finalize(err)
-        
 end program mr_io_test_parallel_reader_space_time

@@ -2,16 +2,15 @@
 
 set -eoux pipefail
 
-DATASOURCE_DIR=./bern_data_experiments_source
-DATASOURCE_FILENAME=bern_data_experiments.zip
-DATASOURCE_METADATA_FILENAME=bern_exp_metadata.json
+DATASOURCE_DIR=$(realpath $1) #./bern_data_experiments_source
+DATASOURCE_FILENAME=${DATASOURCE_DIR}/bern_data_experiments.zip
+DATASOURCE_METADATA_FILENAME=${DATASOURCE_DIR}/bern_exp_metadata.json
 
 if [ ! -d $DATASOURCE_DIR ]; then
   mkdir -p ${DATASOURCE_DIR}
 
   echo "Downloading json file."
   wget -O ${DATASOURCE_METADATA_FILENAME} https://www.dropbox.com/s/0jaqteyysxo5ps5/bern_exp_metadata.json?dl=0 
-  mv ${DATASOURCE_METADATA_FILENAME} ${DATASOURCE_DIR}/ 
 
   echo "Downloading files and extracting them to $(pwd)/${DATASOURCE_DIR} directory." 
   wget -O ${DATASOURCE_FILENAME} https://www.dropbox.com/s/62gisr19w247thx/exp_data_all_timeslices.zip?dl=0 
