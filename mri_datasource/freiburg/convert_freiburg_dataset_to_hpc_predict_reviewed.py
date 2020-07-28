@@ -193,7 +193,7 @@ def parse_args():
     parser = argparse.ArgumentParser(
         description='Generate hpc-predict-io HDF5-message from Freiburg dataset sample (DICOM).')
     parser.add_argument('--mri-data-root', type=str, default="/home/lukasd/src/hpc-predict/data/v0/input_data/original/mri/MRT Daten Bern/",
-                        help='DICOM directory containing the DICOMDIR')
+                        help='DICOM root directory')
     parser.add_argument('--mri-samples', type=int, nargs='+', default=[3,5],
                         help='Sample directories to process')
     # parser.add_argument('--output', type=str,
