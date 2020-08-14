@@ -22,14 +22,16 @@ elif echo ${MPI_MASTER_HOST} | grep -i daint > /dev/null; then
     fi
     CONTAINER_IMAGE="load/${CONTAINER_IMAGE}"
 
-    MOUNT_OPT="--mount=type=bind,source=${MOUNT_HOST_DIR},destination=${MOUNT_CONTAINER_DIR}"
+    MOUNT_HOST_DIR="${CI_CACHE_FOLDER}"
+    MOUNT_CONTAINER_DIR="${CI_CACHE_FOLDER}"
+    MOUNT_OPT="--mount=type=bind,source=${MOUNT_HOST_DIR},destination=${MOUNT_CONTAINER_DIR}  --env CI_CACHE_FOLDER=${MOUNT_CONTAINER_DIR}"
 
     MPIEXEC_CMD=()
     MPI_NUM_NODES=(${MPI_NUM_PROCS[0]} $(python -c "print(min(${SLURM_JOB_NUM_NODES}-1, ${MPI_NUM_PROCS[1]}))"))
     for i in $(seq 0 1); do
         MPIEXEC_CMD+=("srun -N ${MPI_NUM_NODES[$i]} -n ${MPI_NUM_PROCS[$i]}") # --mpi=pmi2") # use mpi flag to choose process manager if using host MPI
     done
-    CONTAINER_RUN_CMD="sarus run --mpi" # use --mpi to replace container-MPI with MPI from host 
+    CONTAINER_RUN_CMD="sarus run --mpi" # use --mpi to replace container-MPI with MPI from host
     CONTAINER_ENTRYPOINT=()
     for i in $(seq 0 1); do
         CONTAINER_ENTRYPOINT+=("bash -c")
@@ -37,13 +39,15 @@ elif echo ${MPI_MASTER_HOST} | grep -i daint > /dev/null; then
     MPIEXEC_CMD_SINGLE="srun -N 1 -n 1"
     CONTAINER_ENTRYPOINT_LOCAL="bash -c"
 else
-    MOUNT_OPT="-v ${MOUNT_HOST_DIR}:${MOUNT_CONTAINER_DIR}"
+    MOUNT_HOST_DIR="${CI_CACHE_FOLDER}"
+    MOUNT_CONTAINER_DIR="${CI_CACHE_FOLDER}" # FIXME: set this back to "/mnt/test" once CI works
+    MOUNT_OPT="-v ${MOUNT_HOST_DIR}:${MOUNT_CONTAINER_DIR} --env CI_CACHE_FOLDER=${MOUNT_CONTAINER_DIR}"
 
     MPIEXEC_CMD=()
     for i in $(seq 0 1); do
         MPIEXEC_CMD+=("")
     done
-    CONTAINER_RUN_CMD="docker run -u $(id -u ${USER}):$(id -g ${USER})"
+    CONTAINER_RUN_CMD="docker run --rm -u $(id -u ${USER}):$(id -g ${USER})"
     #with strace: CONTAINER_RUN_CMD="docker run" #" -u $(id -u ${USER}):$(id -g ${USER})"
     CONTAINER_ENTRYPOINT=()
     for i in $(seq 0 1); do
@@ -53,23 +57,23 @@ else
     CONTAINER_ENTRYPOINT_LOCAL="bash -c"
 fi
 
-# Set MPI environment variable names specific to MPI version
-if echo ${MPI_MASTER_HOST} | grep -i daint  > /dev/null; then
-  echo "Using MPICH..." 
-  MPI_RANK=SLURM_PROCID
-  MPI_SIZE=SLURM_NPROCS
-else
-  MPI_EXEC_VERSION_STDOUT=$(bash -l -c "mpiexec --version")
-  if echo "${MPI_EXEC_VERSION_STDOUT}" | grep -i openmpi > /dev/null; then
-    echo "Using OpenMPI..."
-    MPI_RANK=PMIX_RANK
-    MPI_SIZE=PMIX_SIZE
-  elif echo "${MPI_EXEC_VERSION_STDOUT}" | grep -i mpich > /dev/null; then
-    echo "Using MPICH..." 
-    MPI_RANK=PMI_RANK
-    MPI_SIZE=PMI_SIZE
-  else
-    echo "Failed to identify MPI installation from 'mpiexec --version' - exiting."
-    exit 1
-  fi
-fi
+## Set MPI environment variable names specific to MPI version
+#if echo ${MPI_MASTER_HOST} | grep -i daint  > /dev/null; then
+#  echo "Using MPICH..."
+#  MPI_RANK_VAR=SLURM_PROCID
+#  MPI_SIZE_VAR=SLURM_NPROCS
+#else
+#  MPI_EXEC_VERSION_STDOUT=$(bash -l -c "mpiexec --version")
+#  if echo "${MPI_EXEC_VERSION_STDOUT}" | grep -i openmpi > /dev/null; then
+#    echo "Using OpenMPI..."
+#    MPI_RANK_VAR=PMIX_RANK
+#    MPI_SIZE_VAR=PMIX_SIZE
+#  elif echo "${MPI_EXEC_VERSION_STDOUT}" | grep -i mpich > /dev/null; then
+#    echo "Using MPICH..."
+#    MPI_RANK_VAR=PMI_RANK
+#    MPI_SIZE_VAR=PMI_SIZE
+#  else
+#    echo "Failed to identify MPI installation from 'mpiexec --version' - exiting."
+#    exit 1
+#  fi
+#fi

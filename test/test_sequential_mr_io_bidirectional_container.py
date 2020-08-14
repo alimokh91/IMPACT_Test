@@ -6,37 +6,14 @@ from mr_io import SpatialMRI, \
                   SpaceTimeMRI,\
                   FlowMRI, \
                   SegmentedFlowMRI
-from test_common import validate_group_name, \
-                        validate_array
-
-
-def remove_test_files(test_inst):
-    # Clean up file
-    test_cls = type(test_inst)
-    files = [test_cls.filename_mri_in, test_cls.filename_mri_out, test_cls.filename_err, test_cls.filename_out]
-    for f in files:
-        os.remove(f)
-
-def get_fortran_args(test_cls):
-    fort_args = "%s %s  1> %s 2> %s" % \
-                  (test_cls.filename_mri_in,
-                   test_cls.filename_mri_out,
-                   test_cls.filename_out,
-                   test_cls.filename_err)
-    return fort_args
+from test_common import filename_mri_in, filename_mri_out, remove_test_files, \
+                        validate_group_name, validate_array
 
 
 class TestSpatialMRIBidirectional(unittest.TestCase):
 
+    fortran_exec = "mr_io_test_reader_writer"
     spatial_feature_shape = (71,61,97)
-
-    # Filenames
-    filename_mri_in  = os.environ['HPC_PREDICT_IO_TEST_MRI_PATH'][:-3] + "_in.h5"  # + ".h5"
-    filename_mri_out = os.environ['HPC_PREDICT_IO_TEST_MRI_PATH'][:-3] + "_out.h5"  # + ".h5"
-    filename_out = os.environ['HPC_PREDICT_IO_TEST_MRI_PATH'][:-3] + ".out"
-    filename_err = os.environ['HPC_PREDICT_IO_TEST_MRI_PATH'][:-3] + ".err"
-
-    mri_group_name = "spatial-mri"
 
     def setUp(self):
         # Initialize the MRI data
@@ -45,9 +22,9 @@ class TestSpatialMRIBidirectional(unittest.TestCase):
     
     def test_communicator(self):
         # Write HDF5 from Python and read HDF5 from Fortran
-        self.mri.write_hdf5(type(self).filename_mri_in)
+        self.mri.write_hdf5(filename_mri_in(self))
 
-        out_mri = SpatialMRI.read_hdf5(type(self).filename_mri_out)
+        out_mri = SpatialMRI.read_hdf5(filename_mri_out(self))
         
         validate_group_name(self, out_mri.group_name)
         validate_array(self, self.mri.scalar_feature, out_mri.scalar_feature)        
@@ -58,15 +35,8 @@ class TestSpatialMRIBidirectional(unittest.TestCase):
 
 class TestSpaceTimeMRIBidirectional(unittest.TestCase):
 
+    fortran_exec = "mr_io_test_reader_writer_space_time"
     spatial_feature_shape = (26,11,7)
-
-    # Filenames
-    filename_mri_in  = os.environ['HPC_PREDICT_IO_TEST_MRI_PATH'][:-3] + "_in.h5"  # + ".h5"
-    filename_mri_out = os.environ['HPC_PREDICT_IO_TEST_MRI_PATH'][:-3] + "_out.h5"  # + ".h5"
-    filename_out = os.environ['HPC_PREDICT_IO_TEST_MRI_PATH'][:-3] + ".out"
-    filename_err = os.environ['HPC_PREDICT_IO_TEST_MRI_PATH'][:-3] + ".err"
-
-    mri_group_name = "space-time-mri"
 
     def setUp(self):
         # Initialize the MRI data
@@ -79,9 +49,9 @@ class TestSpaceTimeMRIBidirectional(unittest.TestCase):
 
     def test_communicator(self):
         # Write HDF5 from Python and read HDF5 from Fortran
-        self.mri.write_hdf5(type(self).filename_mri_in)
+        self.mri.write_hdf5(filename_mri_in(self))
             
-        out_mri = SpaceTimeMRI.read_hdf5(type(self).filename_mri_out)
+        out_mri = SpaceTimeMRI.read_hdf5(filename_mri_out(self))
 
         validate_group_name(self, out_mri.group_name)
         for i in range(3):
@@ -94,16 +64,9 @@ class TestSpaceTimeMRIBidirectional(unittest.TestCase):
  
  
 class TestFlowMRIBidirectional(unittest.TestCase):
- 
+
+    fortran_exec = "mr_io_test_reader_writer_flow"
     spatial_feature_shape = (23,13,19)
-
-    # Filenames
-    filename_mri_in  = os.environ['HPC_PREDICT_IO_TEST_MRI_PATH'][:-3] + "_in.h5"  # + ".h5"
-    filename_mri_out = os.environ['HPC_PREDICT_IO_TEST_MRI_PATH'][:-3] + "_out.h5"  # + ".h5"
-    filename_out = os.environ['HPC_PREDICT_IO_TEST_MRI_PATH'][:-3] + ".out"
-    filename_err = os.environ['HPC_PREDICT_IO_TEST_MRI_PATH'][:-3] + ".err"
-
-    mri_group_name = "flow-mri"
 
     def setUp(self):
         # Initialize the MRI data
@@ -119,9 +82,9 @@ class TestFlowMRIBidirectional(unittest.TestCase):
  
     def test_communicator(self):
         # Write HDF5 from Python and read HDF5 from Fortran
-        self.mri.write_hdf5(type(self).filename_mri_in)
+        self.mri.write_hdf5(filename_mri_in(self))
             
-        out_mri = FlowMRI.read_hdf5(type(self).filename_mri_out)
+        out_mri = FlowMRI.read_hdf5(filename_mri_out(self))
 
         for i in range(3):
             validate_array(self, self.mri.geometry[i], out_mri.geometry[i])        
@@ -135,16 +98,9 @@ class TestFlowMRIBidirectional(unittest.TestCase):
          
  
 class TestSegmentedFlowMRIBidirectional(unittest.TestCase):
- 
+
+    fortran_exec = "mr_io_test_reader_writer_segmented_flow"
     spatial_feature_shape = (23,13,19)
-
-    # Filenames
-    filename_mri_in  = os.environ['HPC_PREDICT_IO_TEST_MRI_PATH'][:-3] + "_in.h5"  # + ".h5"
-    filename_mri_out = os.environ['HPC_PREDICT_IO_TEST_MRI_PATH'][:-3] + "_out.h5"  # + ".h5"
-    filename_out = os.environ['HPC_PREDICT_IO_TEST_MRI_PATH'][:-3] + ".out"
-    filename_err = os.environ['HPC_PREDICT_IO_TEST_MRI_PATH'][:-3] + ".err"
-
-    mri_group_name = "segmented-flow-mri"
 
     def setUp(self):
         # Initialize the MRI data
@@ -162,9 +118,9 @@ class TestSegmentedFlowMRIBidirectional(unittest.TestCase):
 
     def test_communicator(self):
         # Write HDF5 from Python and read HDF5 from Fortran
-        self.mri.write_hdf5(type(self).filename_mri_in)
+        self.mri.write_hdf5(filename_mri_in(self))
             
-        out_mri = SegmentedFlowMRI.read_hdf5(type(self).filename_mri_out)
+        out_mri = SegmentedFlowMRI.read_hdf5(filename_mri_out(self))
      
         for i in range(3):
             validate_array(self, self.mri.geometry[i], out_mri.geometry[i])        
