@@ -30,26 +30,29 @@ function run_test() {
 #  set +x
 
   BASH_CMD=()
-  BASH_CMD+=("source /src/hpc-predict/hpc-predict-io/python/venv/bin/activate && \
-    PYTHONPATH=/src/hpc-predict/hpc-predict-io/python:/src/hpc-predict/hpc-predict-io/test \
-      python -m unittest -v $1")
-  BASH_CMD+=("source /src/hpc-predict/hpc-predict-io/python/venv/bin/activate && \
-    export PYTHONPATH=/src/hpc-predict/hpc-predict-io/python:/src/hpc-predict/hpc-predict-io/test && \
-    export HPC_PREDICT_IO_TEST_FORTRAN_COMMAND=${FORTRAN_TEST_BINARY_PATH}/\$(python /src/hpc-predict/hpc-predict-io/test/test_sequential_args.py --test $1) && \
-    echo \"HPC_PREDICT_IO_TEST_FORTRAN_COMMAND = \${HPC_PREDICT_IO_TEST_FORTRAN_COMMAND}\" && \
-    cd ${MOUNT_CONTAINER_DIR} && \
-    eval \${HPC_PREDICT_IO_TEST_FORTRAN_COMMAND}")
-#    source <(echo \${HPC_PREDICT_IO_TEST_FORTRAN_COMMAND})")
+#  BASH_CMD+=("source /src/hpc-predict/hpc-predict-io/python/venv/bin/activate && \
+#    PYTHONPATH=/src/hpc-predict/hpc-predict-io/python:/src/hpc-predict/hpc-predict-io/test \
+#      python -m unittest -v $1")
 #  BASH_CMD+=("source /src/hpc-predict/hpc-predict-io/python/venv/bin/activate && \
 #    export PYTHONPATH=/src/hpc-predict/hpc-predict-io/python:/src/hpc-predict/hpc-predict-io/test && \
-#    cd /src/hpc-predict/hpc-predict-io/test && \
-#    export HPC_PREDICT_IO_TEST_FORTRAN_EXEC=\$(python  test_sequential_args.py --test $1 --type exec) && \
-#    export HPC_PREDICT_IO_TEST_FORTRAN_ARGS=(\$(python test_sequential_args.py --test $1 --type args)) && \
-#    export HPC_PREDICT_IO_TEST_FORTRAN_OUT=\$( python  test_sequential_args.py --test $1 --type out) && \
-#    export HPC_PREDICT_IO_TEST_FORTRAN_ERR=\$( python  test_sequential_args.py --test $1 --type err) && \
+#    export HPC_PREDICT_IO_TEST_FORTRAN_COMMAND=${FORTRAN_TEST_BINARY_PATH}/\$(python /src/hpc-predict/hpc-predict-io/test/test_sequential_args.py --test $1) && \
+#    echo \"HPC_PREDICT_IO_TEST_FORTRAN_COMMAND = \${HPC_PREDICT_IO_TEST_FORTRAN_COMMAND}\" && \
 #    cd ${MOUNT_CONTAINER_DIR} && \
-#    set -x && \
-#    ${FORTRAN_TEST_BINARY_PATH}/\${HPC_PREDICT_IO_TEST_FORTRAN_EXEC} \${HPC_PREDICT_IO_TEST_FORTRAN_ARGS[@]} 1> \${HPC_PREDICT_IO_TEST_FORTRAN_OUT} 2> \${HPC_PREDICT_IO_TEST_FORTRAN_ERR}")
+#    eval \${HPC_PREDICT_IO_TEST_FORTRAN_COMMAND}")
+##    source <(echo \${HPC_PREDICT_IO_TEST_FORTRAN_COMMAND})")
+##  BASH_CMD+=("source /src/hpc-predict/hpc-predict-io/python/venv/bin/activate && \
+##    export PYTHONPATH=/src/hpc-predict/hpc-predict-io/python:/src/hpc-predict/hpc-predict-io/test && \
+##    cd /src/hpc-predict/hpc-predict-io/test && \
+##    export HPC_PREDICT_IO_TEST_FORTRAN_EXEC=\$(python  test_sequential_args.py --test $1 --type exec) && \
+##    export HPC_PREDICT_IO_TEST_FORTRAN_ARGS=(\$(python test_sequential_args.py --test $1 --type args)) && \
+##    export HPC_PREDICT_IO_TEST_FORTRAN_OUT=\$( python  test_sequential_args.py --test $1 --type out) && \
+##    export HPC_PREDICT_IO_TEST_FORTRAN_ERR=\$( python  test_sequential_args.py --test $1 --type err) && \
+##    cd ${MOUNT_CONTAINER_DIR} && \
+##    set -x && \
+##    ${FORTRAN_TEST_BINARY_PATH}/\${HPC_PREDICT_IO_TEST_FORTRAN_EXEC} \${HPC_PREDICT_IO_TEST_FORTRAN_ARGS[@]} 1> \${HPC_PREDICT_IO_TEST_FORTRAN_OUT} 2> \${HPC_PREDICT_IO_TEST_FORTRAN_ERR}")
+
+  BASH_CMD+=("/src/hpc-predict/hpc-predict-io/test/test_sequential_mr_io_driver_python.sh $1")
+  BASH_CMD+=("/src/hpc-predict/hpc-predict-io/test/test_sequential_mr_io_driver_fortran.sh $1")
 
   pid=()
 

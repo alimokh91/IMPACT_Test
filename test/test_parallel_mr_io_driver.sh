@@ -33,43 +33,47 @@ function run_test() {
 #    python -c \"${python_cmd_get_fortran_args}\"")
 
   BASH_CMD=()
-  BASH_CMD+=("source /src/hpc-predict/hpc-predict-io/python/venv/bin/activate && \
-    export PYTHONPATH=/src/hpc-predict/hpc-predict-io/python:/src/hpc-predict/hpc-predict-io/test && \
-    export HPC_PREDICT_IO_TEST_FORTRAN_MPI_SIZE=${HPC_PREDICT_IO_TEST_FORTRAN_MPI_SIZE} && \
-    python -m unittest -v $1")
-#    strace -o ${fortran_exec_name}.strace \
-#    python -m unittest -v $1") # with strace
-
-  BASH_CMD+=("source /src/hpc-predict/hpc-predict-io/python/venv/bin/activate && \
-    export PYTHONPATH=/src/hpc-predict/hpc-predict-io/python:/src/hpc-predict/hpc-predict-io/test && \
-    export HPC_PREDICT_IO_TEST_FORTRAN_MPI_SIZE=${HPC_PREDICT_IO_TEST_FORTRAN_MPI_SIZE} && \
-    export HPC_PREDICT_IO_TEST_FORTRAN_COMMAND=${FORTRAN_TEST_BINARY_PATH}/\$(python /src/hpc-predict/hpc-predict-io/test/test_parallel_args.py --test $1) && \
-    echo \"HPC_PREDICT_IO_TEST_FORTRAN_COMMAND = \${HPC_PREDICT_IO_TEST_FORTRAN_COMMAND}\" && \
-    cd ${MOUNT_CONTAINER_DIR} && \
-    eval \${HPC_PREDICT_IO_TEST_FORTRAN_COMMAND}")
 #  BASH_CMD+=("source /src/hpc-predict/hpc-predict-io/python/venv/bin/activate && \
 #    export PYTHONPATH=/src/hpc-predict/hpc-predict-io/python:/src/hpc-predict/hpc-predict-io/test && \
 #    export HPC_PREDICT_IO_TEST_FORTRAN_MPI_SIZE=${HPC_PREDICT_IO_TEST_FORTRAN_MPI_SIZE} && \
-#    cd /src/hpc-predict/hpc-predict-io/test/ && \
-#    export HPC_PREDICT_IO_TEST_FORTRAN_EXEC=\$(python  test_parallel_args.py --test $1 --type exec) && \
-#    export HPC_PREDICT_IO_TEST_FORTRAN_ARGS=(\$(python test_parallel_args.py --test $1 --type args)) && \
-#    export HPC_PREDICT_IO_TEST_FORTRAN_OUT=\$( python  test_parallel_args.py --test $1 --type out) && \
-#    export HPC_PREDICT_IO_TEST_FORTRAN_ERR=\$( python  test_parallel_args.py --test $1 --type err) && \
+#    python -m unittest -v $1")
+##    strace -o ${fortran_exec_name}.strace \
+##    python -m unittest -v $1") # with strace
+#
+#  BASH_CMD+=("source /src/hpc-predict/hpc-predict-io/python/venv/bin/activate && \
+#    export PYTHONPATH=/src/hpc-predict/hpc-predict-io/python:/src/hpc-predict/hpc-predict-io/test && \
+#    export HPC_PREDICT_IO_TEST_FORTRAN_MPI_SIZE=${HPC_PREDICT_IO_TEST_FORTRAN_MPI_SIZE} && \
+#    export HPC_PREDICT_IO_TEST_FORTRAN_COMMAND=${FORTRAN_TEST_BINARY_PATH}/\$(python /src/hpc-predict/hpc-predict-io/test/test_parallel_args.py --test $1) && \
+#    echo \"HPC_PREDICT_IO_TEST_FORTRAN_COMMAND = \${HPC_PREDICT_IO_TEST_FORTRAN_COMMAND}\" && \
 #    cd ${MOUNT_CONTAINER_DIR} && \
-#    set -x && \
-#    ${FORTRAN_TEST_BINARY_PATH}/\${HPC_PREDICT_IO_TEST_FORTRAN_EXEC} \${HPC_PREDICT_IO_TEST_FORTRAN_ARGS[@]} 1> \${HPC_PREDICT_IO_TEST_FORTRAN_OUT} 2> \${HPC_PREDICT_IO_TEST_FORTRAN_ERR}")
-
-#  BASH_CMD+=("cd ${MOUNT_CONTAINER_DIR} && \
-#    ${FORTRAN_TEST_BINARY_PATH}/${fortran_cmd}")
+#    eval \${HPC_PREDICT_IO_TEST_FORTRAN_COMMAND}")
+##  BASH_CMD+=("source /src/hpc-predict/hpc-predict-io/python/venv/bin/activate && \
+##    export PYTHONPATH=/src/hpc-predict/hpc-predict-io/python:/src/hpc-predict/hpc-predict-io/test && \
+##    export HPC_PREDICT_IO_TEST_FORTRAN_MPI_SIZE=${HPC_PREDICT_IO_TEST_FORTRAN_MPI_SIZE} && \
+##    cd /src/hpc-predict/hpc-predict-io/test/ && \
+##    export HPC_PREDICT_IO_TEST_FORTRAN_EXEC=\$(python  test_parallel_args.py --test $1 --type exec) && \
+##    export HPC_PREDICT_IO_TEST_FORTRAN_ARGS=(\$(python test_parallel_args.py --test $1 --type args)) && \
+##    export HPC_PREDICT_IO_TEST_FORTRAN_OUT=\$( python  test_parallel_args.py --test $1 --type out) && \
+##    export HPC_PREDICT_IO_TEST_FORTRAN_ERR=\$( python  test_parallel_args.py --test $1 --type err) && \
+##    cd ${MOUNT_CONTAINER_DIR} && \
+##    set -x && \
+##    ${FORTRAN_TEST_BINARY_PATH}/\${HPC_PREDICT_IO_TEST_FORTRAN_EXEC} \${HPC_PREDICT_IO_TEST_FORTRAN_ARGS[@]} 1> \${HPC_PREDICT_IO_TEST_FORTRAN_OUT} 2> \${HPC_PREDICT_IO_TEST_FORTRAN_ERR}")
+#
 ##  BASH_CMD+=("cd ${MOUNT_CONTAINER_DIR} && \
-##    strace -o ${fortran_exec_name}_\${${MPI_RANK}}.strace \
-##    ${filename_exec} ${fortran_args}") # with strace
+##    ${FORTRAN_TEST_BINARY_PATH}/${fortran_cmd}")
+###  BASH_CMD+=("cd ${MOUNT_CONTAINER_DIR} && \
+###    strace -o ${fortran_exec_name}_\${${MPI_RANK}}.strace \
+###    ${filename_exec} ${fortran_args}") # with strace
+
+  CONTAINER_ENV="--env HPC_PREDICT_IO_TEST_FORTRAN_MPI_SIZE=${HPC_PREDICT_IO_TEST_FORTRAN_MPI_SIZE}"
+  BASH_CMD+=("/src/hpc-predict/hpc-predict-io/test/test_parallel_mr_io_driver_python.sh $1")
+  BASH_CMD+=("/src/hpc-predict/hpc-predict-io/test/test_parallel_mr_io_driver_fortran.sh $1")
 
   pid=()
 
   for i in $(seq 0 1); do
       set -x
-      ${MPIEXEC_CMD[$i]} ${CONTAINER_RUN_CMD} ${MOUNT_OPT} ${CONTAINER_IMAGE} ${CONTAINER_ENTRYPOINT[$i]} "${BASH_CMD[$i]}" &
+      ${MPIEXEC_CMD[$i]} ${CONTAINER_RUN_CMD} ${MOUNT_OPT} ${CONTAINER_ENV} ${CONTAINER_IMAGE} ${CONTAINER_ENTRYPOINT[$i]} "${BASH_CMD[$i]}" &
   #    bash -c "${BASH_CMD[$i]}" &
       set +x
       pid+=("$!")

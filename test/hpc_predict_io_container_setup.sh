@@ -47,7 +47,7 @@ else
     for i in $(seq 0 1); do
         MPIEXEC_CMD+=("")
     done
-    CONTAINER_RUN_CMD="docker run --rm -u $(id -u ${USER}):$(id -g ${USER})"
+    CONTAINER_RUN_CMD="docker run --rm " # -u $(id -u ${USER}):$(id -g ${USER})"
     #with strace: CONTAINER_RUN_CMD="docker run" #" -u $(id -u ${USER}):$(id -g ${USER})"
     CONTAINER_ENTRYPOINT=()
     for i in $(seq 0 1); do
