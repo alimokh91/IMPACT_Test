@@ -2,17 +2,19 @@ import os
 import argparse
 import numpy as np
 from mr_io_domain_decomp import spatial_hyperslab_dims
-from test_common import filename_mri, filename_mri_in, filename_mri_out, filename_out, filename_err
+from test_common import fortran_strace, \
+                        fortran_exec, \
+                        filename_mri, \
+                        filename_mri_in, \
+                        filename_mri_out, \
+                        fortran_out, \
+                        fortran_err
 # from test_parallel_mr_io_container import TestFlowMRIPadded,\
 #                                           TestSegmentedFlowMRIPadded
 # from test_parallel_mr_io_bidirectional_container import TestFlowMRIPaddedBidirectional,\
 #                                                         TestSegmentedFlowMRIPaddedBidirectional,\
 #                                                         TestFlowMRIPaddedToSpaceTimeBidirectional,\
 #                                                         TestSegmentedFlowMRIPaddedToSpaceTimeBidirectional
-
-
-def get_fortran_exec(test_cls):
-    return test_cls.fortran_exec
 
 
 def get_fortran_args(test_cls):
@@ -54,38 +56,13 @@ def get_fortran_args(test_cls):
     return fort_args
 
 
-def get_mpi_rank():
-    if 'SLURM_PROCID' in os.environ and 'SLURM_NPROCS' in os.environ:
-        mpi_rank = os.environ['SLURM_PROCID']
-        mpi_size = os.environ['SLURM_NPROCS']
-    elif 'PMIX_RANK' in os.environ and 'PMIX_SIZE' in os.environ:
-        mpi_rank = os.environ['PMIX_RANK']
-        mpi_size = os.environ['PMIX_SIZE']
-    elif 'PMI_RANK' in os.environ and 'PMI_SIZE' in os.environ:
-        mpi_rank = os.environ['PMI_RANK']
-        mpi_size = os.environ['PMI_SIZE']
-    else:
-        raise RuntimeError("Failed to recognize MPI environment (rank/size variables).")
-    return mpi_rank
-
-
-def get_fortran_out(test_cls):
-    return filename_out(test_cls) % get_mpi_rank()
-
-def get_fortran_err(test_cls):
-    return filename_err(test_cls) % get_mpi_rank()
-
-def get_fortran_strace(test_cls): # can be used as a prefix to the Fortran command to trace system calls
-    return "strace -o {}_{}.strace".format(get_fortran_exec(test_cls), get_mpi_rank())
-
-
 def parse_args():
     # Parse arguments
     parser = argparse.ArgumentParser(description='Generate Fortran MPI test command.')
     parser.add_argument('--test', type=str, required=True,
-                    help='Unit test (TestModule.TestClass)')
+                        help='Unit test (TestModule.TestClass)')
     parser.add_argument('--type', type=str, default="all",
-                    help='Parameter type [all, exec, args, out, err, strace]')
+                        help='Parameter type [all, exec, args, out, err, strace]')
     return parser.parse_args()
 
 
@@ -101,20 +78,14 @@ if __name__ == '__main__':
     module = importlib.import_module(module_name)
     test_cls = getattr(module, test_cls_name)
 
-    if args.type == "all":
-        print(get_fortran_exec(test_cls) + \
-              " " + get_fortran_args(test_cls) + \
-              " 1> " + get_fortran_out(test_cls) + \
-              " 2> " + get_fortran_err(test_cls))
-    elif args.type == "exec":
-        print(get_fortran_exec(test_cls))
-    elif args.type == "args":
-        print(get_fortran_args(test_cls))
-    elif args.type == "out":
-        print(get_fortran_out(test_cls))
-    elif args.type == "err":
-        print(get_fortran_err(test_cls))
-    elif args.type == "strace":
-        print(get_fortran_strace(test_cls))
+    cmd = fortran_exec(test_cls) + \
+        " " + get_fortran_args(test_cls) + \
+        " 1> " + fortran_out(test_cls) + \
+        " 2> " + fortran_err(test_cls)
+
+    if args.type == 'all':
+        print(cmd)
+    elif args.type == 'strace':
+        print(fortran_strace(test_cls) + cmd)
     else:
-        raise ValueError("type parameter must be one of [all, exec, args, out, err]")
+        raise ValueError("type parameter must be one of [all, strace]")

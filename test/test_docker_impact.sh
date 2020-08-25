@@ -8,7 +8,9 @@ CONTAINER_REGISTRY=${CONTAINER_REGISTRY:-lukasgd}
 export HPC_PREDICT_IO_DEPLOY="${CONTAINER_REGISTRY}/hpc-predict:io-deploy"
 export DEPLOY_IMAGE="${CONTAINER_REGISTRY}/hpc-predict:impact-deploy"
 
-../../IMPACT/docker/build_deploy.sh
+cd ../../IMPACT/docker
+./build_deploy.sh
+cd -
 
 export CONTAINER_IMAGE=${DEPLOY_IMAGE}
 
@@ -25,5 +27,5 @@ mkdir -p tmp
 #}
 #trap clean_up_test_data EXIT
 
-./test_impact_driver.sh
+./test_impact_new_driver.sh
 

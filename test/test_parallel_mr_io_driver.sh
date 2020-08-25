@@ -13,10 +13,12 @@ trap container_shutdown EXIT
 
 function run_test() {
   echo "*** $1 started ***"
+  IFS='.' read -r test_module test_class <<<"$1"
+  mkdir -p ${CI_CACHE_FOLDER}/${test_module}/${test_class}
 
   # Filenames
-  FORTRAN_TEST_BINARY_PATH=/src/hpc-predict/hpc-predict-io/install/bin/test
-  fortran_exec_name=$2
+  #FORTRAN_TEST_BINARY_PATH=/src/hpc-predict/hpc-predict-io/install/bin/test
+  #fortran_exec_name=$2
 
   #filename_exec=${FORTRAN_TEST_BINARY_PATH}/${fortran_exec_name}
   # filename_mri=${fortran_exec_name}.h5
@@ -83,6 +85,8 @@ function run_test() {
       wait ${pid[$i]}
   done
 
+  rmdir ${CI_CACHE_FOLDER}/${test_module}/${test_class}
+  rmdir ${CI_CACHE_FOLDER}/${test_module}
   echo "*** $1 finished ***"
 }
 
