@@ -24,7 +24,7 @@ shell_command=$(printf "%s" \
     " export PYTHONPATH=/src/hpc-predict/hpc-predict-io/python && " \
     " set -x && " \
     " python3 " \
-    " /src/hpc-predict/hpc-predict-io/python/hdf5xdmf.py " \
+    " /src/hpc-predict/hpc-predict-io/python/mr_io_to_xdmf.py " \
     " ${INFERENCE_OUTPUT_FILE} ") 
 
 set -x
