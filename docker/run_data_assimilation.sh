@@ -1,7 +1,8 @@
 #!/bin/bash
 
-set -euxo pipefail
+set -euo pipefail
 
+HPC_PREDICT_IMPACT_IMAGE=${HPC_PREDICT_IMPACT_IMAGE:-'lukasgd/hpc-predict:impact-deploy'}
 HPC_PREDICT_DATA_DIR=$(realpath $1)
 CNN_SEGMENTER_INFERENCE_OUTPUT=$2
 
@@ -45,7 +46,9 @@ shell_command=$(printf "%s" \
     "--output ${container_output_directory}/config.txt " \
     "--np 4")
 
-docker run  -u $(id -u ${USER}):$(id -g ${USER}) -v ${HPC_PREDICT_DATA_DIR}:/hpc-predict-data --entrypoint bash lukasgd/hpc-predict:impact-deploy -c "${shell_command}"
+set -x
+docker run  -u $(id -u ${USER}):$(id -g ${USER}) -v ${HPC_PREDICT_DATA_DIR}:/hpc-predict-data --entrypoint bash "${HPC_PREDICT_IMPACT_IMAGE}" -c "${shell_command}"
+set +x
 
 # Run data assimilation
 
@@ -55,5 +58,7 @@ shell_command=$(printf "%s" \
     "-np 4 " \
     "/src/hpc-predict/IMPACT/prog/impact_debug.exe")
 
-docker run --rm -u $(id -u ${USER}):$(id -g ${USER}) -v ${HPC_PREDICT_DATA_DIR}:/hpc-predict-data --entrypoint bash lukasgd/hpc-predict:impact-deploy -c "${shell_command}" 
+set -x
+docker run --rm -u $(id -u ${USER}):$(id -g ${USER}) -v ${HPC_PREDICT_DATA_DIR}:/hpc-predict-data --entrypoint bash "${HPC_PREDICT_IMPACT_IMAGE}" -c "${shell_command}" 
+set +x
 

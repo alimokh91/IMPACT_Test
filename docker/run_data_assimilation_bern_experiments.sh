@@ -2,6 +2,7 @@
 
 set -euo pipefail
 
+HPC_PREDICT_IMPACT_IMAGE=${HPC_PREDICT_IMPACT_IMAGE:-'lukasgd/hpc-predict:impact-deploy'}
 HPC_PREDICT_DATA_DIR=$(realpath $1)
 
 if [ ! -f "${HPC_PREDICT_DATA_DIR}/input_data/preprocessed/bern_experiments/bern_experimental_dataset_segmented_flow_mri.h5" ]; then
@@ -14,7 +15,7 @@ if [ ! -f "${HPC_PREDICT_DATA_DIR}/input_data/preprocessed/bern_experiments/bern
             "/hpc-predict-data/input_data/original/bern_experiments ")
 
         set -x
-        docker run --rm -u $(id -u ${USER}):$(id -g ${USER}) -v ${HPC_PREDICT_DATA_DIR}:/hpc-predict-data --entrypoint bash lukasgd/hpc-predict:impact-deploy -c "${shell_command}"
+        docker run --rm -u $(id -u ${USER}):$(id -g ${USER}) -v ${HPC_PREDICT_DATA_DIR}:/hpc-predict-data --entrypoint bash "${HPC_PREDICT_IMPACT_IMAGE}" -c "${shell_command}"
         set +x
     fi
 
@@ -29,7 +30,7 @@ if [ ! -f "${HPC_PREDICT_DATA_DIR}/input_data/preprocessed/bern_experiments/bern
         "--output /hpc-predict-data/input_data/preprocessed/bern_experiments/bern_experimental_dataset_segmented_flow_mri.h5 ")
 
     set -x
-    docker run --rm -u $(id -u ${USER}):$(id -g ${USER}) -v ${HPC_PREDICT_DATA_DIR}:/hpc-predict-data --entrypoint bash lukasgd/hpc-predict:impact-deploy -c "${shell_command}"
+    docker run --rm -u $(id -u ${USER}):$(id -g ${USER}) -v ${HPC_PREDICT_DATA_DIR}:/hpc-predict-data --entrypoint bash "${HPC_PREDICT_IMPACT_IMAGE}" -c "${shell_command}"
     set +x
 fi
 
@@ -60,7 +61,7 @@ shell_command=$(printf "%s" \
     "--np 4")
 
 set -x
-docker run --rm -u $(id -u ${USER}):$(id -g ${USER}) -v ${HPC_PREDICT_DATA_DIR}:/hpc-predict-data --entrypoint bash lukasgd/hpc-predict:impact-deploy -c "${shell_command}"
+docker run --rm -u $(id -u ${USER}):$(id -g ${USER}) -v ${HPC_PREDICT_DATA_DIR}:/hpc-predict-data --entrypoint bash "${HPC_PREDICT_IMPACT_IMAGE}" -c "${shell_command}"
 set +x
 
 # Run data assimilation
@@ -76,5 +77,5 @@ shell_command=$(printf "%s" \
     "/src/hpc-predict/IMPACT/prog/impact_debug.exe")
 
 set -x
-docker run --rm -u $(id -u ${USER}):$(id -g ${USER}) -v ${HPC_PREDICT_DATA_DIR}:/hpc-predict-data --entrypoint bash lukasgd/hpc-predict:impact-deploy -c "${shell_command}" 
+docker run --rm -u $(id -u ${USER}):$(id -g ${USER}) -v ${HPC_PREDICT_DATA_DIR}:/hpc-predict-data --entrypoint bash "${HPC_PREDICT_IMPACT_IMAGE}" -c "${shell_command}" 
 set +x
