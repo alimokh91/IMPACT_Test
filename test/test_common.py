@@ -291,7 +291,7 @@ def read_out(filename_out, rank=None):
     out_content = out_reader_lock.file().read()
     out_lines = [l.strip(' \n') for l in out_content.split('\n')]
     print("STDOUT of Fortran rank {} ({}):".format(rank if rank is not None else "", filename_out))
-    print('\n'.join(l if len(l) < 160 else l[:125]+" ... "+l[-30:] for l in out_lines))
+    print('\n'.join(l if len(l) < 160 else l[:125]+" ... "+l[-30:] for l in out_lines), flush=True)
     out_reader_lock.close()
     return out_lines
 
@@ -309,7 +309,7 @@ def print_err(filename_err, rank=None):
         err_content = err_reader_lock.file().read()
         if len(err_content) > 0:
             print("STDERR of Fortran rank {} ({}):".format(rank if rank is not None else "0", filename_err))
-            print(err_content)
+            print(err_content, flush=True)
         err_reader_lock.close()
     else:
-        print("STDERR of Fortran rank {} empty ({}).".format(rank if rank is not None else "0", filename_err))
+        print("STDERR of Fortran rank {} empty ({}).".format(rank if rank is not None else "0", filename_err), flush=True)
