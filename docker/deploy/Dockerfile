@@ -12,7 +12,7 @@ FROM $BUILD_ENV
 
 # Copy hpc-predict source code in
 COPY . /src/hpc-predict/hpc-predict-io
- 
+
 # Compile the Fortran part of hpc-predict-io (without IMPACT tests) and setup python venv
 RUN bash -c "cd /src/hpc-predict/hpc-predict-io \
     && mkdir build install \
@@ -29,6 +29,14 @@ RUN bash -c "cd /src/hpc-predict/hpc-predict-io \
     && source venv/bin/activate \
     && pip install --upgrade pip \
     && pip install -r requirements.txt" 
+
+RUN bash -c "cd /src/hpc-predict/hpc-predict-io/encfs \
+    && mkdir build install \
+    && cd build \
+    && cmake -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_INSTALL_PREFIX=$(pwd)/../install \
+        ../ \
+    && make VERBOSE=1 install"
 
 # FIXME: Bundling remains TBD - question is especially how to apply this to python venvs/whether they should be built inside final image only 
 #      \
