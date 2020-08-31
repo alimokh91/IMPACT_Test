@@ -34,7 +34,7 @@ RUN bash -c "cd /src/hpc-predict/hpc-predict-io/encfs \
     && mkdir build install \
     && cd build \
     && cmake -DCMAKE_BUILD_TYPE=Release \
-        -DCMAKE_INSTALL_PREFIX=$(pwd)/../install \
+        -DCMAKE_INSTALL_PREFIX=../install \
         ../ \
     && make VERBOSE=1 install"
 
