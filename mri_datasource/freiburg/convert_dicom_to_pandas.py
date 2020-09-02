@@ -1,5 +1,7 @@
 import os
 import pydicom
+pydicom.config.datetime_conversion = True
+
 import pandas as pd
 from dicom_visitors import visit_dicom_files
 from collections import OrderedDict
@@ -55,12 +57,13 @@ def parse_args():
         description='Generate pandas dataframe from DICOM headers for exploratory data analysis.')
     parser.add_argument('--mri-data-root', type=str, default="/home/lukasd/src/hpc-predict/data/v0/input_data/original/mri/MRT Daten Bern/",
                         help='DICOM root directory')
-    parser.add_argument('--mri-samples', type=int, nargs='+', default=[3],
+    parser.add_argument('--mri-samples', type=int, nargs='+', default=[3, 5],
                         help='Sample directories to process')
     parser.add_argument('--output-root', type=str, default="/home/lukasd/src/hpc-predict/data/v0/input_data/preprocessed/mri/MRT Daten Bern DICOM Header/",
                         help='Output root directory for serialized DataFrames')
     return parser.parse_args()
 
+### FIXME: replace all occurrences of SimpleNamespace
 
 if __name__ == '__main__':
     args = parse_args()
@@ -80,6 +83,8 @@ if __name__ == '__main__':
             print("File already exists at {} - skipping sample {}.".format(
                 dataframe_output_path, sample))
             continue
+        print("Converting sample {}...".format(
+            sample))
 
         def header_table_from_dicom_dataset(path, dataset):
             dicom_headers = dicom_dataset_to_dict(dataset)
