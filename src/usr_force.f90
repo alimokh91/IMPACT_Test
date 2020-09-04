@@ -44,9 +44,8 @@
   ! nl(S13:N13,S23:N23,S33:N33,3)
   !
 
-  !fd = 0.
-
   ! fd is obtained from MOOSE
+  fd = 0.
   nl = nl + fd * L_ref/(rho_fluid*U_ref**2.)
 
   !=== FRINGE FORCING =======================================================================================

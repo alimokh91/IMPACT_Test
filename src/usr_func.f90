@@ -17,11 +17,13 @@ MODULE usr_func
   USE mod_exchange
   USE usr_vars
   USE ISO_C_BINDING !bbecsek
-  USE mod_solvers
-  USE mod_inout 
-  USE HDF5
-  USE MPI
-
+  USE mod_solvers !kschlegel
+  USE mod_inout !kschlegel
+  USE HDF5 !kschlegel
+  USE mr_io_protocol
+  USE mr_io_parallel_spacetime
+  USE MPI  
+  
   PRIVATE
   
   PUBLIC smooth_step !bbecsek
@@ -643,98 +645,65 @@ MODULE usr_func
 
   IMPLICIT NONE
 
-  INTEGER            :: i,j,k
-  REAL               :: lamb_fringe, parab, parab2,  amplitude, p
-  REAL, PARAMETER    :: pi = 2.*ABS(ACOS(0.))
+  INTEGER            :: i,j,k,ii,jj,kk,m,n
+  INTEGER, DIMENSION(2,3) :: bounds
+  REAL :: vel_voxel(1:3), pulse,time_inst,time_2,time_1
+  INTEGER :: ph_1,ph_2
 
-  amplitude = SIN(2.*pi*subtime)
+  bounds(1,1) = lbound(mri_inst%mri%velocity_mean%array,3)
+  bounds(2,1) = ubound(mri_inst%mri%velocity_mean%array,3)
+  bounds(1,2) = lbound(mri_inst%mri%velocity_mean%array,4)
+  bounds(2,2) = ubound(mri_inst%mri%velocity_mean%array,4)
+  bounds(1,3) = lbound(mri_inst%mri%velocity_mean%array,5)
+  bounds(2,3) = ubound(mri_inst%mri%velocity_mean%array,5)
 
-  !--- x-component ------------------------------------------------------------------------------------------
-  DO k = S31, N31
-     DO j = S21, N21
-        DO i = S11, N11
-          !--- forcing in y-direction ---
-          IF (fringe_dir .EQ. 2) THEN
-             !--- only force within desired bounds ---
-             IF (((x1p(i) - fringe_center(1))**2 + (x3p(k) - fringe_center(3))**2) .LE. fringe_radius**2) THEN
-               CALL fringe_coeff(fringe_amp , fringe_start , fringe_end , fringe_rise , &
-                     fringe_fall , x2p(j) , lamb_fringe)
-               nl(i,j,k,1) = nl(i,j,k,1) - lamb_fringe*( 0. - vel(i,j,k,1) )
-             END IF
-          END IF
-        END DO
-     END DO
-  END DO
-  !--- y-component ------------------------------------------------------------------------------------------
-  DO k = S32, N32
-     DO j = S22, N22
-        DO i = S12, N12
-          !--- forcing in y-direction ---
-          IF (fringe_dir .EQ. 2) THEN
-             !--- only force within desired bounds ---
-             IF (((x1p(i) - fringe_center(1))**2 + (x3p(k) - fringe_center(3))**2) .LE. fringe_radius**2) THEN
-               CALL fringe_coeff(fringe_amp , fringe_start , fringe_end , fringe_rise , &
-                     fringe_fall , x2v(j) , lamb_fringe)
-               nl(i,j,k,2) = nl(i,j,k,2) - lamb_fringe*( 0. - vel(i,j,k,2) )
-             END IF
-          END IF
-        END DO
-     END DO
-  END DO
-  !--- z-component ------------------------------------------------------------------------------------------
-  IF (dimens .EQ. 3) THEN
-    DO k = S33, N33
-      DO j = S23, N23
-        DO i = S13, N13
-          !--- forcing in y-direction ---
-          IF (fringe_dir .EQ. 2) THEN
-             !--- only force within desired bounds ---
-             IF (((x1p(i) - fringe_center(1))**2 + (x3p(k) - fringe_center(3))**2) .LE. fringe_radius**2) THEN
-                 CALL fringe_coeff(fringe_amp , fringe_start , fringe_end , fringe_rise , &
-                       fringe_fall , x2p(j) , lamb_fringe)
-                 nl(i,j,k,3) = nl(i,j,k,3) - lamb_fringe*( 0. - vel(i,j,k,3) )
-             END IF
-          END IF
-        END DO
+  phase = mod(write_kalm_count,intervals) + 1
+  pulse = write_kalm_count/intervals
+  time_inst = (time+dtime) - pulse*kalman_mri_input_attr_t_heart_cycle_period 
+  ph_2 = phase
+  time_2 = mri_inst%mri%t_coordinates(ph_2)
+  if (phase.eq.1) then
+     ph_1 = intervals
+     time_1 = mri_inst%mri%t_coordinates(ph_1) - kalman_mri_input_attr_t_heart_cycle_period
+  else
+     ph_1 = phase-1
+     time_1 = mri_inst%mri%t_coordinates(ph_1)
+  end if
+
+  DO k = bounds(1,3), bounds(2,3)
+    DO j = bounds(1,2), bounds(2,2)
+      DO i = bounds(1,1), bounds(2,1)
+        if (mri_inst%mri%intensity%array(phase,i,j,k) .ge. 0.0 ) then
+
+          m =      i-bounds(1,1)
+          m = m + (j-bounds(1,2))*size(mri_inst%mri%velocity_mean%array,3)
+          m = m + (k-bounds(1,3))*size(mri_inst%mri%velocity_mean%array,3)*size(mri_inst%mri%velocity_mean%array,4)
+ 
+          DO kk = (k-1)*kalman_num_spatial_refinements(3)+1,k*kalman_num_spatial_refinements(3)+1
+            DO jj = (j-1)*kalman_num_spatial_refinements(2)+1,j*kalman_num_spatial_refinements(2)+1
+              DO ii = (i-1)*kalman_num_spatial_refinements(1)+1,i*kalman_num_spatial_refinements(1)+1
+                n =      ii-((bounds(1,1)-1)*kalman_num_spatial_refinements(1)+1)
+                n = n + (jj-((bounds(1,2)-1)*kalman_num_spatial_refinements(2)+1))* &
+                        (size(mri_inst%mri%velocity_mean%array,3)*kalman_num_spatial_refinements(1)+1)
+                n = n + (kk-((bounds(1,3)-1)*kalman_num_spatial_refinements(3)+1))* &
+                        (size(mri_inst%mri%velocity_mean%array,3)*kalman_num_spatial_refinements(1)+1) * &
+                        (size(mri_inst%mri%velocity_mean%array,4)*kalman_num_spatial_refinements(2)+1)
+
+                vel_voxel(1:3) =      (time_inst-time_1)/(time_2-time_1) *mri_inst%mri%velocity_mean%array(1:3,ph_2,i,j,k) + &
+                                 (1.0-(time_inst-time_1)/(time_2-time_1))*mri_inst%mri%velocity_mean%array(1:3,ph_1,i,j,k)
+
+                nl(ii,jj,kk,1) = nl(ii,jj,kk,1)-(vel_voxel(1)-vel(ii,jj,kk,1))/(dtime*aRK(substep))/wgt_interp(ii,jj,kk)
+                nl(ii,jj,kk,2) = nl(ii,jj,kk,2)-(vel_voxel(2)-vel(ii,jj,kk,2))/(dtime*aRK(substep))/wgt_interp(ii,jj,kk)
+                nl(ii,jj,kk,3) = nl(ii,jj,kk,3)-(vel_voxel(3)-vel(ii,jj,kk,3))/(dtime*aRK(substep))/wgt_interp(ii,jj,kk)
+
+              END DO
+            END DO
+          END DO
+
+        end if
       END DO
     END DO
-  END IF
-  !----------------------------------------------------------------------------------------------------------
-
-  ! !cylinder 
-  ! IF (dtime_out_scal.NE.0.0) THEN
-  !    !--- x-component ------------------------------------------------------------------------------------------
-  !    DO k = S31, N31
-  !       DO j = S21, N21
-  !          DO i = S11, N11
-  !             IF (((x1p(i) - 10.0)**2 + (x2p(j) - 1.0)**2) .LE. 0.25**2) THEN
-  !                nl(i,j,k,1) = nl(i,j,k,1) - fringe_amp*(0. - vel(i,j,k,1))
-  !             END IF
-  !          END DO
-  !       END DO
-  !    END DO
-  !    !--- y-component ------------------------------------------------------------------------------------------
-  !    DO k = S32, N32
-  !       DO j = S22, N22
-  !          DO i = S12, N12
-  !             IF (((x1p(i) - 10.0)**2 + (x2p(j) - 1.0)**2) .LE. 0.25**2) THEN
-  !                nl(i,j,k,2) = nl(i,j,k,2) - fringe_amp*( 0. - vel(i,j,k,2) ) 
-  !              END IF
-  !          END DO
-  !       END DO
-  !    END DO
-  !    !--- z-component ------------------------------------------------------------------------------------------
-  !    DO k = S33, N33
-  !       DO j = S23, N23
-  !          DO i = S13, N13
-  !             IF (((x1p(i) - 10.0)**2 + (x2p(j) - 1.0)**2) .LE. 0.25**2) THEN
-  !                nl(i,j,k,3) = nl(i,j,k,3) - fringe_amp*( 0. - vel(i,j,k,3) )
-  !             END IF
-  !          END DO
-  !       END DO
-  !    END DO
-  !    !----------------------------------------------------------------------------------------------------------
-  ! END IF
+  END DO
 
   END SUBROUTINE apply_fringe_forcing
 

@@ -48,27 +48,27 @@ MODULE mod_timeint
   !--- diverse Files <F6>ffnen ----------------------------------------------------------------------------------
   NULLIFY(kalman_first)
   IF (dtime_out_kalm /= 0.) CALL open_kalman
-  IF (dtime_out_scal /= 0.) CALL open_stats
+  IF (dtime_out_scal /= 0. .or. dtime_out_kalm /=  0. ) CALL open_stats
 
   IF (restart == 0) THEN
      time          = time_start
      time_out_vect = time_start
-     time_out_scal = time_start
      time_out_kalm = time_start
+     time_out_scal = time_start
      
      dtime         = 0.
      timestep      = 0
      
      new_dtime      = .TRUE.
      write_out_vect = .TRUE.
-     write_out_scal = .TRUE.
      write_out_kalm = .TRUE.
+     write_out_scal = .TRUE.
      
      write_count = 0
      
      IF (dtime_out_vect == 0.) write_out_vect = .FALSE.
-     IF (dtime_out_scal == 0.) write_out_scal = .FALSE.
      IF (dtime_out_kalm == 0.) write_out_kalm = .FALSE.
+     IF (dtime_out_scal == 0.) write_out_scal = .FALSE.
   ELSE
                                CALL read_restart
      IF (dtime_out_kalm /= 0.) CALL read_restart_kalman
@@ -96,7 +96,8 @@ MODULE mod_timeint
   dtime_old     = dtime
   dtime_average = 0.
   finish_yes    = .FALSE.
-  
+
+
   !--- Null-Raeume bestimmen ---------------------------------------------------------------------------------
   ! Steht hier, weil Korrekturvektor "th" nach "configuration" erst alloziert und bestimmt werden muss
   ! ("initial_conditions_" werden danach als nächstes gerufen, s.o.)
@@ -172,9 +173,9 @@ MODULE mod_timeint
   CALL interpolate_vel(.FALSE.) ! TEST!!! Wurde teilweise schon bei Zeitschritt-Bestimmung erledigt!
 
   !--- Ausschreiben ------------------------------------------------------------------------------------------
+  IF (write_out_kalm .and. write_kalm_count.eq.0 ) CALL compute_kalman
+  IF (write_out_scal .and. write_stats_count.eq.0) CALL compute_stats
   IF (write_xdmf_yes .AND. write_out_vect) CALL write_xdmf_xml ! bbecsek
-  IF (write_out_kalm .and. time.eq.time_start) CALL compute_kalman
-  IF (dtime_out_scal /= 0. .and. time.eq.time_start) CALL compute_stats
   IF (write_out_vect) CALL write_fields
   !===========================================================================================================
   
@@ -281,9 +282,9 @@ MODULE mod_timeint
      CALL level_pressure
      
      !--- Ausschreiben ---------------------------------------------------------------------------------------
-     IF (write_xdmf_yes .AND. write_out_vect) CALL write_xdmf_xml ! bbecsek
      IF (write_out_kalm ) CALL compute_kalman
-     IF (dtime_out_scal /= 0.) CALL compute_stats
+     IF (write_out_scal ) CALL compute_stats
+     IF (write_xdmf_yes .AND. write_out_vect) CALL write_xdmf_xml ! bbecsek
      IF (write_out_vect) CALL write_fields
      
      !--------------------------------------------------------------------------------------------------------

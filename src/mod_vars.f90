@@ -25,7 +25,7 @@ MODULE mod_vars
   
   USE mod_dims
   USE ISO_C_BINDING !bbecsek
-  USE mr_io_protocol, only: DomainPadding
+  USE mr_io_protocol !, only: DomainPadding
   USE mr_io_parallel_spacetime
 
   IMPLICIT NONE
@@ -840,7 +840,6 @@ MODULE mod_vars
   LOGICAL                ::  write_covariance_yes !for writing covariance into xdmf file    defined in config.txt
   INTEGER                ::  intervals   !define number of intervals in the output of a periodic flow
   INTEGER                ::  phase       !define number of interval  in the output of a periodic flow
-  INTEGER, ALLOCATABLE   ::  repetition(:) !define array of #phases for repetitions counter
 
   !--- globale Laufindizes -----------------------------------------------------------------------------------
   INTEGER                ::  direction
@@ -989,20 +988,20 @@ MODULE mod_vars
 
   REAL, ALLOCATABLE, TARGET      ::  vel_old(:,:,:,:)        !< velocity of previous timestep (used in Picard iterations)
 
-  REAL, ALLOCATABLE :: mean_f(:,:,:,:,:), covar_f(:,:,:,:,:), write_gain (:,:,:,:)
-  REAL, ALLOCATABLE :: mean_gbl(:,:,:,:,:), covar_gbl(:,:,:,:,:)
+  INTEGER, ALLOCATABLE :: wgt_interp(:,:,:)
+  REAL, ALLOCATABLE :: mean_f(:,:,:,:,:), covar_f(:,:,:,:,:)
+  REAL, ALLOCATABLE :: re_tau_mean(:,:)
 
   TYPE kalman_t
-     INTEGER :: m
-     REAL, POINTER :: muf(:),pf(:,:),obs_data(:),obs_covar(:,:),obs_oper(:,:),K(:,:) !kalman
+     INTEGER :: m,n
+     REAL, POINTER :: Pf(:,:,:),obs_data(:,:),obs_covar(:,:),obs_oper(:,:),K(:,:),K_vx(:,:),PfHt(:,:) !kalman
      TYPE(kalman_t), POINTER :: next
   END TYPE kalman_t
 
   TYPE(kalman_t), pointer :: kalman_first
 
-  type(DistFlowMRIPadded), pointer :: mri_inst
-  type(DistFlowMRI), pointer :: mri_flow
-  type(DistSpaceTimeMRI), pointer :: mri_dest
+  type(DistSegmentedFlowMRIPadded), pointer :: mri_inst
+  type(DistSegmentedFlowMRIPadded), pointer :: mri_flow
 
   ! MRI file paths
   character(len=300) :: kalman_mri_input_file_path
@@ -1632,7 +1631,6 @@ MODULE mod_vars
   LOGICAL                ::  write_covariance_yes !for writing covariance into xdmf file    defined in config.txt
   INTEGER                ::  intervals   !define number of intervals in the output of a periodic flow
   INTEGER                ::  phase       !define number of interval  in the output of a periodic flow
-  INTEGER, ALLOCATABLE   ::  repetition(:) !define array of #phases for repetitions counter
 
   !--- globale Laufindizes -----------------------------------------------------------------------------------
   INTEGER                ::  direction
@@ -1760,20 +1758,20 @@ MODULE mod_vars
   REAL :: fd(b1L:(N1+b1U),b2L:(N2+b2U),b3L:(N3+b3U),1:3)
   REAL :: vel_old(b1L:(N1+b1U),b2L:(N2+b2U),b3L:(N3+b3U),1:3)        !< vel of previous timestep (used in Picard iterations)
 
-  REAL, ALLOCATABLE :: mean_f(:,:,:,:,:), covar_f(:,:,:,:,:), write_gain (:,:,:,:)
-  REAL, ALLOCATABLE :: mean_gbl(:,:,:,:,:), covar_gbl(:,:,:,:,:)
+  INTEGER, ALLOCATABLE :: wgt_interp(:,:,:)
+  REAL, ALLOCATABLE :: mean_f(:,:,:,:,:), covar_f(:,:,:,:,:)
+  REAL, ALLOCATABLE :: re_tau_mean(:,:)
 
   TYPE kalman_t
-     INTEGER :: m
-     REAL, POINTER :: muf(:),pf(:,:),obs_data(:),obs_covar(:,:),obs_oper(:,:),K(:,:) !kalman
+     INTEGER :: m,n
+     REAL, POINTER :: Pf(:,:,:),obs_data(:,:),obs_covar(:,:),obs_oper(:,:),K(:,:),K_vx(:,:),PfHt(:,:) !kalman
      TYPE(kalman_t), POINTER :: next
   END TYPE kalman_t
 
   TYPE(kalman_t), pointer :: kalman_first
 
-  type(DistFlowMRIPadded), pointer :: mri_inst
-  type(DistFlowMRI), pointer :: mri_flow
-  type(DistSpaceTimeMRI), pointer :: mri_dest
+  type(DistSegmentedFlowMRIPadded), pointer :: mri_inst
+  type(DistSegmentedFlowMRIPadded), pointer :: mri_flow
 
   ! MRI file paths
   character(len=300) :: kalman_mri_input_file_path
