@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-HPC_PREDICT_IMPACT_IMAGE=${HPC_PREDICT_IMPACT_IMAGE:-'lukasgd/hpc-predict:impact-deploy'}
+HPC_PREDICT_IMPACT_IMAGE=${HPC_PREDICT_IMPACT_IMAGE:-'cscs-ci/hpc-predict/impact/deploy'}
 HPC_PREDICT_DATA_DIR=$(realpath $1)
 CNN_SEGMENTER_INFERENCE_OUTPUT=$2
 
@@ -11,7 +11,7 @@ CNN_SEGMENTER_INFERENCE_DIR=$(dirname ${CNN_SEGMENTER_INFERENCE_OUTPUT})
 
 IMPACT_DATA_ASSIMILATION_RESULT=${CNN_SEGMENTER_INFERENCE_RESULT%".h5"}_data_assimilated.h5
 
-relative_input_directory=segmenter/cnn_segmenter/hpc_predict/inference/${CNN_SEGMENTER_INFERENCE_DIR}
+relative_input_directory=segmenter/cnn_segmenter/hpc_predict/v1/inference/${CNN_SEGMENTER_INFERENCE_DIR}
 host_input_directory="${HPC_PREDICT_DATA_DIR}/${relative_input_directory}"
 container_input_directory="/hpc-predict-data/${relative_input_directory}"
 
@@ -21,7 +21,7 @@ if [ -f ${host_input_directory} ]; then
 fi
 
 time_stamp_host=$(date +'%Y-%m-%d_%H-%M-%S')_$(hostname)
-relative_output_directory="impact/hpc_predict/${time_stamp_host}"
+relative_output_directory="impact/hpc_predict/v1/${time_stamp_host}"
 host_output_directory="${HPC_PREDICT_DATA_DIR}/${relative_output_directory}"
 container_output_directory="/hpc-predict-data/${relative_output_directory}"
 
