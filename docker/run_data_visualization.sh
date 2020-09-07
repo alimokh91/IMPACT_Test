@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-HPC_PREDICT_IO_IMAGE=${HPC_PREDICT_IO_IMAGE:-'lukasgd/hpc-predict:io-deploy'}
+HPC_PREDICT_IO_IMAGE=${HPC_PREDICT_IO_IMAGE:-'cscs-ci/hpc-predict/io/deploy'}
 
 # visualize result - here shown on the example of flownet, but 
 INFERENCE_OUTPUT_FILE=$(realpath $1)
