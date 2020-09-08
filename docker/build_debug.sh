@@ -3,11 +3,11 @@
 set -euxo pipefail
 
 if [ -z "${DEBUG_IMAGE-}" ]; then
-    CONTAINER_REGISTRY=${CONTAINER_REGISTRY:-lukasgd}
+    CONTAINER_REGISTRY=${CONTAINER_REGISTRY:-local}
 fi
 
-export BUILD_ENV_IMAGE=${BUILD_ENV_IMAGE:-"${CONTAINER_REGISTRY}/hpc-predict:io-build-env"}
-export DEBUG_IMAGE=${DEBUG_IMAGE:-"${CONTAINER_REGISTRY}/hpc-predict:io-debug"}
+export BUILD_ENV_IMAGE=${BUILD_ENV_IMAGE:-"${CONTAINER_REGISTRY}/hpc-predict/io/build-env"}
+export DEBUG_IMAGE=${DEBUG_IMAGE:-"${CONTAINER_REGISTRY}/hpc-predict/io/debug"}
 
 MPI_MASTER_HOST=$(hostname)
 if [[ -z $(echo ${MPI_MASTER_HOST} | grep -i daint) ]]; then
@@ -19,3 +19,4 @@ if [[ -z $(echo ${MPI_MASTER_HOST} | grep -i daint) ]]; then
     fi
 fi
 
+echo "Run \"export HPC_PREDICT_IO_IMAGE=${DEBUG_IMAGE}\" to automatically use the built image with docker/run scripts."

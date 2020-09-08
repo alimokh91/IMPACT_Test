@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-#CONTAINER_IMAGE="lukasgd/hpc-predict-io-test"
+#CONTAINER_IMAGE="local/hpc-predict/io/deploy"
 
 ### FIXME: rewrite this mess with functions returning the correct commands (not variables)
 

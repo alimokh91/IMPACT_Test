@@ -3,10 +3,10 @@
 set -euxo pipefail
 
 
-CONTAINER_REGISTRY=${CONTAINER_REGISTRY:-lukasgd}
+CONTAINER_REGISTRY=${CONTAINER_REGISTRY:-local}
 
-export HPC_PREDICT_IO_DEPLOY="${CONTAINER_REGISTRY}/hpc-predict:io-deploy"
-export DEPLOY_IMAGE="${CONTAINER_REGISTRY}/hpc-predict:impact-deploy"
+export HPC_PREDICT_IO_DEPLOY="${CONTAINER_REGISTRY}/hpc-predict/io/deploy"
+export DEPLOY_IMAGE="${CONTAINER_REGISTRY}/hpc-predict/impact/deploy"
 
 cd ../../IMPACT/docker
 ./build_deploy.sh
