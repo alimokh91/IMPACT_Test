@@ -1,0 +1,9 @@
+app: cnn_segmenter
+
+inference: 
+
+  input: 
+    flow_CStest_Volunteer_R4.h5: mr_io.FlowMRI
+
+  output: 
+    flow_CStest_Volunteer_R4_segmented.h5: mr_io.SegmentedFlowMRI
