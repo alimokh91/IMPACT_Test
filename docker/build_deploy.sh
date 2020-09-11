@@ -20,4 +20,4 @@ if [[ -z $(echo ${MPI_MASTER_HOST} | grep -i daint) ]]; then
     fi
 fi
 
-echo "Run \"export HPC_PREDICT_IO_IMAGE=${DEPLOY_IMAGE}\" to automatically use the built image with docker/run scripts."
+echo "Run \"export HPC_PREDICT_IMPACT_IMAGE=${DEPLOY_IMAGE}\" to automatically use the built image with docker/run scripts."
