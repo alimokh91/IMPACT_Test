@@ -2,6 +2,7 @@ import os
 import pydicom
 pydicom.config.datetime_conversion = True
 
+import itertools
 import pandas as pd
 from dicom_visitors import visit_dicom_files
 from collections import OrderedDict
@@ -17,7 +18,7 @@ def dicom_dataset_to_dict(dicom_header):
     # VR – the element’s Value Representation – a two letter str that describes to the format of the stored value
     # VM – the element’s Value Multiplicity as an int. This is automatically determined from the contents of the value.
     # value – the element’s actual value. A regular value like a number or string (or list of them if the VM > 1), or a Sequence.
-    for dicom_elem in dicom_header:
+    for dicom_elem in itertools.chain(dicom_header.file_meta, dicom_header) if hasattr(dicom_header, 'file_meta') else dicom_header:
         if dicom_elem.tag == (0x7fe0, 0x0010):
             # discard pixel data
             continue
