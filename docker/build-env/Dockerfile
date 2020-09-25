@@ -6,8 +6,11 @@ ENV MPICH_VERSION ${MPICH_VERSION}
 
 # Update all packages and install the development toolset (newer version of GNU gcc and tools)
 # Dependencies for encfs: libfuse, libssl, gettext
-RUN apt-get update  && apt-get install -y --no-install-recommends \
-       wget gfortran libblas-dev liblapack-dev zlib1g-dev python-dev python3-dev strace python3-venv libfuse-dev libssl-dev gettext fuse encfs \
+RUN apt-get update  && apt-get install --yes --no-install-recommends \
+       wget git curl less vim unzip \
+       gfortran libblas-dev liblapack-dev zlib1g-dev \
+       python-dev python3-dev strace python3-venv \
+       libfuse-dev libssl-dev gettext fuse encfs \
     && rm -rf /var/lib/apt/lists/*
 
 # Install MPI
