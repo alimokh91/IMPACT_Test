@@ -12,10 +12,10 @@ export DEPLOY_IMAGE=${DEPLOY_IMAGE:-"${CONTAINER_REGISTRY}/hpc-predict/io/deploy
 MPI_MASTER_HOST=$(hostname)
 if [[ -z $(echo ${MPI_MASTER_HOST} | grep -i daint) ]]; then
     if [[ -z $(docker images -q ${BUILD_ENV_IMAGE}) ]]; then
-        docker build -f ../docker/build-env/Dockerfile -t ${BUILD_ENV_IMAGE} ..
+        docker build -f ../docker/build-env/Dockerfile -t ${BUILD_ENV_IMAGE} ../docker/build-env
     fi
     if [[ -z $(docker images -q ${DEPLOY_IMAGE}) ]]; then
-        docker build --build-arg BUILD_ENV=${BUILD_ENV_IMAGE} -f ../docker/deploy/Dockerfile -t ${DEPLOY_IMAGE} ..
+        docker build --build-arg BUILD_ENV=${BUILD_ENV_IMAGE} -f ../docker/deploy/Dockerfile -t ${DEPLOY_IMAGE} ../..
     fi
 fi
 

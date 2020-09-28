@@ -11,7 +11,7 @@ FROM $BUILD_ENV
 # FROM hpc-predict:io-build-env
 
 # Copy hpc-predict source code in
-COPY . /src/hpc-predict/hpc-predict-io
+COPY . /src/hpc-predict
 
 # Compile the Fortran part of hpc-predict-io (without IMPACT tests) and setup python venv
 RUN bash -c "cd /src/hpc-predict/hpc-predict-io \
