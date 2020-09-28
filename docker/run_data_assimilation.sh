@@ -40,7 +40,7 @@ echo "Host output directory: \"${host_output_directory}\""
 shell_command=$(printf "%s" \
     "source /src/hpc-predict/hpc-predict-io/python/venv/bin/activate && " \
     "set -x && " \
-    "PYTHONPATH=/src/hpc-predict/hpc-predict-io/python python " \
+    "PYTHONPATH=/src/hpc-predict/hpc-predict-io/python python -u " \
     "-m mr_io_impact_config " \
     "--input-mri \"${container_input_directory}/${CNN_SEGMENTER_INFERENCE_RESULT}\" " \
     "--output-mri \"${container_output_directory}/${IMPACT_DATA_ASSIMILATION_RESULT}\" " \

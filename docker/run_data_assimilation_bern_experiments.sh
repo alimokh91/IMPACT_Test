@@ -30,7 +30,7 @@ if [ ! -f "${HPC_PREDICT_DATA_DIR}/input_data/preprocessed/bern_experiments/v1/2
     shell_command=$(printf "%s" \
         "source /src/hpc-predict/hpc-predict-io/python/venv/bin/activate && " \
         "set -x && " \
-        "PYTHONPATH=/src/hpc-predict/hpc-predict-io/python python " \
+        "PYTHONPATH=/src/hpc-predict/hpc-predict-io/python python -u " \
         "/src/hpc-predict/hpc-predict-io/mri_datasource/convert_bern_expt_to_hpc_predict.py " \
         "--input /hpc-predict-data/input_data/original/bern_experiments/v1/2020-01-01_00-00-00_dario/bern_exp_metadata.json " \
         "--output /hpc-predict-data/input_data/preprocessed/bern_experiments/v1/2020-01-01_00-00-00_dario/bern_experimental_dataset_segmented_flow_mri.h5 ")
@@ -54,7 +54,7 @@ echo "Generate config.txt required by IMPACT based on MRI data"
 shell_command=$(printf "%s" \
     "source /src/hpc-predict/hpc-predict-io/python/venv/bin/activate && " \
     "set -x && " \
-    "PYTHONPATH=/src/hpc-predict/hpc-predict-io/python python " \
+    "PYTHONPATH=/src/hpc-predict/hpc-predict-io/python python -u " \
     "-m mr_io_impact_config " \
     "--input-mri /hpc-predict-data/input_data/preprocessed/bern_experiments/v1/2020-01-01_00-00-00_dario/bern_experimental_dataset_segmented_flow_mri.h5 " \
     "--output-mri \"${container_output_directory}/bern_experimental_dataset_assimilation_results.h5\" " \
