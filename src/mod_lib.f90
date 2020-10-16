@@ -240,9 +240,9 @@ MODULE mod_lib
         finish_yes     = .TRUE.
      END IF
      
-     IF (timestep+1 .GE. n_timesteps) THEN
-        finish_yes     = .TRUE.
-     END IF
+     !IF (timestep+1 .GE. n_timesteps) THEN
+     !   finish_yes     = .TRUE.
+     !END IF
      
      array_real = (/time,dtime/)
      array_log  = (/finish_yes,new_dtime,write_out_vect,write_out_scal,write_out_kalm/)

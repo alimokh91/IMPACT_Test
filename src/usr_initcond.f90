@@ -61,17 +61,17 @@
   ! vel(S13B:N13B,S23B:N23B,S33B:N33B,3)
   !
   vel = 0.
- 
+
   !--- Initial Conditions for 2D-Channel flow
   !--- Parabolic velocity profile everywhere
   
   !Removed for first test of Kalmanfilter
-    ! DO j = S21B, N21B
-    !    DO i = S11B, N11B
-    !       CALL poiseuille_parabola(y2p(1),y2p(M2),x2p(j),parab)
-    !       vel(i,j,S31B:N31B,1) = parab
-    !    END DO
-    ! END DO
+  !   DO j = S21B, N21B
+  !      DO i = S11B, N11B
+  !         CALL poiseuille_parabola(y2p(1),y2p(M2),x2p(j),parab)
+  !         vel(i,j,S31B:N31B,1) = parab
+  !      END DO
+  !   END DO
   
   !--- Load initial conditions from hdf5-File ---
   IF (vel_initcond_file_yes .AND. restart == 0) then

@@ -20,7 +20,7 @@ MODULE mod_inout
   USE mod_exchange
   USE mod_lib
   USE HDF5
-  !USE mpi 
+  USE MPI
  
   PRIVATE
  
@@ -45,17 +45,12 @@ MODULE mod_inout
   PUBLIC write_xdmf_timecollection
   PUBLIC write_2D_xdmf, write_3D_xdmf
  
- 
-  INCLUDE 'mpif.h'
- 
   INTEGER(HID_T)                 ::  file_id, plist_id, dset_id
   INTEGER(HID_T)                 ::  filespace, memspace
   INTEGER(HID_T)                 ::  memtypeREAL, memtypeINT
  
   INTEGER(HSIZE_T )              ::  dims_file  (1:3) ! wird global eingefuehrt, um Probleme bei Uebergabe als Argument nach "CALL filespace_props" zu vermeiden.
   INTEGER(HSSIZE_T)              ::  offset_file(1:3)
- 
-  INTEGER                        ::  i, j, k ! TEST!!! wo brauchts das global?
  
   CONTAINS
  
@@ -69,15 +64,16 @@ MODULE mod_inout
  
   IMPLICIT NONE
  
-  INTEGER                ::  m
- 
   INTEGER                ::  i, ii
   INTEGER                ::  j, jj
   INTEGER                ::  k, kk
+  REAL :: write_field(b1L:(N1+b1U),b2L:(N2+b2U),b3L:(N3+b3U),1)
   
   CHARACTER(LEN=8)       ::  count_char
+  CHARACTER(LEN=2)       ::  id,phs
   CHARACTER(LEN=1)       ::  conc_number
-  
+  CHARACTER(LEN=50)      ::  write_dir
+
   
   IF (rank == 0) WRITE(*,'(a)') 'writing fields ...'
   
@@ -295,6 +291,85 @@ MODULE mod_inout
   END IF
   !===========================================================================================================
 
+  IF (write_covariance_yes ) THEN
+
+    if (dtime_out_kalm.ne.0.0) then
+       phase = mod(write_kalm_count-1,intervals) + 1
+       CALL num_to_string(2,phase,phs)
+       write_dir = './kf_result/phase_'//phs//'/'
+       CALL num_to_string(8,write_kalm_count,count_char)
+
+       write_field = 0.
+       if (associated(kalman_first)) then
+         DO kk = (lbound(mri_inst%mri%velocity_mean%array,5)-1)*kalman_num_spatial_refinements(3)+1, &
+                  ubound(mri_inst%mri%velocity_mean%array,5)*kalman_num_spatial_refinements(3)+1
+           DO jj = (lbound(mri_inst%mri%velocity_mean%array,4)-1)*kalman_num_spatial_refinements(2)+1, &
+                    ubound(mri_inst%mri%velocity_mean%array,4)*kalman_num_spatial_refinements(2)+1
+             DO ii = (lbound(mri_inst%mri%velocity_mean%array,3)-1)*kalman_num_spatial_refinements(1)+1, &
+                      ubound(mri_inst%mri%velocity_mean%array,3)*kalman_num_spatial_refinements(1)+1
+
+               i =      ii-((lbound(mri_inst%mri%velocity_mean%array,3)-1)*kalman_num_spatial_refinements(1)+1)
+               i = i + (jj-((lbound(mri_inst%mri%velocity_mean%array,4)-1)*kalman_num_spatial_refinements(2)+1))* &
+                       (size(mri_inst%mri%velocity_mean%array,3)*kalman_num_spatial_refinements(1)+1)
+               i = i + (kk-((lbound(mri_inst%mri%velocity_mean%array,5)-1)*kalman_num_spatial_refinements(3)+1))* &
+                       (size(mri_inst%mri%velocity_mean%array,3)*kalman_num_spatial_refinements(1)+1) * &
+                       (size(mri_inst%mri%velocity_mean%array,4)*kalman_num_spatial_refinements(2)+1)
+
+               write_field(ii,jj,kk,1) = kalman_first%K(3*i+1,1)
+             END DO
+           END DO
+         END DO
+       end if
+       CALL write_hdf(trim(write_dir)//'gainX_phase'//phs//'_'//count_char,'gainX',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_field(b1L,b2L,b3L,1))
+       write_field = 0.
+       if (associated(kalman_first)) then
+         DO kk = (lbound(mri_inst%mri%velocity_mean%array,5)-1)*kalman_num_spatial_refinements(3)+1, &
+                  ubound(mri_inst%mri%velocity_mean%array,5)*kalman_num_spatial_refinements(3)+1
+           DO jj = (lbound(mri_inst%mri%velocity_mean%array,4)-1)*kalman_num_spatial_refinements(2)+1, &
+                    ubound(mri_inst%mri%velocity_mean%array,4)*kalman_num_spatial_refinements(2)+1
+             DO ii = (lbound(mri_inst%mri%velocity_mean%array,3)-1)*kalman_num_spatial_refinements(1)+1, &
+                      ubound(mri_inst%mri%velocity_mean%array,3)*kalman_num_spatial_refinements(1)+1
+
+               i =      ii-((lbound(mri_inst%mri%velocity_mean%array,3)-1)*kalman_num_spatial_refinements(1)+1)
+               i = i + (jj-((lbound(mri_inst%mri%velocity_mean%array,4)-1)*kalman_num_spatial_refinements(2)+1))* &
+                       (size(mri_inst%mri%velocity_mean%array,3)*kalman_num_spatial_refinements(1)+1)
+               i = i + (kk-((lbound(mri_inst%mri%velocity_mean%array,5)-1)*kalman_num_spatial_refinements(3)+1))* &
+                       (size(mri_inst%mri%velocity_mean%array,3)*kalman_num_spatial_refinements(1)+1) * &
+                       (size(mri_inst%mri%velocity_mean%array,4)*kalman_num_spatial_refinements(2)+1)
+
+               write_field(ii,jj,kk,1) = kalman_first%K(3*i+2,1)
+             END DO
+           END DO
+         END DO
+       end if
+       CALL write_hdf(trim(write_dir)//'gainY_phase'//phs//'_'//count_char,'gainY',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_field(b1L,b2L,b3L,1))
+       write_field = 0.
+       if (associated(kalman_first)) then
+         DO kk = (lbound(mri_inst%mri%velocity_mean%array,5)-1)*kalman_num_spatial_refinements(3)+1, &
+                  ubound(mri_inst%mri%velocity_mean%array,5)*kalman_num_spatial_refinements(3)+1
+           DO jj = (lbound(mri_inst%mri%velocity_mean%array,4)-1)*kalman_num_spatial_refinements(2)+1, &
+                    ubound(mri_inst%mri%velocity_mean%array,4)*kalman_num_spatial_refinements(2)+1
+             DO ii = (lbound(mri_inst%mri%velocity_mean%array,3)-1)*kalman_num_spatial_refinements(1)+1, &
+                      ubound(mri_inst%mri%velocity_mean%array,3)*kalman_num_spatial_refinements(1)+1
+
+               i =      ii-((lbound(mri_inst%mri%velocity_mean%array,3)-1)*kalman_num_spatial_refinements(1)+1)
+               i = i + (jj-((lbound(mri_inst%mri%velocity_mean%array,4)-1)*kalman_num_spatial_refinements(2)+1))* &
+                       (size(mri_inst%mri%velocity_mean%array,3)*kalman_num_spatial_refinements(1)+1)
+               i = i + (kk-((lbound(mri_inst%mri%velocity_mean%array,5)-1)*kalman_num_spatial_refinements(3)+1))* &
+                       (size(mri_inst%mri%velocity_mean%array,3)*kalman_num_spatial_refinements(1)+1) * &
+                       (size(mri_inst%mri%velocity_mean%array,4)*kalman_num_spatial_refinements(2)+1)
+
+               write_field(ii,jj,kk,1) = kalman_first%K(3*i+3,1)
+             END DO
+           END DO
+         END DO
+       end if
+       CALL write_hdf(trim(write_dir)//'gainZ_phase'//phs//'_'//count_char,'gainZ',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_field(b1L,b2L,b3L,1))
+
+    end if
+ 
+  END IF
+
   write_count    = write_count   + 1
   time_out_vect  = time_out_vect + dtime_out_vect
   write_out_vect = .FALSE.
@@ -316,7 +391,6 @@ MODULE mod_inout
   
   IMPLICIT NONE
   
-  INTEGER                ::  m
   CHARACTER(LEN=3)       ::  next_restart_char
   
   
@@ -361,10 +435,6 @@ MODULE mod_inout
   
   IMPLICIT NONE
   
-  INTEGER                ::  i, ii
-  INTEGER                ::  j, jj
-  INTEGER                ::  k, kk
-
   REAL                   ::  old_dtime_out_kalm
   REAL                   ::  old_dtime_out_scal
   REAL                   ::  old_dtime_out_vect
@@ -532,17 +602,18 @@ MODULE mod_inout
   CALL write_hdf_infoINT (1     ,.TRUE. ,attr_yes,'restart'          ,scalar=restart          )
   CALL write_hdf_infoINT (1     ,.TRUE. ,attr_yes,'write_count'      ,scalar=write_count      )
   CALL write_hdf_infoINT (1     ,.TRUE. ,attr_yes,'write_stats_count',scalar=write_stats_count)
-  CALL write_hdf_infoINT (1     ,.TRUE. ,attr_yes,'write_kalm_count' ,scalar=write_kalm_count )
   CALL write_hdf_infoREAL(1     ,.TRUE. ,attr_yes,'time_out_vect'    ,scalar=time_out_vect    )
   CALL write_hdf_infoREAL(1     ,.TRUE. ,attr_yes,'time_out_scal'    ,scalar=time_out_scal    )
-  CALL write_hdf_infoREAL(1     ,.TRUE. ,attr_yes,'time_out_kalm'    ,scalar=time_out_kalm    )
   CALL write_hdf_infoREAL(1     ,.TRUE. ,attr_yes,'dtime_out_vect'   ,scalar=dtime_out_vect   )
   CALL write_hdf_infoREAL(1     ,.TRUE. ,attr_yes,'dtime_out_scal'   ,scalar=dtime_out_scal   )
-  CALL write_hdf_infoREAL(1     ,.TRUE. ,attr_yes,'dtime_out_kalm'   ,scalar=dtime_out_kalm   )
   CALL write_hdf_infoLOG (1     ,.TRUE. ,attr_yes,'write_out_vect'   ,scalar=write_out_vect   )
   CALL write_hdf_infoLOG (1     ,.TRUE. ,attr_yes,'write_out_scal'   ,scalar=write_out_scal   )
-  CALL write_hdf_infoLOG (1     ,.TRUE. ,attr_yes,'write_out_kalm'   ,scalar=write_out_kalm   )
   CALL write_hdf_infoLOG (1     ,.TRUE. ,attr_yes,'new_dtime'        ,scalar=new_dtime        )
+  !--- ddemarinis: DA additions
+  CALL write_hdf_infoINT (1         ,.TRUE. ,attr_yes,'write_kalm_count' ,scalar=write_kalm_count )
+  CALL write_hdf_infoREAL(1         ,.TRUE. ,attr_yes,'time_out_kalm'    ,scalar=time_out_kalm    )
+  CALL write_hdf_infoREAL(1         ,.TRUE. ,attr_yes,'dtime_out_kalm'   ,scalar=dtime_out_kalm   )
+  CALL write_hdf_infoLOG (1         ,.TRUE. ,attr_yes,'write_out_kalm'   ,scalar=write_out_kalm   )
   
   CALL write_hdf_infoINT (3     ,.FALSE.,attr_yes,'M1  M2  M3 '      ,array =(/M1 ,M2 ,M3 /)  )
   CALL write_hdf_infoINT (3     ,.FALSE.,attr_yes,'S1w S2w S3w'      ,array =(/S1w,S2w,S3w/)  )
@@ -590,6 +661,8 @@ MODULE mod_inout
   !--- bbecsek: FSI additions
   CALL write_hdf_infoREAL(1        ,.TRUE. ,attr_yes,'U_ref',scalar=U_ref   )
   CALL write_hdf_infoREAL(1        ,.TRUE. ,attr_yes,'L_ref',scalar=L_ref   )
+
+
   !-----------------------------------------------------------------------------------------------------------
   ! Select hyperslab in the file space / memory space:
   CALL h5sselect_hyperslab_f(filespace,H5S_SELECT_SET_F,offset_file,dims_data,herror)
@@ -1471,17 +1544,19 @@ MODULE mod_inout
   CALL read_hdf_infoREAL(1,.TRUE. ,attr_yes,'dtime'            ,scalar=dtime            )
   CALL read_hdf_infoREAL(1,.TRUE. ,attr_yes,'time_out_vect'    ,scalar=time_out_vect    )
   CALL read_hdf_infoREAL(1,.TRUE. ,attr_yes,'time_out_scal'    ,scalar=time_out_scal    )
-  CALL read_hdf_infoREAL(1,.TRUE. ,attr_yes,'time_out_kalm'    ,scalar=time_out_kalm    )
   CALL read_hdf_infoINT (1,.TRUE. ,attr_yes,'timestep'         ,scalar=timestep         )
   CALL read_hdf_infoINT (1,.TRUE. ,attr_yes,'write_count'      ,scalar=write_count      )
   CALL read_hdf_infoINT (1,.TRUE. ,attr_yes,'write_stats_count',scalar=write_stats_count)
-  CALL read_hdf_infoINT (1,.TRUE. ,attr_yes,'write_kalm_count' ,scalar=write_kalm_count )
   CALL read_hdf_infoLOG (1,.TRUE. ,attr_yes,'write_out_vect'   ,scalar=write_out_vect   )
   CALL read_hdf_infoLOG (1,.TRUE. ,attr_yes,'write_out_scal'   ,scalar=write_out_scal   )
-  CALL read_hdf_infoLOG (1,.TRUE. ,attr_yes,'write_out_kalm'   ,scalar=write_out_kalm   )
   CALL read_hdf_infoLOG (1,.TRUE. ,attr_yes,'new_dtime'        ,scalar=new_dtime        )
   CALL read_hdf_infoINT (3,.FALSE.,attr_yes,'S1w S2w S3w'      ,array =Siw              )
   CALL read_hdf_infoINT (3,.FALSE.,attr_yes,'M1w M2w M3w'      ,array =Miw              )
+  !--- ddemarinis: DA additions
+  CALL read_hdf_infoINT (1,.TRUE. ,attr_yes,'write_kalm_count' ,scalar=write_kalm_count )
+  CALL read_hdf_infoREAL(1,.TRUE. ,attr_yes,'time_out_kalm'    ,scalar=time_out_kalm    )
+  CALL read_hdf_infoLOG (1,.TRUE. ,attr_yes,'write_out_kalm'   ,scalar=write_out_kalm   )
+ 
   !-----------------------------------------------------------------------------------------------------------
   CALL h5dclose_f(dset_id,herror)
   !===========================================================================================================
@@ -2096,7 +2171,7 @@ MODULE mod_inout
   USE mod_exchange
   USE mod_lib
   USE HDF5
-  !USE mpi
+  USE MPI
 
   IMPLICIT NONE
 
@@ -2122,8 +2197,6 @@ MODULE mod_inout
 
   LOGICAL                ::  attr_yes
   INTEGER                ::  i
-
-  INCLUDE 'mpif.h'
 
 
   ! this function is for stride == 1 only
@@ -2230,7 +2303,7 @@ MODULE mod_inout
   USE mod_exchange
   USE mod_lib
   USE HDF5
-  !USE mpi
+  USE MPI
 
   IMPLICIT NONE
 
@@ -2251,8 +2324,6 @@ MODULE mod_inout
 
   INTEGER(HSIZE_T )      ::  dims_file  (4), dims_mem  (4), dims_data(4)
   INTEGER(HSSIZE_T)      ::  offset_file(4), offset_mem(4)
-
-  INCLUDE 'mpif.h'
 
 
 
@@ -2464,14 +2535,6 @@ MODULE mod_inout
   INTEGER(HSIZE_T )        ::  dims_file  (1:2), dims_mem  (1:2), dims_data(1:2)
   INTEGER(HSSIZE_T)        ::  offset_file(1:2), offset_mem(1:2)
   
-  LOGICAL                  ::  attr_yes
-  
-  
-  !----------------------------------------------------------------------------------------------------------!
-  ! Anmerkungen:                                                                                             !
-  !----------------------------------------------------------------------------------------------------------!
-  
-  
   !===========================================================================================================
   !=== File oeffnen ==========================================================================================
   !===========================================================================================================
@@ -2574,7 +2637,7 @@ MODULE mod_inout
      CALL h5aclose_f(attr_id,herror)
   ELSE
      CALL h5dcreate_f(file_id,name,H5T_NATIVE_DOUBLE,memspace,attr_id,herror)
-     CALL H5dwrite_f(attr_id,H5T_NATIVE_DOUBLE,value,dim_mem,herror,memspace)!,H5S_ALL_F,H5P_DEFAULT_F)
+     CALL H5dwrite_f(attr_id,H5T_NATIVE_DOUBLE,value,dim_mem,herror,memspace,H5S_ALL_F,H5P_DEFAULT_F)
      CALL h5dclose_f(attr_id ,herror)
   END IF
   
@@ -2626,7 +2689,7 @@ MODULE mod_inout
      CALL h5aclose_f(attr_id,herror)
   ELSE
      CALL h5dcreate_f(file_id,name,H5T_NATIVE_INTEGER,memspace,attr_id,herror)
-     CALL H5dwrite_f(attr_id,H5T_NATIVE_INTEGER,value,dim_mem,herror,memspace)!,H5S_ALL_F,H5P_DEFAULT_F)
+     CALL H5dwrite_f(attr_id,H5T_NATIVE_INTEGER,value,dim_mem,herror,memspace,H5S_ALL_F,H5P_DEFAULT_F)
      CALL h5dclose_f(attr_id ,herror)
   END IF
   
@@ -2689,7 +2752,7 @@ MODULE mod_inout
      CALL h5aclose_f(attr_id,herror)
   ELSE
      CALL h5dcreate_f(file_id,name,H5T_NATIVE_INTEGER,memspace,attr_id,herror)
-     CALL H5dwrite_f(attr_id,H5T_NATIVE_INTEGER,value,dim_mem,herror,memspace)!,H5S_ALL_F,H5P_DEFAULT_F)
+     CALL H5dwrite_f(attr_id,H5T_NATIVE_INTEGER,value,dim_mem,herror,memspace,H5S_ALL_F,H5P_DEFAULT_F)
      CALL h5dclose_f(attr_id ,herror)
   END IF
   
@@ -2732,7 +2795,7 @@ MODULE mod_inout
      CALL h5aclose_f(attr_id,herror)
   ELSE
      CALL h5dopen_f(file_id,name,attr_id,herror)
-     IF (rank == 0) CALL H5dread_f(attr_id,H5T_NATIVE_DOUBLE,value,dim_mem,herror) !,H5S_ALL_F,H5S_ALL_F,H5P_DEFAULT_F)
+     IF (rank == 0) CALL H5dread_f(attr_id,H5T_NATIVE_DOUBLE,value,dim_mem,herror,H5S_ALL_F,H5S_ALL_F,H5P_DEFAULT_F)
      CALL h5dclose_f(attr_id,herror)
   END IF
   
@@ -2781,7 +2844,7 @@ MODULE mod_inout
      CALL h5aclose_f(attr_id,herror)
   ELSE
      CALL h5dopen_f(file_id,name,attr_id,herror)
-     IF (rank == 0) CALL H5dread_f(attr_id,H5T_NATIVE_INTEGER,value,dim_mem,herror)!,H5S_ALL_F,H5S_ALL_F,H5P_DEFAULT_F)
+     IF (rank == 0) CALL H5dread_f(attr_id,H5T_NATIVE_INTEGER,value,dim_mem,herror,H5S_ALL_F,H5S_ALL_F,H5P_DEFAULT_F)
      CALL h5dclose_f(attr_id,herror)
   END IF
   
@@ -2831,7 +2894,7 @@ MODULE mod_inout
      CALL h5aclose_f(attr_id,herror)
   ELSE
      CALL h5dopen_f(file_id,name,attr_id,herror)
-     IF (rank == 0) CALL H5dread_f(attr_id,H5T_NATIVE_INTEGER,value,dim_mem,herror) !,H5S_ALL_F,H5S_ALL_F,H5P_DEFAULT_F)
+     IF (rank == 0) CALL H5dread_f(attr_id,H5T_NATIVE_INTEGER,value,dim_mem,herror,H5S_ALL_F,H5S_ALL_F,H5P_DEFAULT_F)
      CALL h5dclose_f(attr_id,herror)
   END IF
   
@@ -3277,13 +3340,13 @@ MODULE mod_inout
 
     IF (rank .EQ. 0) THEN
 
-      WRITE(*,'(a)') 'writing XMF file(s) ...'
-
       !=========================================================================================================
       !=== Write count string ==================================================================================
       !=========================================================================================================
       CALL num_to_string(8,write_count,count_char)
       !=========================================================================================================
+
+      WRITE(*,'(2a)') 'writing XMF file(s) for count_char ...', count_char
 
       !=========================================================================================================
       !=== Dimensions of fields ================================================================================
@@ -3321,6 +3384,7 @@ MODULE mod_inout
 
     CHARACTER(*)    , INTENT(in)  ::  filebase, stride_string
     CHARACTER(LEN=8), INTENT(in)  ::  count_char
+    CHARACTER(LEN=8)              ::  count_char2
 
     INTEGER, INTENT(in)           ::  dim1, dim2, dim3
     INTEGER                       ::  xmf=995
@@ -3331,7 +3395,7 @@ MODULE mod_inout
     CHARACTER(*), PARAMETER       ::  fmt4 = "(a,f15.9,a)"
     CHARACTER(*), PARAMETER       ::  fmt5 = "(a,f15.6,a,i0,a)"
     CHARACTER(*), PARAMETER       ::  fmt6 = "(a,f15.6,a,i0,1x,i0,1x,i0,a)"
-    CHARACTER(LEN=2)              ::  id
+    CHARACTER(LEN=2)              ::  id,phs
     CHARACTER(LEN=50)             ::  write_dir
 
     !=== Open file to write into ==============================================================================
@@ -3441,142 +3505,39 @@ MODULE mod_inout
 
     !---- Covariance
     IF (write_covariance_yes) THEN
-      IF (dtime_out_scal .GT. 0.0) THEN
-        do i = 1, num_windows !loop over all windows/folders
-          CALL num_to_string(2,i,id)
-          write_dir = './data_'//id//'/'
-          !--- Mean -------------------------------------------------------------------------------------------------------------------------------------------------------
-          !--- data_X
-          WRITE(xmf,fmt1) '        <Attribute Name="Mean_X_'//id//'" Center="Node">'
-          !IF (scale_output_yes) WRITE(xmf,fmt6) '          <DataItem ItemType="Function" Function="',U_ref,' * $0" Dimensions="',dim3,dim2,dim1,'" NumberType="Float" Precision="8">'
-          WRITE(xmf,fmt3) '          <DataItem Format="HDF" Dimensions="',dim3,dim2,dim1,'" NumberType="Float" Precision="8">'
-          WRITE(xmf,fmt1) '            '//trim(write_dir)//'dataX_'//count_char//'.h5:/meanX'
-          WRITE(xmf,fmt1) '          </DataItem>'
-          !IF (scale_output_yes) WRITE(XMF,fmt1) '          </DataItem>'
-          WRITE(xmf,fmt1) '        </Attribute>'
-          !--- data_Y
-          WRITE(xmf,fmt1) '        <Attribute Name="Mean_Y_'//id//'" Center="Node">'
-          !IF (scale_output_yes) WRITE(xmf,fmt6) '          <DataItem ItemType="Function" Function="',U_ref,' * $0" Dimensions="',dim3,dim2,dim1,'" NumberType="Float" Precision="8">'
-          WRITE(xmf,fmt3) '          <DataItem Format="HDF" Dimensions="',dim3,dim2,dim1,'" NumberType="Float" Precision="8">'
-          WRITE(xmf,fmt1) '            '//trim(write_dir)//'dataY_'//count_char//'.h5:/meanY'
-          WRITE(xmf,fmt1) '          </DataItem>'
-          !IF (scale_output_yes) WRITE(XMF,fmt1) '          </DataItem>'
-          WRITE(xmf,fmt1) '        </Attribute>'
-          !--- data_Z
-          WRITE(xmf,fmt1) '        <Attribute Name="Mean_Z_'//id//'" Center="Node">'
-          !IF (scale_output_yes) WRITE(xmf,fmt6) '          <DataItem ItemType="Function" Function="',U_ref,' * $0" Dimensions="',dim3,dim2,dim1,'" NumberType="Float" Precision="8">'
-          WRITE(xmf,fmt3) '          <DataItem Format="HDF" Dimensions="',dim3,dim2,dim1,'" NumberType="Float" Precision="8">'
-          WRITE(xmf,fmt1) '            '//trim(write_dir)//'dataZ_'//count_char//'.h5:/meanZ'
-          WRITE(xmf,fmt1) '          </DataItem>'
-          !IF (scale_output_yes) WRITE(XMF,fmt1) '          </DataItem>'
-          WRITE(xmf,fmt1) '        </Attribute>'
-          !--- Covariance ------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-          !--- data_XX
-          WRITE(xmf,fmt1) '        <Attribute Name="Covar_XX_'//id//'" Center="Node">'
-          !IF (scale_output_yes) WRITE(xmf,fmt6) '          <DataItem ItemType="Function" Function="',U_ref,' * $0" Dimensions="',dim3,dim2,dim1,'" NumberType="Float" Precision="8">'
-          WRITE(xmf,fmt3) '          <DataItem Format="HDF" Dimensions="',dim3,dim2,dim1,'" NumberType="Float" Precision="8">'
-          WRITE(xmf,fmt1) '            '//trim(write_dir)//'dataXX_'//count_char//'.h5:/covarXX'
-          WRITE(xmf,fmt1) '          </DataItem>'
-          !IF (scale_output_yes) WRITE(XMF,fmt1) '          </DataItem>'
-          WRITE(xmf,fmt1) '        </Attribute>'
-          !--- data_YY
-          WRITE(xmf,fmt1) '        <Attribute Name="Covar_YY_'//id//'" Center="Node">'
-          !IF (scale_output_yes) WRITE(xmf,fmt6) '          <DataItem ItemType="Function" Function="',U_ref,' * $0" Dimensions="',dim3,dim2,dim1,'" NumberType="Float" Precision="8">'
-          WRITE(xmf,fmt3) '          <DataItem Format="HDF" Dimensions="',dim3,dim2,dim1,'" NumberType="Float" Precision="8">'
-          WRITE(xmf,fmt1) '            '//trim(write_dir)//'dataYY_'//count_char//'.h5:/covarYY'
-          WRITE(xmf,fmt1) '          </DataItem>'
-          !IF (scale_output_yes) WRITE(XMF,fmt1) '          </DataItem>'
-          WRITE(xmf,fmt1) '        </Attribute>'
-          !--- data_ZZ
-          WRITE(xmf,fmt1) '        <Attribute Name="Covar_ZZ_'//id//'" Center="Node">'
-          !IF (scale_output_yes) WRITE(xmf,fmt6) '          <DataItem ItemType="Function" Function="',U_ref,' * $0" Dimensions="',dim3,dim2,dim1,'" NumberType="Float" Precision="8">'
-          WRITE(xmf,fmt3) '          <DataItem Format="HDF" Dimensions="',dim3,dim2,dim1,'" NumberType="Float" Precision="8">'
-          WRITE(xmf,fmt1) '            '//trim(write_dir)//'dataZZ_'//count_char//'.h5:/covarZZ'
-          WRITE(xmf,fmt1) '          </DataItem>'
-          !IF (scale_output_yes) WRITE(XMF,fmt1) '          </DataItem>'
-          WRITE(xmf,fmt1) '        </Attribute>'
-        end do
-      END IF
-      IF (dtime_out_kalm .GT. 0.0) THEN
-        write_dir = './kf_result/'
-          !--- Mean -------------------------------------------------------------------------------------------------------------------------------------------------------
-          !--- data_X
-          WRITE(xmf,fmt1) '        <Attribute Name="Mean_X" Center="Node">'
-          !IF (scale_output_yes) WRITE(xmf,fmt6) '          <DataItem ItemType="Function" Function="',U_ref,' * $0" Dimensions="',dim3,dim2,dim1,'" NumberType="Float" Precision="8">'
-          WRITE(xmf,fmt3) '          <DataItem Format="HDF" Dimensions="',dim3,dim2,dim1,'" NumberType="Float" Precision="8">'
-          WRITE(xmf,fmt1) '            '//trim(write_dir)//'kalmanX_'//count_char//'.h5:/meanX'
-          WRITE(xmf,fmt1) '          </DataItem>'
-          !IF (scale_output_yes) WRITE(XMF,fmt1) '          </DataItem>'
-          WRITE(xmf,fmt1) '        </Attribute>'
-          !--- data_Y
-          WRITE(xmf,fmt1) '        <Attribute Name="Mean_Y" Center="Node">'
-          !IF (scale_output_yes) WRITE(xmf,fmt6) '          <DataItem ItemType="Function" Function="',U_ref,' * $0" Dimensions="',dim3,dim2,dim1,'" NumberType="Float" Precision="8">'
-          WRITE(xmf,fmt3) '          <DataItem Format="HDF" Dimensions="',dim3,dim2,dim1,'" NumberType="Float" Precision="8">'
-          WRITE(xmf,fmt1) '            '//trim(write_dir)//'kalmanY_'//count_char//'.h5:/meanY'
-          WRITE(xmf,fmt1) '          </DataItem>'
-          !IF (scale_output_yes) WRITE(XMF,fmt1) '          </DataItem>'
-          WRITE(xmf,fmt1) '        </Attribute>'
-          !--- data_Z
-          WRITE(xmf,fmt1) '        <Attribute Name="Mean_Z" Center="Node">'
-          !IF (scale_output_yes) WRITE(xmf,fmt6) '          <DataItem ItemType="Function" Function="',U_ref,' * $0" Dimensions="',dim3,dim2,dim1,'" NumberType="Float" Precision="8">'
-          WRITE(xmf,fmt3) '          <DataItem Format="HDF" Dimensions="',dim3,dim2,dim1,'" NumberType="Float" Precision="8">'
-          WRITE(xmf,fmt1) '            '//trim(write_dir)//'kalmanZ_'//count_char//'.h5:/meanZ'
-          WRITE(xmf,fmt1) '          </DataItem>'
-          !IF (scale_output_yes) WRITE(XMF,fmt1) '          </DataItem>'
-          WRITE(xmf,fmt1) '        </Attribute>'
-          !--- Covariance --------------------------------------------------------------------------------------------------------------------------------------------------
-          !--- data_XX
-          WRITE(xmf,fmt1) '        <Attribute Name="Covar_XX" Center="Node">'
-          !IF (scale_output_yes) WRITE(xmf,fmt6) '          <DataItem ItemType="Function" Function="',U_ref,' * $0" Dimensions="',dim3,dim2,dim1,'" NumberType="Float" Precision="8">'
-          WRITE(xmf,fmt3) '          <DataItem Format="HDF" Dimensions="',dim3,dim2,dim1,'" NumberType="Float" Precision="8">'
-          WRITE(xmf,fmt1) '            '//trim(write_dir)//'kalmanXX_'//count_char//'.h5:/covarXX'
-          WRITE(xmf,fmt1) '          </DataItem>'
-          !IF (scale_output_yes) WRITE(XMF,fmt1) '          </DataItem>'
-          WRITE(xmf,fmt1) '        </Attribute>'
-          !--- data_YY
-          WRITE(xmf,fmt1) '        <Attribute Name="Covar_YY" Center="Node">'
-          !IF (scale_output_yes) WRITE(xmf,fmt6) '          <DataItem ItemType="Function" Function="',U_ref,' * $0" Dimensions="',dim3,dim2,dim1,'" NumberType="Float" Precision="8">'
-          WRITE(xmf,fmt3) '          <DataItem Format="HDF" Dimensions="',dim3,dim2,dim1,'" NumberType="Float" Precision="8">'
-          WRITE(xmf,fmt1) '            '//trim(write_dir)//'kalmanYY_'//count_char//'.h5:/covarYY'
-          WRITE(xmf,fmt1) '          </DataItem>'
-          !IF (scale_output_yes) WRITE(XMF,fmt1) '          </DataItem>'
-          WRITE(xmf,fmt1) '        </Attribute>'
-          !--- data_ZZ
-          WRITE(xmf,fmt1) '        <Attribute Name="Covar_ZZ" Center="Node">'
-          !IF (scale_output_yes) WRITE(xmf,fmt6) '          <DataItem ItemType="Function" Function="',U_ref,' * $0" Dimensions="',dim3,dim2,dim1,'" NumberType="Float" Precision="8">'
-          WRITE(xmf,fmt3) '          <DataItem Format="HDF" Dimensions="',dim3,dim2,dim1,'" NumberType="Float" Precision="8">'
-          WRITE(xmf,fmt1) '            '//trim(write_dir)//'kalmanZZ_'//count_char//'.h5:/covarZZ'
-          WRITE(xmf,fmt1) '          </DataItem>'
-          !IF (scale_output_yes) WRITE(XMF,fmt1) '          </DataItem>'
-          WRITE(xmf,fmt1) '        </Attribute>'
-          !--- Kalman gain --------------------------------------------------------------------------------------------------------------------------------------------------
-          !--- data_XX
-          WRITE(xmf,fmt1) '        <Attribute Name="Gain_XX" Center="Node">'
-          !IF (scale_output_yes) WRITE(xmf,fmt6) '          <DataItem ItemType="Function" Function="',U_ref,' * $0" Dimensions="',dim3,dim2,dim1,'" NumberType="Float" Precision="8">'
-          WRITE(xmf,fmt3) '          <DataItem Format="HDF" Dimensions="',dim3,dim2,dim1,'" NumberType="Float" Precision="8">'
-          WRITE(xmf,fmt1) '            '//trim(write_dir)//'kalman_gain_XX_'//count_char//'.h5:/gainXX'
-          WRITE(xmf,fmt1) '          </DataItem>'
-          !IF (scale_output_yes) WRITE(XMF,fmt1) '          </DataItem>'
-          WRITE(xmf,fmt1) '        </Attribute>'
-          !--- data_YY
-          WRITE(xmf,fmt1) '        <Attribute Name="Gain_YY" Center="Node">'
-          !IF (scale_output_yes) WRITE(xmf,fmt6) '          <DataItem ItemType="Function" Function="',U_ref,' * $0" Dimensions="',dim3,dim2,dim1,'" NumberType="Float" Precision="8">'
-          WRITE(xmf,fmt3) '          <DataItem Format="HDF" Dimensions="',dim3,dim2,dim1,'" NumberType="Float" Precision="8">'
-          WRITE(xmf,fmt1) '            '//trim(write_dir)//'kalman_gain_YY_'//count_char//'.h5:/gainYY'
-          WRITE(xmf,fmt1) '          </DataItem>'
-          !IF (scale_output_yes) WRITE(XMF,fmt1) '          </DataItem>'
-          WRITE(xmf,fmt1) '        </Attribute>'
-          !--- data_ZZ
-          WRITE(xmf,fmt1) '        <Attribute Name="Gain_ZZ" Center="Node">'
-          !IF (scale_output_yes) WRITE(xmf,fmt6) '          <DataItem ItemType="Function" Function="',U_ref,' * $0" Dimensions="',dim3,dim2,dim1,'" NumberType="Float" Precision="8">'
-          WRITE(xmf,fmt3) '          <DataItem Format="HDF" Dimensions="',dim3,dim2,dim1,'" NumberType="Float" Precision="8">'
-          WRITE(xmf,fmt1) '            '//trim(write_dir)//'kalman_gain_ZZ_'//count_char//'.h5:/gainZZ'
-          WRITE(xmf,fmt1) '          </DataItem>'
-          !IF (scale_output_yes) WRITE(XMF,fmt1) '          </DataItem>'
-          WRITE(xmf,fmt1) '        </Attribute>'
-
-      END IF
+      if (dtime_out_kalm.ne.0.0) then
+         phase = mod(write_kalm_count-1,intervals) + 1
+         CALL num_to_string(2,phase,phs)
+         write_dir = './kf_result/phase_'//phs//'/'
+         CALL num_to_string(8,write_kalm_count,count_char2)
+         !--- Kalman gain ------------------------------------------------------------------------------------------------------------------------------
+         !--- data_XX
+         WRITE(xmf,fmt1) '        <Attribute Name="GainX" Center="Node">'
+         IF (scale_output_yes) WRITE(xmf,fmt6) '          <DataItem ItemType="Function" Function="',U_ref,' * $0" Dimensions="',dim3,dim2,dim1,'" NumberType="Float" Precision="8">'
+         WRITE(xmf,fmt3) '          <DataItem Format="HDF" Dimensions="',dim3,dim2,dim1,'" NumberType="Float" Precision="8">'
+         WRITE(xmf,fmt1) '            '//trim(write_dir)//'gainX_phase'//phs//'_'//count_char2//'.h5:/gainX'
+         WRITE(xmf,fmt1) '          </DataItem>'
+         IF (scale_output_yes) WRITE(XMF,fmt1) '          </DataItem>'
+         WRITE(xmf,fmt1) '        </Attribute>'
+         !--- data_YY
+         WRITE(xmf,fmt1) '        <Attribute Name="GainY" Center="Node">'
+         IF (scale_output_yes) WRITE(xmf,fmt6) '          <DataItem ItemType="Function" Function="',U_ref,' * $0" Dimensions="',dim3,dim2,dim1,'" NumberType="Float" Precision="8">'
+         WRITE(xmf,fmt3) '          <DataItem Format="HDF" Dimensions="',dim3,dim2,dim1,'" NumberType="Float" Precision="8">'
+         WRITE(xmf,fmt1) '            '//trim(write_dir)//'gainY_phase'//phs//'_'//count_char2//'.h5:/gainY'
+         WRITE(xmf,fmt1) '          </DataItem>'
+         IF (scale_output_yes) WRITE(XMF,fmt1) '          </DataItem>'
+         WRITE(xmf,fmt1) '        </Attribute>'
+         !--- data_ZZ
+         WRITE(xmf,fmt1) '        <Attribute Name="GainZ" Center="Node">'
+         IF (scale_output_yes) WRITE(xmf,fmt6) '          <DataItem ItemType="Function" Function="',U_ref,' * $0" Dimensions="',dim3,dim2,dim1,'" NumberType="Float" Precision="8">'
+         WRITE(xmf,fmt3) '          <DataItem Format="HDF" Dimensions="',dim3,dim2,dim1,'" NumberType="Float" Precision="8">'
+         WRITE(xmf,fmt1) '            '//trim(write_dir)//'gainZ_phase'//phs//'_'//count_char2//'.h5:/gainZ'
+         WRITE(xmf,fmt1) '          </DataItem>'
+         IF (scale_output_yes) WRITE(XMF,fmt1) '          </DataItem>'
+         WRITE(xmf,fmt1) '        </Attribute>'
+      end if
     END IF
+
     WRITE(xmf,fmt1) '    </Grid>'
     WRITE(xmf,fmt1) '  </Domain>'
     WRITE(xmf,fmt1) '</Xdmf>'
