@@ -71,7 +71,7 @@ PROGRAM impact_debug
   ! are within that MRI voxel (the pressure grid points with the first/last coordinate from this set always
   ! lie within the neighboring voxel as well).
  
-  write(0,*) "### MRI data ('local' refers to local pressure grid) ##" 
+  write(0,*) "### cazzo MRI data ('local' refers to local pressure grid) ##" 
 
   write(0,*) "## Number of data voxels "
   write(0,*) "   (incl. both with  "
@@ -94,7 +94,7 @@ PROGRAM impact_debug
   write(0,*) "   local  shape: ",shape(mri_inst%mri%segmentation_prob%array)
   write(0,*) "   local lbound: ",lbound(mri_inst%mri%segmentation_prob%array)
   write(0,*) "   local ubound: ",ubound(mri_inst%mri%segmentation_prob%array)
-  write(0,*) "   MRI offset:   ",mri_inst%mri%intensity%time_offset,mri_inst%mri%segmentation_prob%offset
+  write(0,*) "   MRI offset:   ",mri_inst%mri%segmentation_prob%time_offset,mri_inst%mri%segmentation_prob%offset
 
 
   write(0,*) "## MRI: velocity mean field ##"

@@ -27,7 +27,7 @@ local:	$(BUILD_TARGET)
 portable: COMP = mpifort
 portable: INCL = -I$(HDF5_DIR)/include -I$(MPI_HOME)/include -I$(HPC_PREDICT_IO_DIR)/include
 portable: LIBS = -L/usr/lib -lm -ldl -lz -lblas -llapack -L$(HPC_PREDICT_IO_DIR)/lib -L$(MPI_HOME)/lib -L$(HDF5_DIR)/lib -lhpc-predict-io -lmpifort -lhdf5_fortran -lhdf5_hl -lhdf5 -lstdc++
-portable:       OPT1 = -ffree-form -ffree-line-length-none -cpp -fdefault-real-8 -O2 # -g -fbacktrace
+portable:       OPT1 = -ffree-form -ffree-line-length-none -cpp -fdefault-real-8 -O0 -g -fbacktrace
 #-O3 -ffast-math -funroll-all-loops -fpeel-loops -ftracer -funswitch-loops \
 #-ftree-vectorize -funsafe-math-optimizations -fomit-frame-pointer -fno-math-errno
 portable:       OPT2 = $(OPT1) #-xf95-cpp-input
@@ -41,7 +41,7 @@ xc30:	COMP = ftn
 xc30:	INCL = -I$(HDF5_DIR)/include -I$(HPC_PREDICT_IO_DIR)/include
 xc30:	LIBS = -L$(HDF5_DIR)/lib -L$(HPC_PREDICT_IO_DIR)/lib -lhpc-predict-io -lhdf5_fortran -lhdf5_hl -lhdf5 -lz -lm -ldl -lstdc++
 xc30:	OPT1 = -ffree-form -ffree-line-length-none -cpp -fdefault-real-8 \
-	-O2 #-g
+	-g -O0
 #	-O3 -ffast-math -funroll-all-loops -fpeel-loops -ftracer -funswitch-loops \
 #	-ftree-vectorize -funsafe-math-optimizations -fomit-frame-pointer -fno-math-errno
 xc30:	OPT2 = $(OPT1) -xf95-cpp-input
