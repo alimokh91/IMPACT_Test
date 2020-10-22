@@ -19,9 +19,6 @@ PROGRAM impact_debug
 
   USE mod_impact_core
   USE mod_vars
-  USE mod_test
-  USE mod_timeint
-  USE usr_func
   USE usr_vars
 
   USE HDF5
@@ -94,7 +91,7 @@ PROGRAM impact_debug
   write(0,*) "   local  shape: ",shape(mri_inst%mri%segmentation_prob%array)
   write(0,*) "   local lbound: ",lbound(mri_inst%mri%segmentation_prob%array)
   write(0,*) "   local ubound: ",ubound(mri_inst%mri%segmentation_prob%array)
-  write(0,*) "   MRI offset:   ",mri_inst%mri%intensity%time_offset,mri_inst%mri%segmentation_prob%offset
+  write(0,*) "   MRI offset:   ",mri_inst%mri%segmentation_prob%time_offset,mri_inst%mri%segmentation_prob%offset
 
 
   write(0,*) "## MRI: velocity mean field ##"

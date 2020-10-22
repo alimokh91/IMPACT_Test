@@ -367,7 +367,7 @@
  
           m = 0
           klmn%obs_covar(3*m+1:3*m+3,3*m+1:3*m+3) = mri_inst%mri%velocity_cov%array(1:3,1:3,phase,i,j,k)
-          if (mri_inst%mri%intensity%array(phase,i,j,k).ge.0.0) then
+          if (mri_inst%mri%segmentation_prob%array(phase,i,j,k).ge.0.0) then
              klmn%obs_covar(3*m+1:3*m+3,3*m+1:3*m+3) = 1.0e6+klmn%obs_covar(3*m+1:3*m+3,3*m+1:3*m+3)
           end if
           klmn%obs_data (3*m+1:3*m+3,1) = mri_inst%mri%velocity_mean%array (1:3,phase,i,j,k)

@@ -673,7 +673,7 @@ MODULE usr_func
   DO k = bounds(1,3), bounds(2,3)
     DO j = bounds(1,2), bounds(2,2)
       DO i = bounds(1,1), bounds(2,1)
-        if (mri_inst%mri%intensity%array(phase,i,j,k) .ge. 0.0 ) then
+        if (mri_inst%mri%segmentation_prob%array(phase,i,j,k) .ge. 0.0 ) then
 
           m =      i-bounds(1,1)
           m = m + (j-bounds(1,2))*size(mri_inst%mri%velocity_mean%array,3)
