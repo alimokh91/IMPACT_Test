@@ -96,16 +96,17 @@
      allocate(kalman_first)
      klmn => kalman_first
 
-     pts = (kalman_num_spatial_refinements(1)+1)*(kalman_num_spatial_refinements(2)+1)*(kalman_num_spatial_refinements(3)+1)
-
-     klmn%m =        size(mri_inst%mri%velocity_mean%array,3)
-     klmn%m = klmn%m*size(mri_inst%mri%velocity_mean%array,4)
-     klmn%m = klmn%m*size(mri_inst%mri%velocity_mean%array,5)
      klmn%n =         size(mri_inst%mri%velocity_mean%array,3)*kalman_num_spatial_refinements(1)+1
      klmn%n = klmn%n*(size(mri_inst%mri%velocity_mean%array,4)*kalman_num_spatial_refinements(2)+1)
      klmn%n = klmn%n*(size(mri_inst%mri%velocity_mean%array,5)*kalman_num_spatial_refinements(3)+1)
 
+     klmn%m =        size(mri_inst%mri%velocity_mean%array,3)
+     klmn%m = klmn%m*size(mri_inst%mri%velocity_mean%array,4)
+     klmn%m = klmn%m*size(mri_inst%mri%velocity_mean%array,5)
+
      NULLIFY(klmn%K);  ALLOCATE(klmn%K(1:3*klmn%n,1)); klmn%K = 0.0
+
+     pts = (kalman_num_spatial_refinements(1)+1)*(kalman_num_spatial_refinements(2)+1)*(kalman_num_spatial_refinements(3)+1)
 
      klmn%m = 1
      klmn%n = pts
@@ -258,6 +259,7 @@
   CHARACTER(LEN=8) :: count_char
   CHARACTER(LEN=2) :: count_char2
 
+  write(*,*) intervals
   phase = mod(write_kalm_count,intervals) + 1
 
   IF (rank == 0) WRITE(*,'(a,i8,a,i8,a)') 'kalman repetition', write_kalm_count/intervals+1, '   for phase', phase,' ...'

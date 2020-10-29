@@ -31,9 +31,11 @@ if [ ! -f "${HPC_PREDICT_DATA_DIR}/input_data/preprocessed/bern_experiments/v1/2
         "source /src/hpc-predict/hpc-predict-io/python/venv/bin/activate && " \
         "set -x && " \
         "PYTHONPATH=/src/hpc-predict/hpc-predict-io/python python -u " \
-        "/src/hpc-predict/hpc-predict-io/mri_datasource/convert_bern_expt_to_hpc_predict.py " \
+        "/src/hpc-predict/hpc-predict-io/mri_datasource/convert_bern_expt_to_hpc_predict_with_downsampling.py " \
         "--input /hpc-predict-data/input_data/original/bern_experiments/v1/2020-01-01_00-00-00_dario/bern_exp_metadata.json " \
-        "--output /hpc-predict-data/input_data/preprocessed/bern_experiments/v1/2020-01-01_00-00-00_dario/bern_experimental_dataset_segmented_flow_mri.h5 ")
+        "--output /hpc-predict-data/input_data/preprocessed/bern_experiments/v1/2020-01-01_00-00-00_dario/bern_experimental_dataset_segmented_flow_mri.h5 " \
+        "--downsample 4" \
+        "--single_rep -1")
 
     set -x
     docker run --rm -u $(id -u ${USER}):$(id -g ${USER}) -v ${HPC_PREDICT_DATA_DIR}:/hpc-predict-data --entrypoint bash "${HPC_PREDICT_IMPACT_IMAGE}" -c "${shell_command}"
@@ -58,11 +60,12 @@ shell_command=$(printf "%s" \
     "-m mr_io_impact_config " \
     "--input-mri /hpc-predict-data/input_data/preprocessed/bern_experiments/v1/2020-01-01_00-00-00_dario/bern_experimental_dataset_segmented_flow_mri.h5 " \
     "--output-mri \"${container_output_directory}/bern_experimental_dataset_assimilation_results.h5\" " \
-    "--sr 2 2 2 " \
-    "--padding 0.5 0.5 0.5 " \
+    "--sr 4 4 4 " \
+    "--padding 0.2 0.2 0.2 " \
     "--tr 2 " \
+    "--pulses 10 " \
     "--output \"${container_output_directory}/config.txt\" " \
-    "--np 4")
+    "--np 8")
     # removed due to redundancy: "--config /src/hpc-predict/hpc-predict-io/python/config.txt.j2 " \
 
 set -x
@@ -78,8 +81,8 @@ echo "Launching data assimilation in IMPACT"
 shell_command=$(printf "%s" \
     "cd \"${container_output_directory}\" && " \
     "mpirun " \
-    "-np 4 " \
-    "/src/hpc-predict/IMPACT/prog/impact_debug.exe")
+    "-np 8 " \
+    "/src/hpc-predict/IMPACT/prog/impact.exe")
 
 set -x
 docker run --rm -u $(id -u ${USER}):$(id -g ${USER}) -v ${HPC_PREDICT_DATA_DIR}:/hpc-predict-data --entrypoint bash "${HPC_PREDICT_IMPACT_IMAGE}" -c "${shell_command}" 

@@ -547,8 +547,10 @@
   
   !--- number of intervals for the period (statistics) ---
   !dtime_out_scal = 1.
-    IF (INDEX(text,'intervals'                      ) == 1) READ(UNIT=text,FMT=*) dummy, intervals
-    intervals = intervals/kalman_num_time_refinements
+    IF (INDEX(text,'intervals'                      ) == 1) then
+       READ(UNIT=text,FMT=*) dummy, intervals
+       intervals = intervals/kalman_num_time_refinements
+    END IF
 
   !--- compute and write lambda2 fields from velocity ---
   !write_lambda2_yes = .TRUE.
