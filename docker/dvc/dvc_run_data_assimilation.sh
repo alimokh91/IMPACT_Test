@@ -59,9 +59,9 @@ host_dvc_directory="${HPC_PREDICT_DATA_DIR}/${dvc_dir}${relative_output_director
 mkdir -p "${host_dvc_directory}"
 shell_command=$(printf "%s" \
   " \"$(realpath --relative-to="${host_dvc_directory}" $(realpath $(dirname $0)))/dvc_check_code_consistency.sh\" \"${HPC_PREDICT_IMPACT_IMAGE}\" && " \
-  " docker run --rm -u $(id -u ${USER}):$(id -g ${USER}) -v ${HPC_PREDICT_DATA_DIR}:/hpc-predict-data \"${HPC_PREDICT_IMPACT_IMAGE}\" " \
+  " docker run --rm -u \$(id -u \${USER}):\$(id -g \${USER}) -v \$(pwd)/$(realpath --relative-to="${host_dvc_directory}" ${HPC_PREDICT_DATA_DIR}):/hpc-predict-data \"${HPC_PREDICT_IMPACT_IMAGE}\" " \
   " /src/hpc-predict/IMPACT/docker/dvc/data_assimilation_config.sh "${container_decrypt_input_file}" "${container_decrypt_output_file}" && " \
-  " docker run --rm -u $(id -u ${USER}):$(id -g ${USER}) -v ${HPC_PREDICT_DATA_DIR}:/hpc-predict-data \"${HPC_PREDICT_IMPACT_IMAGE}\" " \
+  " docker run --rm -u \$(id -u \${USER}):\$(id -g \${USER}) -v \$(pwd)/$(realpath --relative-to="${host_dvc_directory}" ${HPC_PREDICT_DATA_DIR}):/hpc-predict-data \"${HPC_PREDICT_IMPACT_IMAGE}\" " \
   " /src/hpc-predict/IMPACT/docker/dvc/data_assimilation_impact.sh "${container_decrypt_output_directory}/output" ")
 
 
