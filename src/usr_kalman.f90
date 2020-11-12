@@ -259,7 +259,6 @@
   CHARACTER(LEN=8) :: count_char
   CHARACTER(LEN=2) :: count_char2
 
-  write(*,*) intervals
   phase = mod(write_kalm_count,intervals) + 1
 
   IF (rank == 0) WRITE(*,'(a,i8,a,i8,a)') 'kalman repetition', write_kalm_count/intervals+1, '   for phase', phase,' ...'

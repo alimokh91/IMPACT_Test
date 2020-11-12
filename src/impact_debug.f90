@@ -140,7 +140,7 @@ PROGRAM impact_debug
   ALLOCATE(dtime_phases(1:intervals)); dtime_phases(1:intervals) = kalman_mri_input_attr_t_heart_cycle_period/intervals
   allocate(mri_out%mri%t_coordinates(1:size(mri_inp%mri%t_coordinates)*kalman_num_time_refinements))
   mri_out%mri%t_coordinates(1) = mri_inp%mri%t_coordinates(1)
-  do i = 1, size(mri_inp%mri%t_coordinates)-1
+  do i = 1, size(mri_out%mri%t_coordinates)-1
      mri_out%mri%t_coordinates(i+1) = mri_out%mri%t_coordinates(i)+dtime_phases(i)
   end do
   mri_out%mri%intensity%time_offset = mri_inp%mri%intensity%time_offset*kalman_num_time_refinements

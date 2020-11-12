@@ -84,7 +84,7 @@
   mri_flow%mri%t_dim = mri_inst%mri%t_dim*kalman_num_time_refinements
   allocate(mri_flow%mri%t_coordinates(1:size(mri_inst%mri%t_coordinates)*kalman_num_time_refinements))
   mri_flow%mri%t_coordinates(1) = mri_inst%mri%t_coordinates(1)
-  do i = 1, size(mri_inst%mri%t_coordinates)-1
+  do i = 1, size(mri_flow%mri%t_coordinates)-1
      mri_flow%mri%t_coordinates(i+1) = mri_flow%mri%t_coordinates(i)+dtime_phases(i)
   end do
   mri_flow%mri%intensity%time_offset = mri_inst%mri%intensity%time_offset*kalman_num_time_refinements
