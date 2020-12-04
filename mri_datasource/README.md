@@ -6,9 +6,11 @@ Download Bern experimental data and convert it to hpc-predict-io format
 ```
 source python/venv/bin/activate
 cd mri_datasource
-./fetch_bern_experimental_data.sh
+../../data/fetch_scripts/fetch_bern_experiments_assimilation_in.sh
 python generate_bern_exp_meta_info.py --data bern_data_experiments_source --output bern_exp_metadata.json
-PYTHONPATH=../python/ python  convert_bern_expt_to_hpc_predict.py --input bern_data_experiments_source/bern_exp_metadata.json --output bern_data_experiments_hpc_predict/bern_experimental_dataset_flow_mri.h5
+PYTHONPATH=../python/ python  convert_bern_expt_to_hpc_predict.py --input bern_data_experiments_source/bern_exp_metadata.json --output bern_data_experiments_hpc_predict/bern_experimental_dataset_flow_mri.h5 --downsample 1 --single_rep -1
+
+Downsample factor and option to save only an instantaneous velocity field can be changed via the arguments
 ```
 
 To generate an IMPACT config.txt file, then use the following command (feel free to adjust the numerical parameters)

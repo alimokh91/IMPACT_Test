@@ -400,10 +400,14 @@ def read_hdf5(path: str):
     """Read MRI from file at path as hpc-predict-io HDF5-format"""
     mr_io_classes = { cls.group_name : cls.read_hdf5 for cls in [SegmentedFlowMRI, FlowMRI, SpaceTimeMRI, SpatialMRI] }
     mr_io_reader = None
-    with h5py.File(path, "r") as f:
-        for group_name in f.keys():
-            if mr_io_classes.get(group_name) is not None:
-                mr_io_reader = mr_io_classes[group_name]
-                break
+
+    lock = LockedFileH5Reader(path)
+    lock.open()
+    f = lock.file()
+    for group_name in f.keys():
+        if mr_io_classes.get(group_name) is not None:
+            mr_io_reader = mr_io_classes[group_name]
+            break
+    lock.close()
     return mr_io_reader(path)
-     
+

@@ -19,7 +19,7 @@ def main():
                     help='Amount of bilateral padding for periodic boundary conditions along each dimension relative to MRI grid')
     parser.add_argument('--tr', type=int,
                     help='Number of temporal refinements compared to MRI grid')
-    parser.add_argument('--config', type=str, default='config.txt.j2',
+    parser.add_argument('--config', type=str, default=os.path.join(os.path.dirname(os.path.realpath(__file__)), 'config.txt.j2'),
                     help='Jinja2 template for configuration file in IMPACT')
     parser.add_argument('--output', type=str,  default='config.txt',
                     help='Output configuration file for IMPACT')

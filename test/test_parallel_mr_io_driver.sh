@@ -2,11 +2,8 @@
 
 set -euo pipefail
 
-HPC_PREDICT_IO_TEST_MPI_FORTRAN_PROCS=$((2**1))
-MPI_NUM_PROCS=(1 ${HPC_PREDICT_IO_TEST_MPI_FORTRAN_PROCS})
-
-MOUNT_HOST_DIR="$(pwd)/tmp"
-MOUNT_CONTAINER_DIR="/mnt/test"
+HPC_PREDICT_IO_TEST_FORTRAN_MPI_SIZE=$((2**1))
+MPI_NUM_PROCS=(1 ${HPC_PREDICT_IO_TEST_FORTRAN_MPI_SIZE})
 
 source hpc_predict_io_container_setup.sh
 function container_shutdown {
@@ -16,53 +13,69 @@ trap container_shutdown EXIT
 
 function run_test() {
   echo "*** $1 started ***"
+  IFS='.' read -r test_module test_class <<<"$1"
+  mkdir -p ${CI_CACHE_FOLDER}/${test_module}/${test_class}
 
   # Filenames
-  FORTRAN_TEST_BINARY_PATH=/src/hpc-predict/hpc-predict-io/install/bin/test
-  fortran_exec_name=$2
+  #FORTRAN_TEST_BINARY_PATH=/src/hpc-predict/hpc-predict-io/install/bin/test
+  #fortran_exec_name=$2
 
-  filename_exec=${FORTRAN_TEST_BINARY_PATH}/${fortran_exec_name}
-  filename_mri=${fortran_exec_name}.h5
+  #filename_exec=${FORTRAN_TEST_BINARY_PATH}/${fortran_exec_name}
+  # filename_mri=${fortran_exec_name}.h5
   # filename_out=${fortran_exec_name}_\$\{${MPI_RANK}\}.out
   # filename_err=${fortran_exec_name}_\$\{${MPI_RANK}\}.err
 
-  IFS='.' read -r python_module test_class <<<"$1"
-  python_cmd_get_fortran_args="from ${python_module} import get_fortran_args, ${test_class}; print(get_fortran_args(${test_class}))"
-  fortran_args=$(${MPIEXEC_CMD_SINGLE} ${CONTAINER_RUN_CMD} ${MOUNT_OPT} ${CONTAINER_IMAGE} ${CONTAINER_ENTRYPOINT_LOCAL} \
-  "source /src/hpc-predict/hpc-predict-io/python/venv/bin/activate && cd ${MOUNT_CONTAINER_DIR} && \
-    HPC_PREDICT_IO_TEST_MRI_PATH=${filename_mri} \
-    HPC_PREDICT_IO_TEST_MPI_FORTRAN_PROCS=${HPC_PREDICT_IO_TEST_MPI_FORTRAN_PROCS} \
-    PYTHONPATH=/src/hpc-predict/hpc-predict-io/python:/src/hpc-predict/hpc-predict-io/test \
-    MPI_RANK=${MPI_RANK} MPI_SIZE=${MPI_SIZE} \
-    python -c \"${python_cmd_get_fortran_args}\"")
+#  IFS='.' read -r python_module test_class <<<"$1"
+#  python_cmd_get_fortran_args="from ${python_module} import get_fortran_args, ${test_class}; print(get_fortran_args(${test_class}))"
+#  fortran_cmd=$(${MPIEXEC_CMD_SINGLE} ${CONTAINER_RUN_CMD} ${MOUNT_OPT} ${CONTAINER_IMAGE} ${CONTAINER_ENTRYPOINT_LOCAL} \
+#  "source /src/hpc-predict/hpc-predict-io/python/venv/bin/activate && \
+#    PYTHONPATH=/src/hpc-predict/hpc-predict-io/python:/src/hpc-predict/hpc-predict-io/test \
+#    MPI_RANK_VAR=${MPI_RANK_VAR} MPI_SIZE_VAR=${MPI_SIZE_VAR} \
+#    HPC_PREDICT_IO_TEST_FORTRAN_MPI_SIZE=${HPC_PREDICT_IO_TEST_FORTRAN_MPI_SIZE} \
+#    python -c \"${python_cmd_get_fortran_args}\"")
 
   BASH_CMD=()
-  BASH_CMD+=("source /src/hpc-predict/hpc-predict-io/python/venv/bin/activate && cd ${MOUNT_CONTAINER_DIR} && \
-    export HPC_PREDICT_IO_TEST_MRI_PATH=${filename_mri} && \
-    export HPC_PREDICT_IO_TEST_MPI_FORTRAN_PROCS=${HPC_PREDICT_IO_TEST_MPI_FORTRAN_PROCS} && \
-    export PYTHONPATH=/src/hpc-predict/hpc-predict-io/python:/src/hpc-predict/hpc-predict-io/test && \
-    strace -o ${fortran_exec_name}.strace \
-    python -m unittest -v $1") #/src/hpc-predict/hpc-predict-io/test/test_parallel_mr_io_container.py")
-#    source scl_source enable devtoolset-7 && \
-#    strace -o ${fortran_exec_name}.strace \
-#    python -m unittest -v $1") #/src/hpc-predict/hpc-predict-io/test/test_parallel_mr_io_container.py")
-  BASH_CMD+=("cd ${MOUNT_CONTAINER_DIR} && \
-    strace -o ${fortran_exec_name}_\${${MPI_RANK}}.strace \
-    ${filename_exec} ${fortran_args}")
-#    source scl_source enable devtoolset-7 && \
-#    strace -o ${fortran_exec_name}_\${${MPI_RANK}}.strace \
-#    ${filename_exec} ${fortran_args}")
+#  BASH_CMD+=("source /src/hpc-predict/hpc-predict-io/python/venv/bin/activate && \
+#    export PYTHONPATH=/src/hpc-predict/hpc-predict-io/python:/src/hpc-predict/hpc-predict-io/test && \
+#    export HPC_PREDICT_IO_TEST_FORTRAN_MPI_SIZE=${HPC_PREDICT_IO_TEST_FORTRAN_MPI_SIZE} && \
+#    python -m unittest -v $1")
+##    strace -o ${fortran_exec_name}.strace \
+##    python -m unittest -v $1") # with strace
+#
+#  BASH_CMD+=("source /src/hpc-predict/hpc-predict-io/python/venv/bin/activate && \
+#    export PYTHONPATH=/src/hpc-predict/hpc-predict-io/python:/src/hpc-predict/hpc-predict-io/test && \
+#    export HPC_PREDICT_IO_TEST_FORTRAN_MPI_SIZE=${HPC_PREDICT_IO_TEST_FORTRAN_MPI_SIZE} && \
+#    export HPC_PREDICT_IO_TEST_FORTRAN_COMMAND=${FORTRAN_TEST_BINARY_PATH}/\$(python /src/hpc-predict/hpc-predict-io/test/test_parallel_args.py --test $1) && \
+#    echo \"HPC_PREDICT_IO_TEST_FORTRAN_COMMAND = \${HPC_PREDICT_IO_TEST_FORTRAN_COMMAND}\" && \
+#    cd ${MOUNT_CONTAINER_DIR} && \
+#    eval \${HPC_PREDICT_IO_TEST_FORTRAN_COMMAND}")
+##  BASH_CMD+=("source /src/hpc-predict/hpc-predict-io/python/venv/bin/activate && \
+##    export PYTHONPATH=/src/hpc-predict/hpc-predict-io/python:/src/hpc-predict/hpc-predict-io/test && \
+##    export HPC_PREDICT_IO_TEST_FORTRAN_MPI_SIZE=${HPC_PREDICT_IO_TEST_FORTRAN_MPI_SIZE} && \
+##    cd /src/hpc-predict/hpc-predict-io/test/ && \
+##    export HPC_PREDICT_IO_TEST_FORTRAN_EXEC=\$(python  test_parallel_args.py --test $1 --type exec) && \
+##    export HPC_PREDICT_IO_TEST_FORTRAN_ARGS=(\$(python test_parallel_args.py --test $1 --type args)) && \
+##    export HPC_PREDICT_IO_TEST_FORTRAN_OUT=\$( python  test_parallel_args.py --test $1 --type out) && \
+##    export HPC_PREDICT_IO_TEST_FORTRAN_ERR=\$( python  test_parallel_args.py --test $1 --type err) && \
+##    cd ${MOUNT_CONTAINER_DIR} && \
+##    set -x && \
+##    ${FORTRAN_TEST_BINARY_PATH}/\${HPC_PREDICT_IO_TEST_FORTRAN_EXEC} \${HPC_PREDICT_IO_TEST_FORTRAN_ARGS[@]} 1> \${HPC_PREDICT_IO_TEST_FORTRAN_OUT} 2> \${HPC_PREDICT_IO_TEST_FORTRAN_ERR}")
+#
+##  BASH_CMD+=("cd ${MOUNT_CONTAINER_DIR} && \
+##    ${FORTRAN_TEST_BINARY_PATH}/${fortran_cmd}")
+###  BASH_CMD+=("cd ${MOUNT_CONTAINER_DIR} && \
+###    strace -o ${fortran_exec_name}_\${${MPI_RANK}}.strace \
+###    ${filename_exec} ${fortran_args}") # with strace
 
-
-  #BASH_CMD+=("source ~/src/hpc-predict/hpc-predict-io/python/venv/bin/activate && \
-  #  HPC_PREDICT_IO_TEST_MRI_PATH=${filename_mri} python test/test_parallel_mr_io_container.py")
-  #BASH_CMD+=("${filename_exec} ${filename_mri} 1> ${filename_out} 2> ${filename_err}")
+  CONTAINER_ENV="--env HPC_PREDICT_IO_TEST_FORTRAN_MPI_SIZE=${HPC_PREDICT_IO_TEST_FORTRAN_MPI_SIZE}"
+  BASH_CMD+=("/src/hpc-predict/hpc-predict-io/test/test_parallel_mr_io_driver_python.sh $1")
+  BASH_CMD+=("/src/hpc-predict/hpc-predict-io/test/test_parallel_mr_io_driver_fortran.sh $1")
 
   pid=()
 
   for i in $(seq 0 1); do
       set -x
-      ${MPIEXEC_CMD[$i]} ${CONTAINER_RUN_CMD} ${MOUNT_OPT} ${CONTAINER_IMAGE} ${CONTAINER_ENTRYPOINT[$i]} "${BASH_CMD[$i]}" &
+      ${MPIEXEC_CMD[$i]} ${CONTAINER_RUN_CMD} ${MOUNT_OPT} ${CONTAINER_ENV} ${CONTAINER_IMAGE} ${CONTAINER_ENTRYPOINT[$i]} "${BASH_CMD[$i]}" &
   #    bash -c "${BASH_CMD[$i]}" &
       set +x
       pid+=("$!")
@@ -72,6 +85,8 @@ function run_test() {
       wait ${pid[$i]}
   done
 
+  rmdir ${CI_CACHE_FOLDER}/${test_module}/${test_class}
+  rmdir ${CI_CACHE_FOLDER}/${test_module}
   echo "*** $1 finished ***"
 }
 
@@ -86,8 +101,6 @@ run_test 'test_parallel_mr_io_bidirectional_container.TestSpatialMRIBidirectiona
 run_test 'test_parallel_mr_io_bidirectional_container.TestSpaceTimeMRIBidirectional'           'mr_io_test_parallel_reader_writer_space_time'
 run_test 'test_parallel_mr_io_bidirectional_container.TestFlowMRIBidirectional'                'mr_io_test_parallel_reader_writer_flow'
 run_test 'test_parallel_mr_io_bidirectional_container.TestSegmentedFlowMRIBidirectional'       'mr_io_test_parallel_reader_writer_segmented_flow'
-run_test 'test_parallel_mr_io_bidirectional_container.TestFlowMRIPaddedBidirectional'                      'mr_io_test_parallel_reader_writer_flow_padded'
-run_test 'test_parallel_mr_io_bidirectional_container.TestSegmentedFlowMRIPaddedBidirectional'             'mr_io_test_parallel_reader_writer_segmented_flow_padded'
 run_test 'test_parallel_mr_io_bidirectional_container.TestFlowMRIPaddedBidirectional'                      'mr_io_test_parallel_reader_writer_flow_padded'
 run_test 'test_parallel_mr_io_bidirectional_container.TestSegmentedFlowMRIPaddedBidirectional'             'mr_io_test_parallel_reader_writer_segmented_flow_padded'
 run_test 'test_parallel_mr_io_bidirectional_container.TestFlowMRIPaddedToSpaceTimeBidirectional'           'mr_io_test_parallel_reader_writer_flow_padded_to_space_time'

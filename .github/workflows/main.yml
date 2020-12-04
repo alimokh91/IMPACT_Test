@@ -1,0 +1,37 @@
+ 
+# Based on https://github.com/spyoungtech/mirror-action/blob/master/.github/workflows/main.yml
+
+name: CI
+
+# Controls when the action will run. Triggers the workflow on push or pull request
+# events but only for the master branch
+on:
+  push:
+    branches: '**'
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+    - uses: actions/checkout@v1
+
+    # Mirror repository to REMOTE for CI
+    - name: mirror repository
+      run: |
+        mkdir ~/.ssh
+        echo "${GIT_SSH_PRIVATE_KEY}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        export GIT_SSH_COMMAND="ssh -i ~/.ssh/id_rsa -o IdentitiesOnly=yes -o StrictHostKeyChecking=no"
+        git remote add mirror "${REMOTE}"
+        git remote show mirror
+        git push --tags --force --prune mirror 'refs/remotes/origin/*:refs/heads/*'
+      env:
+        REMOTE: git@gitlab.com:cscs-ci/hpc-predict/hpc-predict-io.git
+        GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_KEY }}
+        

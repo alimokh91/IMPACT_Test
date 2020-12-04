@@ -1,16 +1,14 @@
 import unittest
-import subprocess as sp
 import os
 import numpy as np
 from mr_io import SpatialMRI, SpaceTimeMRI, FlowMRI, SegmentedFlowMRI
-from test_common import spatial_hyperslab_dims_test,\
+from test_common import filename_mri, filename_out, filename_err, remove_test_files,\
+                        validate_group_name,\
+                        spatial_hyperslab_dims_test,\
                         spatial_hyperslab_loc_test,\
                         validate_spatial_fort_array,\
                         read_out, print_err
 
-def validate_group_name(test_inst, fort_group_name):
-    test_inst.assertEqual(fort_group_name, type(test_inst).mri_group_name)        
-    
 
 def validate_dist_spatial_fort_array(test_inst, mpi_rank, array, out_lines):
     test_cls = type(test_inst)
@@ -129,56 +127,11 @@ def validate_dist_spacetime_matrix_fort_array(test_inst, mpi_rank, array, out_li
     validate_dist_spacetime_fort_array(test_inst, mpi_rank, array, out_lines, transpose_dims=(2,1,0,3,5,4))
 
 
-def remove_test_files(test_inst):
-    # Clean up file
-    test_cls = type(test_inst)
-    files = [test_cls.filename_mri] + \
-          [test_cls.filename_out_rank % (mpi_rank) for mpi_rank in range(test_cls.mpi_proc)] + \
-          [test_cls.filename_err_rank % (mpi_rank) for mpi_rank in range(test_cls.mpi_proc)]
-    for f in files:
-        os.remove(f)
-
-
-def get_fortran_args(test_cls):
-    from mr_io_domain_decomp import spatial_hyperslab_dims
-    mpi_cart_dims = spatial_hyperslab_dims(test_cls.mpi_proc, test_cls.spatial_feature_shape)
-
-    fort_args = "%d %d %d %s " % \
-                   (*mpi_cart_dims,
-                    test_cls.filename_mri)
-
-    if test_cls in [TestFlowMRIPadded, TestSegmentedFlowMRIPadded]:
-        test_cls.num_vox = test_cls.spatial_feature_shape
-
-        num_pad_vox = [int(np.ceil(2. * test_cls.padding[i] * test_cls.num_vox[i])) for i in range(3)]
-
-        num_ext_vox = [((test_cls.num_vox[i] + num_pad_vox[i] + mpi_cart_dims[i] - 1) // mpi_cart_dims[i]) \
-                       * mpi_cart_dims[i] for i in range(3)]
-        num_pad_vox_lhs = [(num_ext_vox[i] - test_cls.num_vox[i]) // 2 for i in range(3)]
-        num_pad_vox_rhs = [(num_ext_vox[i] - test_cls.num_vox[i] + 1) // 2 for i in range(3)]
-        num_vox_per_proc = [num_ext_vox[i] // mpi_cart_dims[i] for i in range(3)]
-
-        fort_args += " %d %d %d %d %d %d " % (*num_pad_vox_lhs, *num_pad_vox_rhs)
-
-    fort_args += " 1> %s 2> %s" % \
-                 (test_cls.filename_out_rank % ("${%s}" % os.environ["MPI_RANK"]),
-                  test_cls.filename_err_rank % ("${%s}" % os.environ["MPI_RANK"]))
-
-    return fort_args
-
-
 class TestSpatialMRI(unittest.TestCase):
-        
-    # number of Fortran MPI processes
-    mpi_proc = int(os.environ['HPC_PREDICT_IO_TEST_MPI_FORTRAN_PROCS']) #2**4
+
+    fortran_exec = "mr_io_test_parallel_reader_container"
+    mpi_proc = int(os.environ['HPC_PREDICT_IO_TEST_FORTRAN_MPI_SIZE']) #2**4
     spatial_feature_shape=(91,31,71)
-
-    # Filenames
-    filename_mri = os.environ['HPC_PREDICT_IO_TEST_MRI_PATH']  # + ".h5"
-    filename_out_rank = os.environ['HPC_PREDICT_IO_TEST_MRI_PATH'][:-3] + "_%s.out"
-    filename_err_rank = os.environ['HPC_PREDICT_IO_TEST_MRI_PATH'][:-3] + "_%s.err"
-
-    mri_group_name = "spatial-mri"
 
     def setUp(self):
         # Initialize the MRI data
@@ -188,14 +141,11 @@ class TestSpatialMRI(unittest.TestCase):
 
     def test_communicator(self):
         # Write HDF5 from Python and read HDF5 from Fortran
-        self.mri.write_hdf5(type(self).filename_mri)
+        self.mri.write_hdf5(filename_mri(self))
 
         for mpi_rank in range(type(self).mpi_proc):
-            filename_out = type(self).filename_out_rank % (mpi_rank)
-            filename_err = type(self).filename_err_rank % (mpi_rank)
-
-            out_lines = read_out(filename_out)
-            print_err(filename_err)
+            out_lines = read_out(filename_out(self), mpi_rank)
+            print_err(filename_err(self), mpi_rank)
 
             validate_group_name(self, out_lines[0])
             validate_dist_spatial_fort_array(self, mpi_rank, self.mri.scalar_feature, out_lines[1:5])
@@ -206,37 +156,27 @@ class TestSpatialMRI(unittest.TestCase):
 
 class TestSpaceTimeMRI(unittest.TestCase):
 
-    # number of Fortran MPI processes
-    mpi_proc = int(os.environ['HPC_PREDICT_IO_TEST_MPI_FORTRAN_PROCS']) #2**3
-    spatial_feature_shape=(67,43,29)
-
-    # Filenames
-    filename_mri = os.environ['HPC_PREDICT_IO_TEST_MRI_PATH']  # + ".h5"
-    filename_out_rank = os.environ['HPC_PREDICT_IO_TEST_MRI_PATH'][:-3] + "_%s.out"
-    filename_err_rank = os.environ['HPC_PREDICT_IO_TEST_MRI_PATH'][:-3] + "_%s.err"
-
-    mri_group_name = "space-time-mri"
+    fortran_exec = "mr_io_test_parallel_reader_space_time_container"
+    mpi_proc = int(os.environ['HPC_PREDICT_IO_TEST_FORTRAN_MPI_SIZE']) #2**3
+    spatial_feature_shape = (17, 23, 19)
 
     def setUp(self):
         # Initialize the MRI datan
-        time = np.random.rand(11)
+        time = np.random.rand(7)
         geometry = [np.random.rand(type(self).spatial_feature_shape[0]), \
                     np.random.rand(type(self).spatial_feature_shape[1]), \
                     np.random.rand(type(self).spatial_feature_shape[2])]
-        vector_feature = np.random.rand(*type(self).spatial_feature_shape, 11, 3)
+        vector_feature = np.random.rand(*type(self).spatial_feature_shape, 7, 3)
         self.mri = SpaceTimeMRI(geometry, time, vector_feature)
         self.mpi_cart_dims = spatial_hyperslab_dims_test(type(self), self.mri.vector_feature)
 
     def test_communicator(self):
         # Write HDF5 from Python and read HDF5 from Fortran
-        self.mri.write_hdf5(type(self).filename_mri)
+        self.mri.write_hdf5(filename_mri(self))
 
         for mpi_rank in range(type(self).mpi_proc):
-            filename_out = type(self).filename_out_rank % (mpi_rank)
-            filename_err = type(self).filename_err_rank % (mpi_rank)
-
-            out_lines = read_out(filename_out)
-            print_err(filename_err)
+            out_lines = read_out(filename_out(self), mpi_rank)
+            print_err(filename_err(self), mpi_rank)
 
             validate_group_name(self, out_lines[0])
 
@@ -253,40 +193,30 @@ class TestSpaceTimeMRI(unittest.TestCase):
 
 class TestFlowMRI(unittest.TestCase):  # FIXME: coordinates test...
 
-    # number of Fortran MPI processes
-    mpi_proc = int(os.environ['HPC_PREDICT_IO_TEST_MPI_FORTRAN_PROCS']) #2**3
-    spatial_feature_shape=(67,43,29)
-
-    # Filenames
-    filename_mri = os.environ['HPC_PREDICT_IO_TEST_MRI_PATH']  # + ".h5"
-    filename_out_rank = os.environ['HPC_PREDICT_IO_TEST_MRI_PATH'][:-3] + "_%s.out"
-    filename_err_rank = os.environ['HPC_PREDICT_IO_TEST_MRI_PATH'][:-3] + "_%s.err"
-
-    mri_group_name = "flow-mri"
+    fortran_exec = "mr_io_test_parallel_reader_flow_container"
+    mpi_proc = int(os.environ['HPC_PREDICT_IO_TEST_FORTRAN_MPI_SIZE']) #2**3
+    spatial_feature_shape = (17, 23, 19)
 
     def setUp(self):
         # Initialize the MRI data
-        time = np.random.rand(11)
+        time = np.random.rand(7)
         time_heart_cycle_period = np.max(time)
         geometry = [np.random.rand(type(self).spatial_feature_shape[0]), \
                     np.random.rand(type(self).spatial_feature_shape[1]), \
                     np.random.rand(type(self).spatial_feature_shape[2])]
-        intensity = np.random.rand(*type(self).spatial_feature_shape, 11)
-        velocity_mean = np.random.rand(*type(self).spatial_feature_shape, 11, 3)
-        velocity_cov = np.random.rand(*type(self).spatial_feature_shape, 11, 3, 5)
+        intensity = np.random.rand(*type(self).spatial_feature_shape, 7)
+        velocity_mean = np.random.rand(*type(self).spatial_feature_shape, 7, 3)
+        velocity_cov = np.random.rand(*type(self).spatial_feature_shape, 7, 3, 5)
         self.mri = FlowMRI(geometry, time, time_heart_cycle_period, intensity, velocity_mean, velocity_cov)
         self.mpi_cart_dims = spatial_hyperslab_dims_test(type(self), self.mri.intensity)
 
     def test_communicator(self):
         # Write HDF5 from Python and read HDF5 from Fortran
-        self.mri.write_hdf5(type(self).filename_mri)
+        self.mri.write_hdf5(filename_mri(self))
 
         for mpi_rank in range(type(self).mpi_proc):
-            filename_out = type(self).filename_out_rank % (mpi_rank)
-            filename_err = type(self).filename_err_rank % (mpi_rank)
-
-            out_lines = read_out(filename_out)
-            print_err(filename_err)
+            out_lines = read_out(filename_out(self), mpi_rank)
+            print_err(filename_err(self), mpi_rank)
 
             validate_group_name(self, out_lines[0])
 
@@ -305,42 +235,32 @@ class TestFlowMRI(unittest.TestCase):  # FIXME: coordinates test...
 
 class TestSegmentedFlowMRI(unittest.TestCase):  # FIXME: coordinates test...
 
-    # number of Fortran MPI processes
-    mpi_proc = int(os.environ['HPC_PREDICT_IO_TEST_MPI_FORTRAN_PROCS']) #2**3
-    spatial_feature_shape=(67,43,29)
-
-    # Filenames
-    filename_mri = os.environ['HPC_PREDICT_IO_TEST_MRI_PATH']  # + ".h5"
-    filename_out_rank = os.environ['HPC_PREDICT_IO_TEST_MRI_PATH'][:-3] + "_%s.out"
-    filename_err_rank = os.environ['HPC_PREDICT_IO_TEST_MRI_PATH'][:-3] + "_%s.err"
-
-    mri_group_name = "segmented-flow-mri"
+    fortran_exec = "mr_io_test_parallel_reader_segmented_flow_container"
+    mpi_proc = int(os.environ['HPC_PREDICT_IO_TEST_FORTRAN_MPI_SIZE']) #2**3
+    spatial_feature_shape = (17, 23, 19)
 
     def setUp(self):
         # Initialize the MRI data
-        time = np.random.rand(11)
+        time = np.random.rand(7)
         time_heart_cycle_period = np.max(time)
         geometry = [np.random.rand(type(self).spatial_feature_shape[0]), \
                     np.random.rand(type(self).spatial_feature_shape[1]), \
                     np.random.rand(type(self).spatial_feature_shape[2])]
-        intensity = np.random.rand(*type(self).spatial_feature_shape, 11)
-        velocity_mean = np.random.rand(*type(self).spatial_feature_shape, 11, 3)
-        velocity_cov = np.random.rand(*type(self).spatial_feature_shape, 11, 3, 5)
-        segmentation_prob = np.random.rand(*type(self).spatial_feature_shape, 11)
+        intensity = np.random.rand(*type(self).spatial_feature_shape, 7)
+        velocity_mean = np.random.rand(*type(self).spatial_feature_shape, 7, 3)
+        velocity_cov = np.random.rand(*type(self).spatial_feature_shape, 7, 3, 5)
+        segmentation_prob = np.random.rand(*type(self).spatial_feature_shape, 7)
         self.mri = SegmentedFlowMRI(geometry, time, time_heart_cycle_period, intensity, velocity_mean, velocity_cov,
                                     segmentation_prob)
         self.mpi_cart_dims = spatial_hyperslab_dims_test(type(self), self.mri.intensity)
 
     def test_communicator(self):
         # Write HDF5 from Python and read HDF5 from Fortran
-        self.mri.write_hdf5(type(self).filename_mri)
+        self.mri.write_hdf5(filename_mri(self))
 
         for mpi_rank in range(type(self).mpi_proc):
-            filename_out = type(self).filename_out_rank % (mpi_rank)
-            filename_err = type(self).filename_err_rank % (mpi_rank)
-
-            out_lines = read_out(filename_out)
-            print_err(filename_err)
+            out_lines = read_out(filename_out(self), mpi_rank)
+            print_err(filename_err(self), mpi_rank)
 
             validate_group_name(self, out_lines[0])
 
@@ -360,31 +280,23 @@ class TestSegmentedFlowMRI(unittest.TestCase):  # FIXME: coordinates test...
 
 class TestFlowMRIPadded(unittest.TestCase):  # FIXME: coordinates test...
 
-    # number of Fortran MPI processes
-    mpi_proc = int(os.environ['HPC_PREDICT_IO_TEST_MPI_FORTRAN_PROCS']) #2**3
-    spatial_feature_shape=(67,43,29)
-
-    # Filenames
-    filename_mri = os.environ['HPC_PREDICT_IO_TEST_MRI_PATH']  # + ".h5"
-    filename_out_rank = os.environ['HPC_PREDICT_IO_TEST_MRI_PATH'][:-3] + "_%s.out"
-    filename_err_rank = os.environ['HPC_PREDICT_IO_TEST_MRI_PATH'][:-3] + "_%s.err"
-
-    mri_group_name = "flow-mri"
-
+    fortran_exec = "mr_io_test_parallel_reader_flow_padded_container"
+    mpi_proc = int(os.environ['HPC_PREDICT_IO_TEST_FORTRAN_MPI_SIZE']) #2**3
+    spatial_feature_shape = (17, 23, 19)
     padding = (1.5, 1.4, 1.7)
 
     def setUp(self):
         test_cls = type(self)
 
         # Initialize the MRI data
-        time = np.random.rand(11)
+        time = np.random.rand(7)
         time_heart_cycle_period = np.max(time)
         geometry = [np.random.rand(type(self).spatial_feature_shape[0]), \
                     np.random.rand(type(self).spatial_feature_shape[1]), \
                     np.random.rand(type(self).spatial_feature_shape[2])]
-        intensity = np.random.rand(*type(self).spatial_feature_shape, 11)
-        velocity_mean = np.random.rand(*type(self).spatial_feature_shape, 11, 3)
-        velocity_cov = np.random.rand(*type(self).spatial_feature_shape, 11, 3, 5)
+        intensity = np.random.rand(*type(self).spatial_feature_shape, 7)
+        velocity_mean = np.random.rand(*type(self).spatial_feature_shape, 7, 3)
+        velocity_cov = np.random.rand(*type(self).spatial_feature_shape, 7, 3, 5)
         self.mri = FlowMRI(geometry, time, time_heart_cycle_period, intensity, velocity_mean, velocity_cov)
 
         self.mpi_cart_dims = spatial_hyperslab_dims_test(type(self), self.mri.intensity)
@@ -401,14 +313,11 @@ class TestFlowMRIPadded(unittest.TestCase):  # FIXME: coordinates test...
 
     def test_communicator(self):
         # Write HDF5 from Python and read HDF5 from Fortran
-        self.mri.write_hdf5(type(self).filename_mri)
+        self.mri.write_hdf5(filename_mri(self))
 
         for mpi_rank in range(type(self).mpi_proc):
-            filename_out = type(self).filename_out_rank % (mpi_rank)
-            filename_err = type(self).filename_err_rank % (mpi_rank)
-
-            out_lines = read_out(filename_out)
-            print_err(filename_err)
+            out_lines = read_out(filename_out(self), mpi_rank)
+            print_err(filename_err(self), mpi_rank)
 
             validate_group_name(self, out_lines[0])
 
@@ -429,33 +338,25 @@ class TestFlowMRIPadded(unittest.TestCase):  # FIXME: coordinates test...
 
 class TestSegmentedFlowMRIPadded(unittest.TestCase):  # FIXME: coordinates test...
 
-    # number of Fortran MPI processes
-    mpi_proc = int(os.environ['HPC_PREDICT_IO_TEST_MPI_FORTRAN_PROCS']) #2**3
-    spatial_feature_shape=(67,43,29)
-
-    # Filenames
-    filename_mri = os.environ['HPC_PREDICT_IO_TEST_MRI_PATH']  # + ".h5"
-    filename_out_rank = os.environ['HPC_PREDICT_IO_TEST_MRI_PATH'][:-3] + "_%s.out"
-    filename_err_rank = os.environ['HPC_PREDICT_IO_TEST_MRI_PATH'][:-3] + "_%s.err"
-
-    mri_group_name = "segmented-flow-mri"
-
+    fortran_exec = "mr_io_test_parallel_reader_segmented_flow_padded_container"
+    mpi_proc = int(os.environ['HPC_PREDICT_IO_TEST_FORTRAN_MPI_SIZE']) #2**3
+    spatial_feature_shape = (17, 23, 19)
     padding = (1.5, 1.4, 1.7)
 
     def setUp(self):
         test_cls = type(self)
 
         # Initialize the MRI data
-        time = np.random.rand(11)
+        time = np.random.rand(7)
         time_heart_cycle_period = np.max(time)
         geometry = [np.random.rand(67), np.random.rand(43), np.random.rand(29)]
         geometry = [np.random.rand(type(self).spatial_feature_shape[0]), \
                     np.random.rand(type(self).spatial_feature_shape[1]), \
                     np.random.rand(type(self).spatial_feature_shape[2])]
-        intensity = np.random.rand(*type(self).spatial_feature_shape, 11)
-        velocity_mean = np.random.rand(*type(self).spatial_feature_shape, 11, 3)
-        velocity_cov = np.random.rand(*type(self).spatial_feature_shape, 11, 3, 5)
-        segmentation_prob = np.random.rand(*type(self).spatial_feature_shape, 11)
+        intensity = np.random.rand(*type(self).spatial_feature_shape, 7)
+        velocity_mean = np.random.rand(*type(self).spatial_feature_shape, 7, 3)
+        velocity_cov = np.random.rand(*type(self).spatial_feature_shape, 7, 3, 5)
+        segmentation_prob = np.random.rand(*type(self).spatial_feature_shape, 7)
         self.mri = SegmentedFlowMRI(geometry, time, time_heart_cycle_period, intensity, velocity_mean, velocity_cov,
                                     segmentation_prob)
 
@@ -473,14 +374,11 @@ class TestSegmentedFlowMRIPadded(unittest.TestCase):  # FIXME: coordinates test.
 
     def test_communicator(self):
         # Write HDF5 from Python and read HDF5 from Fortran
-        self.mri.write_hdf5(type(self).filename_mri)
+        self.mri.write_hdf5(filename_mri(self))
 
         for mpi_rank in range(type(self).mpi_proc):
-            filename_out = type(self).filename_out_rank % (mpi_rank)
-            filename_err = type(self).filename_err_rank % (mpi_rank)
-
-            out_lines = read_out(filename_out)
-            print_err(filename_err)
+            out_lines = read_out(filename_out(self), mpi_rank)
+            print_err(filename_err(self), mpi_rank)
 
             validate_group_name(self, out_lines[0])
 
@@ -498,7 +396,6 @@ class TestSegmentedFlowMRIPadded(unittest.TestCase):  # FIXME: coordinates test.
                                                       out_lines[38:47])  # 7+2
 
     def tearDown(self):
-        #         pass
         remove_test_files(self)
 
 

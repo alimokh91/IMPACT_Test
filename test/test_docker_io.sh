@@ -2,10 +2,10 @@
 
 set -euxo pipefail
 
-CONTAINER_REGISTRY=${CONTAINER_REGISTRY:-lukasgd}
+CONTAINER_REGISTRY=${CONTAINER_REGISTRY:-local}
 
-export BUILD_ENV_IMAGE="${CONTAINER_REGISTRY}/hpc-predict:io-build-env"
-export DEPLOY_IMAGE="${CONTAINER_REGISTRY}/hpc-predict:io-deploy"
+export BUILD_ENV_IMAGE="${CONTAINER_REGISTRY}/hpc-predict/io/build-env"
+export DEPLOY_IMAGE="${CONTAINER_REGISTRY}/hpc-predict/io/deploy"
 
 ../docker/build_deploy.sh
 
