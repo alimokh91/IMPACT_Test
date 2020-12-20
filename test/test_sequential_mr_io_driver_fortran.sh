@@ -14,8 +14,8 @@ HPC_PREDICT_IO_TEST_FORTRAN_COMMAND=$(python /src/hpc-predict/hpc-predict-io/tes
 echo "HPC_PREDICT_IO_TEST_FORTRAN_COMMAND = ${HPC_PREDICT_IO_TEST_FORTRAN_COMMAND}"
 
 IFS='.' read -r test_module test_class <<<"$1"
-[[ -d "${CI_CACHE_FOLDER}/decrypt" ]] && decrypt_dir="decrypt/"
-cd ${CI_CACHE_FOLDER}/${test_module}/${decrypt_dir}${test_class}
+[[ -d "${CI_CACHE_FOLDER}/decrypt" ]] && decrypt_dir="decrypt/" || decrypt_dir=""
+cd ${CI_CACHE_FOLDER}/${decrypt_dir}${test_module}/${test_class}
 
 set -x
 echo "$(pwd)"
