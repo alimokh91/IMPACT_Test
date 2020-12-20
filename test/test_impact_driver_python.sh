@@ -12,7 +12,8 @@ export FORTRAN_TEST_BINARY_PATH=/src/hpc-predict/hpc-predict-io/install/bin/test
 # export HPC_PREDICT_IO_TEST_FORTRAN_MPI_SIZE=${HPC_PREDICT_IO_TEST_FORTRAN_MPI_SIZE}
 
 IFS='.' read -r test_module test_class <<<"$1"
-cd ${CI_CACHE_FOLDER}/${test_module}/${test_class}
+[[ -d "${CI_CACHE_FOLDER}/decrypt" ]] && decrypt_dir="decrypt/" || decrypt_dir=""
+cd ${CI_CACHE_FOLDER}/${test_module}/${decrypt_dir}${test_class}
 
 set -x
 echo "$(pwd)"
