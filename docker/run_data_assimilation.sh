@@ -45,10 +45,10 @@ shell_command=$(printf "%s" \
     "--input-mri \"${container_input_directory}/${CNN_SEGMENTER_INFERENCE_RESULT}\" " \
     "--output-mri \"${container_output_directory}/${IMPACT_DATA_ASSIMILATION_RESULT}\" " \
     "--sr 2 2 2 " \
-    "--padding 0.5 0.5 0.5 " \
+    "--padding 0.2 0.2 0.2 " \
     "--tr 2 " \
     "--output \"${container_output_directory}/config.txt\" " \
-    "--np 4")
+    "--np 16")
     # removed due to redundancy: "--config /src/hpc-predict/hpc-predict-io/python/config.txt.j2 " \
 
 set -x
@@ -60,8 +60,8 @@ set +x
 shell_command=$(printf "%s" \
     "cd \"${container_output_directory}\" && " \
     "mpirun " \
-    "-np 4 " \
-    "/src/hpc-predict/IMPACT/prog/impact_debug.exe")
+    "-np 16 " \
+    "/src/hpc-predict/IMPACT/prog/impact.exe")
 
 set -x
 docker run --rm -u $(id -u ${USER}):$(id -g ${USER}) -v ${HPC_PREDICT_DATA_DIR}:/hpc-predict-data --entrypoint bash "${HPC_PREDICT_IMPACT_IMAGE}" -c "${shell_command}" 

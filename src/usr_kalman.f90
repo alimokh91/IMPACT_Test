@@ -64,14 +64,13 @@
   !===========================================================================================================
   !=== read the observed data (components, time, x, y, z) ====================================================
   !===========================================================================================================
-  if (associated(mri_inst).eqv..false.) then
+!  if (associated(mri_inst).eqv..false.) then
      nullify(mri_inst); allocate(mri_inst)
      mri_inst%domain_padding = kalman_domain_padding
      CALL mr_io_read_parallel_segmentedflow_padded(MPI_COMM_WORLD, MPI_INFO_NULL, (/NB1,NB2,NB3/), &
           trim(kalman_mri_input_file_path), mri_inst)
-          !trim(kalman_mri_input_file_path)//'.h5', mri_inst)
      CALL h5open_f(herror) ! Required as hpc-predict-io closes HDF5 environment with h5close_f
-  end if
+!  end if
   mri_inst%mri%velocity_mean%array = mri_inst%mri%velocity_mean%array/U_ref
   mri_inst%mri%velocity_cov%array  = mri_inst%mri%velocity_cov%array/U_ref/U_ref
   !===========================================================================================================
@@ -91,6 +90,8 @@
   bounds(2,2) = ubound(mri_inst%mri%velocity_mean%array,4)
   bounds(1,3) = lbound(mri_inst%mri%velocity_mean%array,5)
   bounds(2,3) = ubound(mri_inst%mri%velocity_mean%array,5)
+
+  write(*,*) 'sonoqui'
 
   if (size(mri_inst%mri%velocity_mean%array,3)*size(mri_inst%mri%velocity_mean%array,4)*size(mri_inst%mri%velocity_mean%array,5).ne.0) then
      allocate(kalman_first)
@@ -368,7 +369,7 @@
  
           m = 0
           klmn%obs_covar(3*m+1:3*m+3,3*m+1:3*m+3) = mri_inst%mri%velocity_cov%array(1:3,1:3,phase,i,j,k)
-          if (mri_inst%mri%segmentation_prob%array(phase,i,j,k).ge.0.0) then
+          if (mri_inst%mri%segmentation_prob%array(phase,i,j,k).le.0.5) then
              klmn%obs_covar(3*m+1:3*m+3,3*m+1:3*m+3) = 1.0e6+klmn%obs_covar(3*m+1:3*m+3,3*m+1:3*m+3)
           end if
           klmn%obs_data (3*m+1:3*m+3,1) = mri_inst%mri%velocity_mean%array (1:3,phase,i,j,k)

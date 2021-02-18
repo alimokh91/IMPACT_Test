@@ -47,8 +47,8 @@ MODULE mod_timeint
 
   !--- diverse Files <F6>ffnen ----------------------------------------------------------------------------------
   NULLIFY(kalman_first)
-  IF (dtime_out_kalm /= 0.) CALL open_kalman
-  IF (dtime_out_scal /= 0. .or. dtime_out_kalm /=  0. ) CALL open_stats
+  CALL open_kalman
+  CALL open_stats
 
   IF (restart == 0) THEN
      time          = time_start

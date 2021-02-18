@@ -648,7 +648,7 @@ MODULE usr_func
   INTEGER            :: i,j,k,ii,jj,kk,m,n
   INTEGER, DIMENSION(2,3) :: bounds
   REAL :: vel_voxel(1:3), pulse,time_inst,time_2,time_1
-  INTEGER :: ph_1,ph_2
+  INTEGER :: ph_1,ph_2,inflow_bds
 
   bounds(1,1) = lbound(mri_inst%mri%velocity_mean%array,3)
   bounds(2,1) = ubound(mri_inst%mri%velocity_mean%array,3)
@@ -670,10 +670,12 @@ MODULE usr_func
      time_1 = mri_inst%mri%t_coordinates(ph_1)
   end if
 
+  !--- wall boundary conditions ---
   DO k = bounds(1,3), bounds(2,3)
     DO j = bounds(1,2), bounds(2,2)
       DO i = bounds(1,1), bounds(2,1)
-        if (mri_inst%mri%segmentation_prob%array(phase,i,j,k) .ge. 0.0 ) then
+
+        if (mri_inst%mri%segmentation_prob%array(phase,i,j,k) .le. 0.5 ) then
 
           m =      i-bounds(1,1)
           m = m + (j-bounds(1,2))*size(mri_inst%mri%velocity_mean%array,3)
@@ -701,9 +703,51 @@ MODULE usr_func
           END DO
 
         end if
+
       END DO
     END DO
   END DO
+
+  !--- inflow boundary conditions ---
+  if (bounds(1,2).le.5 .and. bounds(2,2).ne.0) then
+  inflow_bds = min(5,bounds(2,2))
+  DO k = bounds(1,3), bounds(2,3)
+    DO j = bounds(1,2), inflow_bds
+      DO i = bounds(1,1), bounds(2,1)
+
+        if (mri_inst%mri%segmentation_prob%array(phase,i,j,k) .gt. 0.5 ) then
+
+          m =      i-bounds(1,1)
+          m = m + (j-bounds(1,2))*size(mri_inst%mri%velocity_mean%array,3)
+          m = m + (k-bounds(1,3))*size(mri_inst%mri%velocity_mean%array,3)*size(mri_inst%mri%velocity_mean%array,4)
+ 
+          DO kk = (k-1)*kalman_num_spatial_refinements(3)+1,k*kalman_num_spatial_refinements(3)+1
+            DO jj = (j-1)*kalman_num_spatial_refinements(2)+1,j*kalman_num_spatial_refinements(2)+1
+              DO ii = (i-1)*kalman_num_spatial_refinements(1)+1,i*kalman_num_spatial_refinements(1)+1
+                n =      ii-((bounds(1,1)-1)*kalman_num_spatial_refinements(1)+1)
+                n = n + (jj-((bounds(1,2)-1)*kalman_num_spatial_refinements(2)+1))* &
+                        (size(mri_inst%mri%velocity_mean%array,3)*kalman_num_spatial_refinements(1)+1)
+                n = n + (kk-((bounds(1,3)-1)*kalman_num_spatial_refinements(3)+1))* &
+                        (size(mri_inst%mri%velocity_mean%array,3)*kalman_num_spatial_refinements(1)+1) * &
+                        (size(mri_inst%mri%velocity_mean%array,4)*kalman_num_spatial_refinements(2)+1)
+
+                vel_voxel(1:3) =      (time_inst-time_1)/(time_2-time_1) *mri_inst%mri%velocity_mean%array(1:3,ph_2,i,j,k) + &
+                                 (1.0-(time_inst-time_1)/(time_2-time_1))*mri_inst%mri%velocity_mean%array(1:3,ph_1,i,j,k)
+
+                nl(ii,jj,kk,1) = nl(ii,jj,kk,1)-(vel_voxel(1)-vel(ii,jj,kk,1))/(dtime*aRK(substep))/wgt_interp(ii,jj,kk)
+                nl(ii,jj,kk,2) = nl(ii,jj,kk,2)-(vel_voxel(2)-vel(ii,jj,kk,2))/(dtime*aRK(substep))/wgt_interp(ii,jj,kk)
+                nl(ii,jj,kk,3) = nl(ii,jj,kk,3)-(vel_voxel(3)-vel(ii,jj,kk,3))/(dtime*aRK(substep))/wgt_interp(ii,jj,kk)
+
+              END DO
+            END DO
+          END DO
+
+        end if
+
+      END DO
+    END DO
+  END DO
+  end if
 
   END SUBROUTINE apply_fringe_forcing
 
