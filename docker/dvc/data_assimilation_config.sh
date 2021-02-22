@@ -16,6 +16,7 @@ export PYTHONPATH=/src/hpc-predict/hpc-predict-io/python
 # Generate config file
 # FIXME: Move input configuration on commandline here to a tracked file
 set -x
+mkdir -p "$(dirname ${container_output_file})"
 python3 -u \
     -m mr_io_impact_config \
     --input-mri "${container_input_file}" \

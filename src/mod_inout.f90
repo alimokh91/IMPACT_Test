@@ -74,7 +74,6 @@ MODULE mod_inout
   CHARACTER(LEN=1)       ::  conc_number
   CHARACTER(LEN=50)      ::  write_dir
 
-  
   IF (rank == 0) WRITE(*,'(a)') 'writing fields ...'
   
   !===========================================================================================================
@@ -602,12 +601,16 @@ MODULE mod_inout
   CALL write_hdf_infoINT (1     ,.TRUE. ,attr_yes,'restart'          ,scalar=restart          )
   CALL write_hdf_infoINT (1     ,.TRUE. ,attr_yes,'write_count'      ,scalar=write_count      )
   CALL write_hdf_infoINT (1     ,.TRUE. ,attr_yes,'write_stats_count',scalar=write_stats_count)
+  CALL write_hdf_infoINT (1     ,.TRUE. ,attr_yes,'write_kalm_count' ,scalar=write_kalm_count )
   CALL write_hdf_infoREAL(1     ,.TRUE. ,attr_yes,'time_out_vect'    ,scalar=time_out_vect    )
   CALL write_hdf_infoREAL(1     ,.TRUE. ,attr_yes,'time_out_scal'    ,scalar=time_out_scal    )
+  CALL write_hdf_infoREAL(1     ,.TRUE. ,attr_yes,'time_out_kalm'    ,scalar=time_out_kalm    )
   CALL write_hdf_infoREAL(1     ,.TRUE. ,attr_yes,'dtime_out_vect'   ,scalar=dtime_out_vect   )
   CALL write_hdf_infoREAL(1     ,.TRUE. ,attr_yes,'dtime_out_scal'   ,scalar=dtime_out_scal   )
+  CALL write_hdf_infoREAL(1     ,.TRUE. ,attr_yes,'dtime_out_kalm'   ,scalar=dtime_out_kalm   )
   CALL write_hdf_infoLOG (1     ,.TRUE. ,attr_yes,'write_out_vect'   ,scalar=write_out_vect   )
   CALL write_hdf_infoLOG (1     ,.TRUE. ,attr_yes,'write_out_scal'   ,scalar=write_out_scal   )
+  CALL write_hdf_infoLOG (1     ,.TRUE. ,attr_yes,'write_out_kalm'   ,scalar=write_out_kalm   )
   CALL write_hdf_infoLOG (1     ,.TRUE. ,attr_yes,'new_dtime'        ,scalar=new_dtime        )
   !--- ddemarinis: DA additions
   CALL write_hdf_infoINT (1         ,.TRUE. ,attr_yes,'write_kalm_count' ,scalar=write_kalm_count )
@@ -661,8 +664,6 @@ MODULE mod_inout
   !--- bbecsek: FSI additions
   CALL write_hdf_infoREAL(1        ,.TRUE. ,attr_yes,'U_ref',scalar=U_ref   )
   CALL write_hdf_infoREAL(1        ,.TRUE. ,attr_yes,'L_ref',scalar=L_ref   )
-
-
   !-----------------------------------------------------------------------------------------------------------
   ! Select hyperslab in the file space / memory space:
   CALL h5sselect_hyperslab_f(filespace,H5S_SELECT_SET_F,offset_file,dims_data,herror)
@@ -1544,11 +1545,14 @@ MODULE mod_inout
   CALL read_hdf_infoREAL(1,.TRUE. ,attr_yes,'dtime'            ,scalar=dtime            )
   CALL read_hdf_infoREAL(1,.TRUE. ,attr_yes,'time_out_vect'    ,scalar=time_out_vect    )
   CALL read_hdf_infoREAL(1,.TRUE. ,attr_yes,'time_out_scal'    ,scalar=time_out_scal    )
+  CALL read_hdf_infoREAL(1,.TRUE. ,attr_yes,'time_out_kalm'    ,scalar=time_out_kalm    )
   CALL read_hdf_infoINT (1,.TRUE. ,attr_yes,'timestep'         ,scalar=timestep         )
   CALL read_hdf_infoINT (1,.TRUE. ,attr_yes,'write_count'      ,scalar=write_count      )
   CALL read_hdf_infoINT (1,.TRUE. ,attr_yes,'write_stats_count',scalar=write_stats_count)
+  CALL read_hdf_infoINT (1,.TRUE. ,attr_yes,'write_kalm_count' ,scalar=write_kalm_count )
   CALL read_hdf_infoLOG (1,.TRUE. ,attr_yes,'write_out_vect'   ,scalar=write_out_vect   )
   CALL read_hdf_infoLOG (1,.TRUE. ,attr_yes,'write_out_scal'   ,scalar=write_out_scal   )
+  CALL read_hdf_infoLOG (1,.TRUE. ,attr_yes,'write_out_kalm'   ,scalar=write_out_kalm   )
   CALL read_hdf_infoLOG (1,.TRUE. ,attr_yes,'new_dtime'        ,scalar=new_dtime        )
   CALL read_hdf_infoINT (3,.FALSE.,attr_yes,'S1w S2w S3w'      ,array =Siw              )
   CALL read_hdf_infoINT (3,.FALSE.,attr_yes,'M1w M2w M3w'      ,array =Miw              )
@@ -2637,7 +2641,7 @@ MODULE mod_inout
      CALL h5aclose_f(attr_id,herror)
   ELSE
      CALL h5dcreate_f(file_id,name,H5T_NATIVE_DOUBLE,memspace,attr_id,herror)
-     CALL H5dwrite_f(attr_id,H5T_NATIVE_DOUBLE,value,dim_mem,herror,memspace,H5S_ALL_F,H5P_DEFAULT_F)
+     CALL H5dwrite_f(attr_id,H5T_NATIVE_DOUBLE,value,dim_mem,herror,memspace)!,H5S_ALL_F,H5P_DEFAULT_F)
      CALL h5dclose_f(attr_id ,herror)
   END IF
   
@@ -2689,7 +2693,7 @@ MODULE mod_inout
      CALL h5aclose_f(attr_id,herror)
   ELSE
      CALL h5dcreate_f(file_id,name,H5T_NATIVE_INTEGER,memspace,attr_id,herror)
-     CALL H5dwrite_f(attr_id,H5T_NATIVE_INTEGER,value,dim_mem,herror,memspace,H5S_ALL_F,H5P_DEFAULT_F)
+     CALL H5dwrite_f(attr_id,H5T_NATIVE_INTEGER,value,dim_mem,herror,memspace)!,H5S_ALL_F,H5P_DEFAULT_F)
      CALL h5dclose_f(attr_id ,herror)
   END IF
   
@@ -2752,7 +2756,7 @@ MODULE mod_inout
      CALL h5aclose_f(attr_id,herror)
   ELSE
      CALL h5dcreate_f(file_id,name,H5T_NATIVE_INTEGER,memspace,attr_id,herror)
-     CALL H5dwrite_f(attr_id,H5T_NATIVE_INTEGER,value,dim_mem,herror,memspace,H5S_ALL_F,H5P_DEFAULT_F)
+     CALL H5dwrite_f(attr_id,H5T_NATIVE_INTEGER,value,dim_mem,herror,memspace)!,H5S_ALL_F,H5P_DEFAULT_F)
      CALL h5dclose_f(attr_id ,herror)
   END IF
   
@@ -2795,7 +2799,7 @@ MODULE mod_inout
      CALL h5aclose_f(attr_id,herror)
   ELSE
      CALL h5dopen_f(file_id,name,attr_id,herror)
-     IF (rank == 0) CALL H5dread_f(attr_id,H5T_NATIVE_DOUBLE,value,dim_mem,herror,H5S_ALL_F,H5S_ALL_F,H5P_DEFAULT_F)
+     IF (rank == 0) CALL H5dread_f(attr_id,H5T_NATIVE_DOUBLE,value,dim_mem,herror) !,H5S_ALL_F,H5S_ALL_F,H5P_DEFAULT_F)
      CALL h5dclose_f(attr_id,herror)
   END IF
   
@@ -2844,7 +2848,7 @@ MODULE mod_inout
      CALL h5aclose_f(attr_id,herror)
   ELSE
      CALL h5dopen_f(file_id,name,attr_id,herror)
-     IF (rank == 0) CALL H5dread_f(attr_id,H5T_NATIVE_INTEGER,value,dim_mem,herror,H5S_ALL_F,H5S_ALL_F,H5P_DEFAULT_F)
+     IF (rank == 0) CALL H5dread_f(attr_id,H5T_NATIVE_INTEGER,value,dim_mem,herror)!,H5S_ALL_F,H5S_ALL_F,H5P_DEFAULT_F)
      CALL h5dclose_f(attr_id,herror)
   END IF
   
@@ -2894,7 +2898,7 @@ MODULE mod_inout
      CALL h5aclose_f(attr_id,herror)
   ELSE
      CALL h5dopen_f(file_id,name,attr_id,herror)
-     IF (rank == 0) CALL H5dread_f(attr_id,H5T_NATIVE_INTEGER,value,dim_mem,herror,H5S_ALL_F,H5S_ALL_F,H5P_DEFAULT_F)
+     IF (rank == 0) CALL H5dread_f(attr_id,H5T_NATIVE_INTEGER,value,dim_mem,herror) !,H5S_ALL_F,H5S_ALL_F,H5P_DEFAULT_F)
      CALL h5dclose_f(attr_id,herror)
   END IF
   

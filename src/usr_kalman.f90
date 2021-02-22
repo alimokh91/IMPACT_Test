@@ -91,8 +91,6 @@
   bounds(1,3) = lbound(mri_inst%mri%velocity_mean%array,5)
   bounds(2,3) = ubound(mri_inst%mri%velocity_mean%array,5)
 
-  write(*,*) 'sonoqui'
-
   if (size(mri_inst%mri%velocity_mean%array,3)*size(mri_inst%mri%velocity_mean%array,4)*size(mri_inst%mri%velocity_mean%array,5).ne.0) then
      allocate(kalman_first)
      klmn => kalman_first
@@ -260,7 +258,7 @@
   CHARACTER(LEN=8) :: count_char
   CHARACTER(LEN=2) :: count_char2
 
-  phase = mod(write_kalm_count,intervals) + 1
+  write_out_kalm = .FALSE.
 
   IF (rank == 0) WRITE(*,'(a,i8,a,i8,a)') 'kalman repetition', write_kalm_count/intervals+1, '   for phase', phase,' ...'
 
@@ -295,7 +293,6 @@
 
   klmn => kalman_first
   do while(associated(klmn))
-
     !========================================================================================================
     !=== forecast statistics ================================================================================
     !========================================================================================================

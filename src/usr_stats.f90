@@ -45,6 +45,7 @@
         j = (i-1)*kalman_num_time_refinements
         dtime_phases(j+1:j+kalman_num_time_refinements) = dtime_kalm_phases(i)/kalman_num_time_refinements
      end do
+
   end if
   dtime_out_scal = dtime_phases(1)
 

@@ -1,5 +1,7 @@
-prog/*h5
-prog/*xmf
+prog/*.exe
+prog/libimpact.a
+prog/*.h5
+prog/*.xmf
 prog/turb_stats*
 prog/test*
 prog/tke*
