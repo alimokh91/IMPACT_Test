@@ -34,7 +34,7 @@ if [ ! -f "${HPC_PREDICT_DATA_DIR}/input_data/preprocessed/bern_experiments/v1/2
         "/src/hpc-predict/hpc-predict-io/mri_datasource/convert_bern_expt_to_hpc_predict_with_downsampling.py " \
         "--input /hpc-predict-data/input_data/original/bern_experiments/v1/2020-01-01_00-00-00_dario/bern_exp_metadata.json " \
         "--output /hpc-predict-data/input_data/preprocessed/bern_experiments/v1/2020-01-01_00-00-00_dario/bern_experimental_dataset_segmented_flow_mri.h5 " \
-        "--downsample 4" \
+        "--downsample 4 " \
         "--single_rep -1")
 
     set -x

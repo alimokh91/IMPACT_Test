@@ -260,6 +260,7 @@
 
   write_out_kalm = .FALSE.
 
+  phase = mod(write_kalm_count,intervals) + 1
   IF (rank == 0) WRITE(*,'(a,i8,a,i8,a)') 'kalman repetition', write_kalm_count/intervals+1, '   for phase', phase,' ...'
 
   bounds(1,1) = lbound(mri_inst%mri%velocity_mean%array,3)

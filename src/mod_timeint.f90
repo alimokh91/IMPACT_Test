@@ -173,8 +173,8 @@ MODULE mod_timeint
   CALL interpolate_vel(.FALSE.) ! TEST!!! Wurde teilweise schon bei Zeitschritt-Bestimmung erledigt!
 
   !--- Ausschreiben ------------------------------------------------------------------------------------------
-  IF (write_out_kalm .and. write_kalm_count.eq.0 ) CALL compute_kalman
-  IF (write_out_scal .and. write_stats_count.eq.0) CALL compute_stats
+  CALL compute_kalman
+  CALL compute_stats
   IF (write_xdmf_yes .AND. write_out_vect) CALL write_xdmf_xml ! bbecsek
   IF (write_out_vect) CALL write_fields
   !===========================================================================================================

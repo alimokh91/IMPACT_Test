@@ -290,84 +290,84 @@ MODULE mod_inout
   END IF
   !===========================================================================================================
 
-  IF (write_covariance_yes ) THEN
+  !IF (write_covariance_yes ) THEN
 
-    if (dtime_out_kalm.ne.0.0) then
-       phase = mod(write_kalm_count-1,intervals) + 1
-       CALL num_to_string(2,phase,phs)
-       write_dir = './kf_result/phase_'//phs//'/'
-       CALL num_to_string(8,write_kalm_count,count_char)
+  !  if (dtime_out_kalm.ne.0.0) then
+  !     phase = mod(write_kalm_count-1,intervals) + 1
+  !     CALL num_to_string(2,phase,phs)
+  !     write_dir = './kf_result/phase_'//phs//'/'
+  !     CALL num_to_string(8,write_kalm_count,count_char)
 
-       write_field = 0.
-       if (associated(kalman_first)) then
-         DO kk = (lbound(mri_inst%mri%velocity_mean%array,5)-1)*kalman_num_spatial_refinements(3)+1, &
-                  ubound(mri_inst%mri%velocity_mean%array,5)*kalman_num_spatial_refinements(3)+1
-           DO jj = (lbound(mri_inst%mri%velocity_mean%array,4)-1)*kalman_num_spatial_refinements(2)+1, &
-                    ubound(mri_inst%mri%velocity_mean%array,4)*kalman_num_spatial_refinements(2)+1
-             DO ii = (lbound(mri_inst%mri%velocity_mean%array,3)-1)*kalman_num_spatial_refinements(1)+1, &
-                      ubound(mri_inst%mri%velocity_mean%array,3)*kalman_num_spatial_refinements(1)+1
+  !     write_field = 0.
+  !     if (associated(kalman_first)) then
+  !       DO kk = (lbound(mri_inst%mri%velocity_mean%array,5)-1)*kalman_num_spatial_refinements(3)+1, &
+  !                ubound(mri_inst%mri%velocity_mean%array,5)*kalman_num_spatial_refinements(3)+1
+  !         DO jj = (lbound(mri_inst%mri%velocity_mean%array,4)-1)*kalman_num_spatial_refinements(2)+1, &
+  !                  ubound(mri_inst%mri%velocity_mean%array,4)*kalman_num_spatial_refinements(2)+1
+  !           DO ii = (lbound(mri_inst%mri%velocity_mean%array,3)-1)*kalman_num_spatial_refinements(1)+1, &
+  !                    ubound(mri_inst%mri%velocity_mean%array,3)*kalman_num_spatial_refinements(1)+1
 
-               i =      ii-((lbound(mri_inst%mri%velocity_mean%array,3)-1)*kalman_num_spatial_refinements(1)+1)
-               i = i + (jj-((lbound(mri_inst%mri%velocity_mean%array,4)-1)*kalman_num_spatial_refinements(2)+1))* &
-                       (size(mri_inst%mri%velocity_mean%array,3)*kalman_num_spatial_refinements(1)+1)
-               i = i + (kk-((lbound(mri_inst%mri%velocity_mean%array,5)-1)*kalman_num_spatial_refinements(3)+1))* &
-                       (size(mri_inst%mri%velocity_mean%array,3)*kalman_num_spatial_refinements(1)+1) * &
-                       (size(mri_inst%mri%velocity_mean%array,4)*kalman_num_spatial_refinements(2)+1)
+  !             i =      ii-((lbound(mri_inst%mri%velocity_mean%array,3)-1)*kalman_num_spatial_refinements(1)+1)
+  !             i = i + (jj-((lbound(mri_inst%mri%velocity_mean%array,4)-1)*kalman_num_spatial_refinements(2)+1))* &
+  !                     (size(mri_inst%mri%velocity_mean%array,3)*kalman_num_spatial_refinements(1)+1)
+  !             i = i + (kk-((lbound(mri_inst%mri%velocity_mean%array,5)-1)*kalman_num_spatial_refinements(3)+1))* &
+  !                     (size(mri_inst%mri%velocity_mean%array,3)*kalman_num_spatial_refinements(1)+1) * &
+  !                     (size(mri_inst%mri%velocity_mean%array,4)*kalman_num_spatial_refinements(2)+1)
 
-               write_field(ii,jj,kk,1) = kalman_first%K(3*i+1,1)
-             END DO
-           END DO
-         END DO
-       end if
-       CALL write_hdf(trim(write_dir)//'gainX_phase'//phs//'_'//count_char,'gainX',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_field(b1L,b2L,b3L,1))
-       write_field = 0.
-       if (associated(kalman_first)) then
-         DO kk = (lbound(mri_inst%mri%velocity_mean%array,5)-1)*kalman_num_spatial_refinements(3)+1, &
-                  ubound(mri_inst%mri%velocity_mean%array,5)*kalman_num_spatial_refinements(3)+1
-           DO jj = (lbound(mri_inst%mri%velocity_mean%array,4)-1)*kalman_num_spatial_refinements(2)+1, &
-                    ubound(mri_inst%mri%velocity_mean%array,4)*kalman_num_spatial_refinements(2)+1
-             DO ii = (lbound(mri_inst%mri%velocity_mean%array,3)-1)*kalman_num_spatial_refinements(1)+1, &
-                      ubound(mri_inst%mri%velocity_mean%array,3)*kalman_num_spatial_refinements(1)+1
+  !             write_field(ii,jj,kk,1) = kalman_first%K(3*i+1,1)
+  !           END DO
+  !         END DO
+  !       END DO
+  !     end if
+  !     CALL write_hdf(trim(write_dir)//'gainX_phase'//phs//'_'//count_char,'gainX',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_field(b1L,b2L,b3L,1))
+  !     write_field = 0.
+  !     if (associated(kalman_first)) then
+  !       DO kk = (lbound(mri_inst%mri%velocity_mean%array,5)-1)*kalman_num_spatial_refinements(3)+1, &
+  !                ubound(mri_inst%mri%velocity_mean%array,5)*kalman_num_spatial_refinements(3)+1
+  !         DO jj = (lbound(mri_inst%mri%velocity_mean%array,4)-1)*kalman_num_spatial_refinements(2)+1, &
+  !                  ubound(mri_inst%mri%velocity_mean%array,4)*kalman_num_spatial_refinements(2)+1
+  !           DO ii = (lbound(mri_inst%mri%velocity_mean%array,3)-1)*kalman_num_spatial_refinements(1)+1, &
+  !                    ubound(mri_inst%mri%velocity_mean%array,3)*kalman_num_spatial_refinements(1)+1
 
-               i =      ii-((lbound(mri_inst%mri%velocity_mean%array,3)-1)*kalman_num_spatial_refinements(1)+1)
-               i = i + (jj-((lbound(mri_inst%mri%velocity_mean%array,4)-1)*kalman_num_spatial_refinements(2)+1))* &
-                       (size(mri_inst%mri%velocity_mean%array,3)*kalman_num_spatial_refinements(1)+1)
-               i = i + (kk-((lbound(mri_inst%mri%velocity_mean%array,5)-1)*kalman_num_spatial_refinements(3)+1))* &
-                       (size(mri_inst%mri%velocity_mean%array,3)*kalman_num_spatial_refinements(1)+1) * &
-                       (size(mri_inst%mri%velocity_mean%array,4)*kalman_num_spatial_refinements(2)+1)
+  !             i =      ii-((lbound(mri_inst%mri%velocity_mean%array,3)-1)*kalman_num_spatial_refinements(1)+1)
+  !             i = i + (jj-((lbound(mri_inst%mri%velocity_mean%array,4)-1)*kalman_num_spatial_refinements(2)+1))* &
+  !                     (size(mri_inst%mri%velocity_mean%array,3)*kalman_num_spatial_refinements(1)+1)
+  !             i = i + (kk-((lbound(mri_inst%mri%velocity_mean%array,5)-1)*kalman_num_spatial_refinements(3)+1))* &
+  !                     (size(mri_inst%mri%velocity_mean%array,3)*kalman_num_spatial_refinements(1)+1) * &
+  !                     (size(mri_inst%mri%velocity_mean%array,4)*kalman_num_spatial_refinements(2)+1)
 
-               write_field(ii,jj,kk,1) = kalman_first%K(3*i+2,1)
-             END DO
-           END DO
-         END DO
-       end if
-       CALL write_hdf(trim(write_dir)//'gainY_phase'//phs//'_'//count_char,'gainY',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_field(b1L,b2L,b3L,1))
-       write_field = 0.
-       if (associated(kalman_first)) then
-         DO kk = (lbound(mri_inst%mri%velocity_mean%array,5)-1)*kalman_num_spatial_refinements(3)+1, &
-                  ubound(mri_inst%mri%velocity_mean%array,5)*kalman_num_spatial_refinements(3)+1
-           DO jj = (lbound(mri_inst%mri%velocity_mean%array,4)-1)*kalman_num_spatial_refinements(2)+1, &
-                    ubound(mri_inst%mri%velocity_mean%array,4)*kalman_num_spatial_refinements(2)+1
-             DO ii = (lbound(mri_inst%mri%velocity_mean%array,3)-1)*kalman_num_spatial_refinements(1)+1, &
-                      ubound(mri_inst%mri%velocity_mean%array,3)*kalman_num_spatial_refinements(1)+1
+  !             write_field(ii,jj,kk,1) = kalman_first%K(3*i+2,1)
+  !           END DO
+  !         END DO
+  !       END DO
+  !     end if
+  !     CALL write_hdf(trim(write_dir)//'gainY_phase'//phs//'_'//count_char,'gainY',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_field(b1L,b2L,b3L,1))
+  !     write_field = 0.
+  !     if (associated(kalman_first)) then
+  !       DO kk = (lbound(mri_inst%mri%velocity_mean%array,5)-1)*kalman_num_spatial_refinements(3)+1, &
+  !                ubound(mri_inst%mri%velocity_mean%array,5)*kalman_num_spatial_refinements(3)+1
+  !         DO jj = (lbound(mri_inst%mri%velocity_mean%array,4)-1)*kalman_num_spatial_refinements(2)+1, &
+  !                  ubound(mri_inst%mri%velocity_mean%array,4)*kalman_num_spatial_refinements(2)+1
+  !           DO ii = (lbound(mri_inst%mri%velocity_mean%array,3)-1)*kalman_num_spatial_refinements(1)+1, &
+  !                    ubound(mri_inst%mri%velocity_mean%array,3)*kalman_num_spatial_refinements(1)+1
 
-               i =      ii-((lbound(mri_inst%mri%velocity_mean%array,3)-1)*kalman_num_spatial_refinements(1)+1)
-               i = i + (jj-((lbound(mri_inst%mri%velocity_mean%array,4)-1)*kalman_num_spatial_refinements(2)+1))* &
-                       (size(mri_inst%mri%velocity_mean%array,3)*kalman_num_spatial_refinements(1)+1)
-               i = i + (kk-((lbound(mri_inst%mri%velocity_mean%array,5)-1)*kalman_num_spatial_refinements(3)+1))* &
-                       (size(mri_inst%mri%velocity_mean%array,3)*kalman_num_spatial_refinements(1)+1) * &
-                       (size(mri_inst%mri%velocity_mean%array,4)*kalman_num_spatial_refinements(2)+1)
+  !             i =      ii-((lbound(mri_inst%mri%velocity_mean%array,3)-1)*kalman_num_spatial_refinements(1)+1)
+  !             i = i + (jj-((lbound(mri_inst%mri%velocity_mean%array,4)-1)*kalman_num_spatial_refinements(2)+1))* &
+  !                     (size(mri_inst%mri%velocity_mean%array,3)*kalman_num_spatial_refinements(1)+1)
+  !             i = i + (kk-((lbound(mri_inst%mri%velocity_mean%array,5)-1)*kalman_num_spatial_refinements(3)+1))* &
+  !                     (size(mri_inst%mri%velocity_mean%array,3)*kalman_num_spatial_refinements(1)+1) * &
+  !                     (size(mri_inst%mri%velocity_mean%array,4)*kalman_num_spatial_refinements(2)+1)
 
-               write_field(ii,jj,kk,1) = kalman_first%K(3*i+3,1)
-             END DO
-           END DO
-         END DO
-       end if
-       CALL write_hdf(trim(write_dir)//'gainZ_phase'//phs//'_'//count_char,'gainZ',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_field(b1L,b2L,b3L,1))
+  !             write_field(ii,jj,kk,1) = kalman_first%K(3*i+3,1)
+  !           END DO
+  !         END DO
+  !       END DO
+  !     end if
+  !     CALL write_hdf(trim(write_dir)//'gainZ_phase'//phs//'_'//count_char,'gainZ',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_field(b1L,b2L,b3L,1))
 
-    end if
+  !  end if
  
-  END IF
+  !END IF
 
   write_count    = write_count   + 1
   time_out_vect  = time_out_vect + dtime_out_vect

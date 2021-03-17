@@ -37,6 +37,8 @@
   CHARACTER(LEN=2) ::  id_char, phs
   CHARACTER(LEN=3) ::  M1_char, M2_char, M3_char
  
+  if (rank.eq.0) write(0,*) "open stats... "
+
   intervals = kalman_num_time_refinements*intervals
 
   ALLOCATE(dtime_phases(1:intervals)); dtime_phases(1:intervals) = kalman_mri_input_attr_t_heart_cycle_period/intervals !dtime_out_scal 
@@ -57,7 +59,6 @@
   !=== construct pressure-grid mri data-structure ============================================================
   !===========================================================================================================
   nullify(mri_flow) 
-  if (dtime_out_kalm.eq.0.) return
 
   !===========================================================================================================
   !added for writing tke_kalman with M1 M2 M3 ================================================================
