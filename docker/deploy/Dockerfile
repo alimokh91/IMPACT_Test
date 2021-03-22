@@ -30,13 +30,16 @@ RUN bash -c "cd /src/hpc-predict/hpc-predict-io \
     && pip install --upgrade pip \
     && pip install -r requirements.txt" 
 
-RUN bash -c "cd /src/hpc-predict/hpc-predict-io/encfs \
-    && mkdir build install \
-    && cd build \
-    && cmake -DCMAKE_BUILD_TYPE=Release \
-        -DCMAKE_INSTALL_PREFIX=../install \
-        ../ \
-    && make VERBOSE=1 install"
+# finkandreas: I do not think that we need encfs inside the container,
+# because it needs root capabilities when starting as a docker container
+# and does not work at all with sarus (https://github.com/HPC-PREDICT/hpc-predict/issues/62)
+# RUN bash -c "cd /src/hpc-predict/hpc-predict-io/encfs \
+#     && mkdir -p build install \
+#     && cd build \
+#     && cmake -DCMAKE_BUILD_TYPE=Release \
+#         -DCMAKE_INSTALL_PREFIX=../install \
+#         ../ \
+#     && make VERBOSE=1 install"
 
 # FIXME: Bundling remains TBD - question is especially how to apply this to python venvs/whether they should be built inside final image only 
 #      \
