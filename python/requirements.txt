@@ -2,5 +2,6 @@ h5py==2.10.0
 Jinja2==2.10.1
 numpy==1.18.1
 six==1.14.0
+papermill==2.3.3
 pydicom==2.0
 itk==5.1.0
