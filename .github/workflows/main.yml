@@ -1,3 +1,4 @@
+
 # Based on https://github.com/spyoungtech/mirror-action/blob/master/.github/workflows/main.yml
 
 name: CI
@@ -33,4 +34,4 @@ jobs:
       env:
         REMOTE: git@gitlab.com:cscs-ci/hpc-predict/IMPACT.git
         GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_KEY }}
-        
+
