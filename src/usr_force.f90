@@ -45,8 +45,8 @@
   !
 
   ! fd is obtained from MOOSE
-  fd = 0.
-  nl = nl + fd * L_ref/(rho_fluid*U_ref**2.)
+  !fd = 0.
+  !nl = nl + fd * L_ref/(rho_fluid*U_ref**2.)
 
   !=== FRINGE FORCING =======================================================================================
   IF (fringe_yes) THEN
