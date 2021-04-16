@@ -20,14 +20,14 @@ from highdicom.seg.sop import Segmentation
 config.enforce_valid_values = True
 config.future_behavior(False)
 
-mri = mr_io.SegmentedFlowMRI.read_hdf5('/home/nfadel/Desktop/sw/hpc-predict/data/v1/decrypt/segmenter/cnn_segmenter/hpc_predict/v1/inference/2021-01-29_14-47-59_daint102/output/recon_volN1_vn.mat_segmented.h5')
+mri = mr_io.SegmentedFlowMRI.read_hdf5('/home/nfadel/Desktop/sw/hpc-predict/hpc-predict-io/mri_datasource/recon_volN1_vn.mat.h5')#'/home/nfadel/Desktop/sw/hpc-predict/data/v1/decrypt/segmenter/cnn_segmenter/hpc_predict/v1/inference/2021-01-29_14-47-59_daint102/output/recon_volN1_vn.mat_segmented.h5')
 
 # Path to directory containing single-frame legacy CT Image instances
 # stored as PS3.10 files
 series_dir = Path('/home/nfadel/Desktop/sw/hpc-predict/hpc-predict-io/mri_datasource/freiburg/MRT_Daten_Bern/127/10005583/10005584/10005585/')
 image_files = series_dir.glob('10005605')#,'10005586','100055D8','100055C2')
 
-# Read CT Image data sets from PS3.10 files on disk
+# Read MRI Image data sets from PS3.10 files
 image_datasets = [dcmread(str(f)) for f in image_files]
 
 # Create a boolean segmentation mask
@@ -61,16 +61,16 @@ description_segment_1 = SegmentDescription(
 )
 
 positions= np.zeros(mri.segmentation_prob.shape[0])
-print('&&&&&&&&&&&&&&&&&&&&')
-print(positions.shape)
+#print('&&&&&&&&&&&&&&&&&&&&')
+#print(positions.shape)
 positions=mri.segmentation_prob[:,1,:,1]
-print('################')
-print(positions.ndim)
-print(positions.shape)
-print('@@@@@@@@@@@@@@@@@@@@')
-print(mri.segmentation_prob[:,:,:,1].shape[0])#92
-print(len(positions))#96
-print('@@@@@@@@@@@@@@@@@@@@@')
+#print('################')
+#print(positions.ndim)
+#print(positions.shape)
+#print('@@@@@@@@@@@@@@@@@@@@')
+#print(mri.segmentation_prob[:,:,:,1].shape[0])#92
+#print(len(positions))#96
+#print('@@@@@@@@@@@@@@@@@@@@@')
 
 #mri.segmentation_prob[:,:,:,mri_time].shape[0] != len(positions)
 
@@ -93,6 +93,7 @@ for mri_time in range(mri.segmentation_prob[1,1,1].size):
             device_serial_number='Device XYZ',
             #plane_positions=positions#works only if the first dimension of pixel_array = image_datasets
             )
+    seg_dataset.fix_meta_info(True)
     seg_dataset.save_as(f"dicom/SEG{mri_time}",write_like_original=False)
 #seg_dataset.save_as("seg.dcm")
 #TODO create dicomdir with dcmgpdir
