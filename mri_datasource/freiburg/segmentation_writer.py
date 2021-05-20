@@ -443,7 +443,6 @@ if hasattr(mri, 'intensity') and enable_intensity:
         ds[0].TriggerTime = str(mri.time[mri_time])
         for z_axis in range(mri.intensity[1,1,:,1].size): 
             ds[0].ImageType = 'ORIGINAL\PRIMARY\M\DIS2D',
-            print('PixelData ', mri.intensity[:,:,z_axis,mri_time])
             ds[0].pixel_data=mri.intensity[:,:,z_axis,mri_time],
             ds[0].sop_instance_uid=generate_uid(),
             ds[0].fix_meta_info(True)
