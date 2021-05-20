@@ -252,7 +252,7 @@ image_datasets[0].DerivationCodeSequence.CodeValue = '121327'
 ds[0].DerivationDescription = 'Lossless JPEG compression, selection value 1, point transform 0, compression ratio 1.7085'
 ds[0].DeviceSerialNumber = '35042'
 ds[0].EchoNumbers = 1
-ds[0].EchoTime = '2.573' #TODO is it OK?
+ds[0].EchoTime = '2.573'
 ds[0].EchoTrainLength = 1
 ds[0].FlipAngle = 7
 ds[0].FrameOfReferenceUID = '1.3.12.2.1107.5.2.32.35042.2.20140520124746281.0.0.0'
@@ -428,6 +428,7 @@ if hasattr(mri, 'intensity') and enable_intensity:
         print('z ', mri.intensity[1,1,:,1].size)
     os.makedirs(name_output_file + "/intensity", exist_ok = True)
     series_instance_uid=generate_uid()
+    ds[0].SeriesNumber=2
     for mri_time in range(mri.intensity[1,1,1,:].size):
         ds[0].AcquisitionTime = d.time(ds[0].AcquisitionTime.hour,ds[0].AcquisitionTime.minute,ds[0].AcquisitionTime.second,int(mri.time[mri_time]*100))
         ds[0].ContentTime = d.time(ds[0].ContentTime.hour,ds[0].ContentTime.minute,ds[0].ContentTime.second,int(mri.time[mri_time]*100))
@@ -441,7 +442,8 @@ if hasattr(mri, 'intensity') and enable_intensity:
         ds[0].StudyTime = d.time(ds[0].StudyTime.hour,ds[0].StudyTime.minute,ds[0].StudyTime.second,int(mri.time[mri_time]*100))
         ds[0].TriggerTime = str(mri.time[mri_time])
         for z_axis in range(mri.intensity[1,1,:,1].size): 
-            ds[0].image_type = 'M',
+            ds[0].ImageType = 'ORIGINAL\PRIMARY\M\DIS2D',
+            print('PixelData ', mri.intensity[:,:,z_axis,mri_time])
             ds[0].pixel_data=mri.intensity[:,:,z_axis,mri_time],
             ds[0].sop_instance_uid=generate_uid(),
             ds[0].fix_meta_info(True)
@@ -469,7 +471,7 @@ if hasattr(mri, 'velocity_mean') and enable_velocity_mean:
         ds[0].StudyTime = d.time(ds[0].StudyTime.hour,ds[0].StudyTime.minute,ds[0].StudyTime.second,int(mri.time[mri_time]*100))
         ds[0].TriggerTime = str(mri.time[mri_time])
         for z_axis in range(int(mri.velocity_mean[1,1,:,1].size/3)): 
-            ds[0].image_type = 'P'
+            ds[0].ImageType = 'ORIGINAL\PRIMARY\P\DIS2D',
             ds[0].pixel_data=mri.velocity_mean[:,:,z_axis,mri_time],
             ds[0].sop_instance_uid=generate_uid(),
             ds[0].fix_meta_info(True)
