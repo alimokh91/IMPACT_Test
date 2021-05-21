@@ -334,18 +334,18 @@ ds[0].ProtocolName = '4DFlow_Pat5_Tres20'
 
 #ReferencedImageSequence
 ris = [ FileDataset(None, {}, file_meta=file_meta, preamble=b"\0" * 128) , FileDataset(None, {}, file_meta=file_meta, preamble=b"\0" * 128) , FileDataset(None, {}, file_meta=file_meta, preamble=b"\0" * 128)]
-ris[0].ReferencedSOPClassUID = 'MR Image Storage'
+ris[0].ReferencedSOPClassUID = 'MRImageStorage'
 ris[0].ReferencedSOPInstanceUID = '1.3.12.2.1107.5.2.32.35042.201405201323376824961820'
-ris[1].ReferencedSOPClassUID = 'MR Image Storage'
+ris[1].ReferencedSOPClassUID = 'MRImageStorage'
 ris[1].ReferencedSOPInstanceUID = '1.3.12.2.1107.5.2.32.35042.2014052012483887491258809'
-ris[2].ReferencedSOPClassUID = 'MR Image Storage'
+ris[2].ReferencedSOPClassUID = 'MRImageStorage'
 ris[2].ReferencedSOPInstanceUID = '1.3.12.2.1107.5.2.32.35042.2014052012513677902359453'
 ds[0].add_new(0x00081140, 'SQ', ris)
 
 #ReferencedPerformedProcedureStepSequence
 rppss = [ FileDataset(None, {}, file_meta=file_meta, preamble=b"\0" * 128) ]
-rppss[0].ReferencedSOPClassUID = 'Modality Performed Procedure Step SOP Class'
-rppss[0].ReferencedSOPClassUID = '1.2.40.0.13.1.1.1.193.196.214.172.20140515182142778.7737'
+rppss[0].ReferencedSOPClassUID = 'ModalityPerformedProcedureStepSOPClass'
+rppss[0].ReferencedSOPInstanceUID = '1.2.40.0.13.1.1.1.193.196.214.172.20140515182142778.7737'
 ds[0].add_new(0x00081111, 'SQ', rppss)
 #
 ds[0].ReferringPhysicianName = 'Amb. Neurologie'
