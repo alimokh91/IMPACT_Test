@@ -206,6 +206,7 @@ description_segment_1 = SegmentDescription(
 file_meta = FileMetaDataset()
 ####################
 ds = [ FileDataset(None, {}, file_meta=file_meta, preamble=b"\0" * 128) ]
+#ds= image_datasets
 ####################
 ## DICOM TAGS
 #print('type image_datsets ', type(image_datasets))
@@ -239,16 +240,13 @@ ds[0].CardiacNumberOfImages = 44
 ds[0].Columns = 120
 ds[0].ContentDate = d.date(2014,5,20)
 ds[0].ContentTime = d.time(14,11,17,984)
-#TODO
-#print(type(image_datasets[0]))
-#print(type(ds[0]))
-image_datasets[0].DerivationCodeSequence.CodeValue = '121327'
-#add_new(tag, VR, value)
-#ds[0].add_new(DerivationCodeSequence[0].CodeValue, '121327')
-#ds[0].DerivationCodeSequence[0].CodeValue = '121327'
-#ds[0].DerivationCodeSequence.CodingSchemeDesignator = 'DCM'
-#ds[0].DerivationCodeSequence.CodeMeaning = 'Full fidelity image, uncompressed or lossless compressed'
-
+# Dataset DerivationCodeSequence
+dcs = [ FileDataset(None, {}, file_meta=file_meta, preamble=b"\0" * 128) ]
+dcs[0].CodeValue = '121327'
+dcs[0].CodingSchemeDesignator = 'DCM'
+dcs[0].CodeMeaning = 'Full fidelity image, uncompressed or lossless compressed'
+ds[0].add_new(0x00089215, 'SQ', dcs)
+#
 ds[0].DerivationDescription = 'Lossless JPEG compression, selection value 1, point transform 0, compression ratio 1.7085'
 ds[0].DeviceSerialNumber = '35042'
 ds[0].EchoNumbers = 1
@@ -270,8 +268,11 @@ ds[0].InstanceNumber = 2275
 ds[0].InstitutionAddress = 'Albertiner strasse, 515, Rafalburg /c528a3/,BW,CH,79106'
 ds[0].InstitutionName = 'Rad. Univ. Klinik Rafaelburg'
 ds[0].InstitutionalDepartmentName = 'Department'
-#TODO
-#ds[0].IssuerOfAccessionNumberSequence.LocalNamespaceEntityID = '6229UKF'
+#Issuer of Accession Number Sequence
+ioans = [ FileDataset(None, {}, file_meta=file_meta, preamble=b"\0" * 128) ]
+ioans[0].LocalNamespaceEntityID = '6229UKF'
+ds[0].add_new(0x00080051, 'SQ', ioans)
+#
 ds[0].IssuerOfPatientID = '6229UKF'
 ds[0].LargestImagePixelValue = 4094
 ds[0].MRAcquisitionType = '3D'
@@ -283,13 +284,19 @@ ds[0].NominalInterval = 1111
 ds[0].NumberOfAverages = 1
 ds[0].NumberOfPhaseEncodingSteps = 100
 ds[0].OperatorsName = 'MS'
-#TODO
-#ds[0].OriginalAttributesSequence.ModifiedAttributesSequence = '124746.062000'
-#ds[0].OriginalAttributesSequence.StudyTime = d.time(12,47,46,062)
-#ds[0].OriginalAttributesSequence.AttributeModificationDateTime = d.datetime(2019,07,13,16,19,07)
-#ds[0].OriginalAttributesSequence.ModifyingSystem = 'MERLIN'
-#ds[0].OriginalAttributesSequence.SourceOfPreviousValues = 'Rad. Univ. Klinik Freiburg'
-#ds[0].OriginalAttributesSequence.ReasonForTheAttributeModificati = 'COERCE'
+
+#OriginalAttributesSequence
+oas = [ FileDataset(None, {}, file_meta=file_meta, preamble=b"\0" * 128) ]
+#ModifiedAttributesSequence 
+mas = [ FileDataset(None, {}, file_meta=file_meta, preamble=b"\0" * 128) ]
+mas[0].StudyTime = d.time(12,47,46,62)
+oas[0].add_new(0x04000550, 'SQ', mas)
+oas[0].AttributeModificationDateTime = d.datetime(2019,7,13,16,19,7)
+oas[0].ModifyingSystem = 'MERLIN'
+oas[0].SourceOfPreviousValues = 'Rad. Univ. Klinik Raffaburg'
+oas[0].ReasonForTheRequestedProcedure = 'COERCE'
+ds[0].add_new(0x04000561, 'SQ', oas)
+#
 ds[0].OtherPatientIDs = ['17067214', 'f62f9fd1-4ab9-4de8-afdc-3a309ca6d71f']
 #ds[0].OtherPatientNames
 ds[0].PatientAge = '070Y'
@@ -315,64 +322,67 @@ ds[0].PixelRepresentation = 0
 ds[0].PixelSpacing = [2.125, 2.125]
 #ds[0].PositionReferenceIndicator
 ds[0].PregnancyStatus = 4
-#TODO
-#ds[0].ProcedureCodeSequence.CodeValue = '6010'
-#ds[0].ProcedureCodeSequence.CodingSchemeDesignator ='99GAP'
-#ds[0].ProcedureCodeSequence.CodeMeaning = 'MR Thorax'
+
+#ProcedureCodeSequence
+pcs = [ FileDataset(None, {}, file_meta=file_meta, preamble=b"\0" * 128) ]
+pcs[0].CodeValue = '6010'
+pcs[0].CodingSchemeDesignator ='99GAP'
+pcs[0].CodeMeaning = 'MR Thorax'
+ds[0].add_new(0x00081032, 'SQ', pcs)
+#
 ds[0].ProtocolName = '4DFlow_Pat5_Tres20'
-#TODO
-#ds[0].ReferencedImageSequence.ReferencedSOPClassUID = 'MR Image Storage'
-#ds[0].ReferencedImageSequence.ReferencedSOPInstanceUID = '1.3.12.2.1107.5.2.32.35042.201405201323376824961820'
-#(0008, 1150) Referenced SOP Class UID            UI: MR Image Storage
-#(0008, 1155) Referenced SOP Instance UID         UI: 1.3.12.2.1107.5.2.32.35042.201405201323376824961820(0008, 1150) Referenced SOP Class #UID            UI: MR Image Storage
-#(0008, 1155) Referenced SOP Instance UID         UI: 1.3.12.2.1107.5.2.32.35042.2014052012483887491258809(0008, 1150) Referenced SOP Class #UID            UI: MR Image Storage
-#(0008, 1155) Referenced SOP Instance UID         UI: 1.3.12.2.1107.5.2.32.35042.2014052012513677902359453]
-#TODO
-#ds[0].ReferencedPerformedProcedureStepSequence.ReferencedSOPClassUID = 'Modality Performed Procedure Step SOP Class'
-#ds[0].ReferencedPerformedProcedureStepSequence.ReferencedSOPClassUID = '1.2.40.0.13.1.1.1.193.196.214.172.20140515182142778.7737'
+
+#ReferencedImageSequence
+ris = [ FileDataset(None, {}, file_meta=file_meta, preamble=b"\0" * 128) , FileDataset(None, {}, file_meta=file_meta, preamble=b"\0" * 128) , FileDataset(None, {}, file_meta=file_meta, preamble=b"\0" * 128)]
+ris[0].ReferencedSOPClassUID = 'MR Image Storage'
+ris[0].ReferencedSOPInstanceUID = '1.3.12.2.1107.5.2.32.35042.201405201323376824961820'
+ris[1].ReferencedSOPClassUID = 'MR Image Storage'
+ris[1].ReferencedSOPInstanceUID = '1.3.12.2.1107.5.2.32.35042.2014052012483887491258809'
+ris[2].ReferencedSOPClassUID = 'MR Image Storage'
+ris[2].ReferencedSOPInstanceUID = '1.3.12.2.1107.5.2.32.35042.2014052012513677902359453'
+ds[0].add_new(0x00081140, 'SQ', ris)
+
+#ReferencedPerformedProcedureStepSequence
+rppss = [ FileDataset(None, {}, file_meta=file_meta, preamble=b"\0" * 128) ]
+rppss[0].ReferencedSOPClassUID = 'Modality Performed Procedure Step SOP Class'
+rppss[0].ReferencedSOPClassUID = '1.2.40.0.13.1.1.1.193.196.214.172.20140515182142778.7737'
+ds[0].add_new(0x00081111, 'SQ', rppss)
+#
 ds[0].ReferringPhysicianName = 'Amb. Neurologie'
 ds[0].RepetitionTime = 20
-#TODO
-#ds[0].RequestAttributesSequence.AccessionNumber = '0027084519'
-#ds[0].RequestAttributesSequence.StudyInstanceUID = '1.2.276.0.38.1.1.1.3150.20140520105617.27084519'
-#ds[0].RequestAttributesSequence.RequestingService = '200260Amb. Neurologie'
-#ds[0].RequestAttributesSequence.RequestedProcedureDescription = 'MR-Angio Thorax'
-#print('pota', ds[0].RequestAttributesSequence)
-#ds[0].RequestAttributesSequence.RequestedProcedureCodeSequence.CodeValue = '6011-57ad451f'
-#ds[0].RequestAttributesSequence.RequestedProcedureCodeSequence.CodingSchemeDesignator = 'GAPIT'
-#ds[0].RequestAttributesSequence.RequestedProcedureCodeSequence.CodeMeaning = 'MR-Angio Thorax'
-#ds[0].RequestAttributesSequence.ScheduledProcedureStepDescriptio = 'MR-Angio Thorax'
-#ds[0].RequestAttributesSequence.ScheduledProtocolCodeSequence.CodeValue = '6011-57ad451f'
-#ds[0].RequestAttributesSequence.ScheduledProtocolCodeSequence.CodingSchemeDesignator = 'GAPIT'
-#ds[0].RequestAttributesSequence.ScheduledProtocolCodeSequence.CodeMeaning = 'MR-Angio Thorax'
-#ds[0].RequestAttributesSequence.ScheduledProcedureStepID = '0027084519'
-#ds[0].RequestAttributesSequence.RequestedProcedureID = '0027084519'
 
-#[(0008, 0050) Accession Number                    SH: '0027084519'
-#(0020, 000d) Study Instance UID                  UI: 1.2.276.0.38.1.1.1.3150.20140520105617.27084519
-#(0032, 1032) Requesting Physician                PN: ''
-#(0032, 1033) Requesting Service                  LO: '200260Amb. Neurologie'
-#(0032, 1060) Requested Procedure Description     LO: 'MR-Angio Thorax'
-#(0032, 1064)  Requested Procedure Code Sequence  1 item(s) ---- 
-#   (0008, 0100) Code Value                          SH: '6011-57ad451f'
-#   (0008, 0102) Coding Scheme Designator            SH: 'GAPIT'
-#   (0008, 0104) Code Meaning                        LO: 'MR-Angio Thorax'
-#   ---------
-#(0040, 0007) Scheduled Procedure Step Descriptio LO: 'MR-Angio Thorax'
-#(0040, 0008)  Scheduled Protocol Code Sequence  1 item(s) ---- 
-#   (0008, 0100) Code Value                          SH: '6011-57ad451f'
-#   (0008, 0102) Coding Scheme Designator            SH: 'GAPIT'
-#   (0008, 0104) Code Meaning                        LO: 'MR-Angio Thorax'
-#   ---------
-#(0040, 0009) Scheduled Procedure Step ID         SH: '0027084519'
-#(0040, 1001) Requested Procedure ID              SH: '0027084519'
-#(0040, 1002) Reason for the Requested Procedure  LO: ''
-#(0040, 1400) Requested Procedure Comments        LT: '']
+# RequestAttributesSequence
+ras = [ FileDataset(None, {}, file_meta=file_meta, preamble=b"\0" * 128) ]
+ras[0].AccessionNumber = '0027084519'
+ras[0].StudyInstanceUID = '1.2.276.0.38.1.1.1.3150.20140520105617.27084519'
+ras[0].RequestingService = '200260Amb. Neurologie'
+ras[0].RequestedProcedureDescription = 'MR-Angio Thorax'
+# RequestedProcedureCodeSequence #TODO
+rpcs = [ FileDataset(None, {}, file_meta=file_meta, preamble=b"\0" * 128) ]
+rpcs[0].CodeValue = '6011-57ad451f'
+rpcs[0].CodingSchemeDesignator = 'GAPIT'
+rpcs[0].CodeMeaning = 'MR-Angio Thorax'
+ras[0].add_new(0x00321064,'SQ',rpcs)
+#
+ras[0].ScheduledProcedureStepDescription = 'MR-Angio Thorax'
+# ScheduledProtocolCodeSequence TODO
+spcs = [ FileDataset(None, {}, file_meta=file_meta, preamble=b"\0" * 128) ]
+spcs[0].CodeValue = '6011-57ad451f'
+spcs[0].CodingSchemeDesignator = 'GAPIT'
+spcs[0].CodeMeaning = 'MR-Angio Thorax'
+ras[0].add_new(0x00400008,'SQ',spcs)
+#
+ras[0].ScheduledProcedureStepID = '0027084519'
+ras[0].RequestedProcedureID = '0027084519'
+ds[0].add_new(0x00400275, 'SQ', ras)
 
-#TODO
-#ds[0].RequestedProcedureCodeSequence.CodeValue = '6010'
-#ds[0].RequestedProcedureCodeSequence.CodingSchemeDesignator = '99GAP'
-#ds[0].RequestedProcedureCodeSequence.CodeMeaning = 'MR Thorax'
+#RequestedProcedureCodeSequence
+rpcs = [ FileDataset(None, {}, file_meta=file_meta, preamble=b"\0" * 128) ]
+rpcs[0].CodeValue = '6010'
+rpcs[0].CodingSchemeDesignator = '99GAP'
+rpcs[0].CodeMeaning = 'MR Thorax'
+ds[0].add_new(0x00321064, 'SQ', rpcs)
+
 ds[0].RequestedProcedureDescription = 'MR Thorax'
 ds[0].RescaleIntercept = -4096
 ds[0].RescaleSlope = 2
@@ -412,6 +422,9 @@ ds[0].WindowCenterWidthExplanation = 'Algo1'
 ds[0].WindowWidth = 4516
 ds[0].dBdt = 0
 
+if enable_debug:
+    print(ds[0])
+
 ########################################
 
 if enable_debug:
@@ -434,8 +447,8 @@ if hasattr(mri, 'intensity') and enable_intensity:
         ds[0].ContentTime = d.time(ds[0].ContentTime.hour,ds[0].ContentTime.minute,ds[0].ContentTime.second,int(mri.time[mri_time]*100))
         ds[0].EchoTime = str(mri.time[mri_time])
         ds[0].InstanceCreationTime = d.time(ds[0].InstanceCreationTime.hour,ds[0].InstanceCreationTime.minute,ds[0].InstanceCreationTime.second,int(mri.time[mri_time]*100))
-#        ds[0].OriginalAttributesSequence.StudyTime = mri.time[mri_time]
-#        ds[0].OriginalAttributesSequence.AttributeModificationDateTime = mri.time[mri_time]
+        ds[0].OriginalAttributesSequence.StudyTime = str(mri.time[mri_time]) #TODO check is correct
+        ds[0].OriginalAttributesSequence.AttributeModificationDateTime = str(mri.time[mri_time]) #TODO check if correct
         ds[0].PerformedProcedureStepStartTime = d.time(ds[0].PerformedProcedureStepStartTime.hour,ds[0].PerformedProcedureStepStartTime.minute,ds[0].PerformedProcedureStepStartTime.second,int(mri.time[mri_time]*100))
         ds[0].RepetitionTime = str(mri.time[mri_time])
         ds[0].SeriesTime = d.time(ds[0].SeriesTime.hour,ds[0].SeriesTime.minute,ds[0].SeriesTime.second,int(mri.time[mri_time]*100))
@@ -446,6 +459,7 @@ if hasattr(mri, 'intensity') and enable_intensity:
             ds[0].pixel_data=mri.intensity[:,:,z_axis,mri_time],
             ds[0].sop_instance_uid=generate_uid(),
             ds[0].fix_meta_info(True)
+            #ds[0].dcmread().validate_file_meta(ds[0]) #TODO need to be tested
             ds[0].save_as(f"dicom/intensity/TS_{mri_time}_INT_{z_axis}.dcm",write_like_original=False)
 
 if hasattr(mri, 'velocity_mean') and enable_velocity_mean:
@@ -548,5 +562,4 @@ if hasattr(mri, 'anomaly_prob') and enable_abnormality:
                     )
             seg_dataset.fix_meta_info(True)
             seg_dataset.save_as(f"dicom/anomaly_prob/TS_{mri_time}_AN_{z_axis}.dcm",write_like_original=False)
-
 
