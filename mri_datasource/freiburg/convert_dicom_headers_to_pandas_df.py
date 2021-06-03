@@ -105,7 +105,7 @@ if __name__ == '__main__':
         else:
             print(f"Converting {os.path.relpath(abs_mri_sample_path, start=abs_hpc_predict_data_root)} -> "
                   f"{os.path.relpath(abs_dataframe_sample_output_path, start=abs_hpc_predict_data_root)}")
-            os.makedirs(os.path.dirname(abs_dataframe_sample_output_path), exist_ok=False)
+            os.makedirs(os.path.dirname(abs_dataframe_sample_output_path), exist_ok=True)
 
             def header_table_from_dicom_dataset(path, dataset):
                 dicom_headers = dicom_dataset_to_dict(dataset)

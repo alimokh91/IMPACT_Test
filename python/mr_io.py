@@ -115,6 +115,9 @@ def write_space_time_voxel_matrix_feature(grp, name, voxel_feature):
     voxel_feature_transposed = voxel_feature.transpose((2,1,0,3,5,4))
     ds = grp.create_dataset(name, voxel_feature_transposed.shape, data=voxel_feature_transposed, dtype="float64")
 
+def write_empty_feature(grp, name):
+    ds = grp.create_dataset(name, data=h5py.Empty("float64"))
+
 class SpaceTimeMRI:
     """MRI datatype for time-dependent vectorial measurements in 3d including axis information
     
@@ -212,7 +215,8 @@ class FlowMRI:
         validate_spacetime_coordinates(geometry, time)
         validate_spacetime_scalar_feature(FlowMRI, geometry, time, intensity)
         validate_spacetime_vector_feature(FlowMRI, geometry, time, velocity_mean)
-        validate_spacetime_matrix_feature(FlowMRI, geometry, time, velocity_cov)
+        if velocity_cov is not None:
+            validate_spacetime_matrix_feature(FlowMRI, geometry, time, velocity_cov)
 
         self.geometry = geometry
         self.time = time
@@ -245,7 +249,10 @@ class FlowMRI:
         write_space_time_coordinates(grp, self.geometry, self.time)
         write_space_time_voxel_scalar_feature(grp, "intensity", self.intensity)
         write_space_time_voxel_vector_feature(grp, "velocity_mean", self.velocity_mean)
-        write_space_time_voxel_matrix_feature(grp, "velocity_cov", self.velocity_cov)
+        if self.velocity_cov is not None:
+            write_space_time_voxel_matrix_feature(grp, "velocity_cov", self.velocity_cov)
+        else:
+            write_empty_feature(grp, "velocity_cov")
         lock.close()
 
 
@@ -281,7 +288,7 @@ class FlowMRI:
                             time_heart_cycle_period=time_heart_cycle_period,
                             intensity=f[FlowMRI.group_name]["intensity"][()].transpose((2,1,0,3)),
                             velocity_mean=f[FlowMRI.group_name]["velocity_mean"][()].transpose((2,1,0,3,4)),
-                            velocity_cov=f[FlowMRI.group_name]["velocity_cov"][()].transpose((2,1,0,3,5,4)))
+                            velocity_cov=f[FlowMRI.group_name]["velocity_cov"][()].transpose((2,1,0,3,5,4)) if not isinstance(f[FlowMRI.group_name]["velocity_cov"][()], h5py.Empty) else None)
         lock.close()
         return mri
 

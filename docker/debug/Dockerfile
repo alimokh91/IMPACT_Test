@@ -28,7 +28,8 @@ RUN bash -c "cd /src/hpc-predict/hpc-predict-io \
     && python3 -m venv venv \
     && source venv/bin/activate \
     && pip install --upgrade pip \
-    && pip install -r requirements.txt" 
+    && pip install -r requirements.txt \
+    && patch venv/lib/python3.6/site-packages/black/cache.py requirements_black_cache.patch" # https://github.com/psf/black/pull/1224/files
 
 # FIXME: Bundling remains TBD - question is especially how to apply this to python venvs/whether they should be built inside final image only 
 #      \
