@@ -1,0 +1,19 @@
+grid dimensions (total):
+         M1:    133
+         M2:     69
+         M3:     79
+
+grid dimensions (per processor block):
+         N1:     23
+         N2:     35
+         N3:     27
+
+Processor blocks:
+        NB1:      6
+        NB2:      2
+        NB3:      3
+
+Processor block gathering:
+n_gather(1):      1
+n_gather(2):      1
+n_gather(3):      1

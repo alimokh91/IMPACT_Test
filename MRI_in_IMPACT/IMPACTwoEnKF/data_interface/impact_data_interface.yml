@@ -1,0 +1,9 @@
+app: impact
+
+data-assimilation: 
+
+  input: 
+    flow_CStest_Volunteer_R4_segmented.h5: mr_io.SegmentedFlowMRI
+
+  output: 
+    flow_CStest_Volunteer_R4_cnn_segmented_data_assimilated.h5: mr_io.SegmentedFlowMRI
