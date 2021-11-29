@@ -28,7 +28,8 @@ RUN bash -c "cd /src/hpc-predict/hpc-predict-io \
     && python3 -m venv venv \
     && source venv/bin/activate \
     && pip install --upgrade pip \
-    && pip install -r requirements.txt" 
+    && pip install -r requirements.txt \
+    && patch venv/lib/python3.6/site-packages/black/cache.py requirements_black_cache.patch" # https://github.com/psf/black/pull/1224/files
 
 # finkandreas: I do not think that we need encfs inside the container,
 # because it needs root capabilities when starting as a docker container

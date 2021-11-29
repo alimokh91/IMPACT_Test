@@ -2,6 +2,7 @@ python/venv
 python/__pycache__
 python/*.pyc
 python/config.txt
+python/visualization/.ipynb_checkpoints
 test/__pycache__
 fortran/*.o
 fortran/*.mod
@@ -45,3 +46,5 @@ mri_datasource/bern_data_experiments_source/*
 mri_datasource/bern_data_experiments_hpc_predict/*
 mri_datasource/mri_reconstruction_example_source/*
 mri_datasource/mri_reconstruction_example_hpc_predict/*
+mri_datasource/freiburg/.ipynb_checkpoints
+mri_datasource/freiburg/__pycache__
