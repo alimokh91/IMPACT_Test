@@ -1,4 +1,5 @@
 import os
+import tarfile
 import pydicom
 
 # TODO: Pandas reader that converts DICOM file set into DataFrame table (one column per header)
@@ -12,17 +13,33 @@ import pydicom
 #   dcm_image: pydicom.dataset.FileDataset (DICOM image read with dicom.dcm_read))
 #    -> None
 
-def visit_dicom_files(directory, image_callback):
+def visit_dicom_files(directory, image_callback, filter_images=lambda f: True):
     local_image_filenames = []
     for f in os.scandir(directory):
         if f.is_dir():
-            visit_dicom_files(f.path, image_callback)
+            visit_dicom_files(f.path, image_callback, filter_images)
         else:
             local_image_filenames.append(f.path)
     for f_path in local_image_filenames:
-        if os.path.basename(f_path) != "DICOMDIR":
+        if os.path.basename(f_path) != "DICOMDIR" and filter_images(f_path):
             image_callback(f_path, pydicom.dcmread(f_path))
 
+
+def visit_dicom_tar(tar_file, image_callback, filter_images=lambda f: True):
+    
+    tar = tarfile.open(tar_file)    
+
+    d = {f.name: list() for f in tar.getmembers() if f.isdir()}
+    for f in tar.getmembers():
+        if f.isfile():
+            d[os.path.dirname(f.name)].append(f.name)
+            
+    for d, filenames in d.items(): # possibly only iterate over a selection of directories
+        for filename in filenames:
+            file = tar.extractfile(filename)
+            if os.path.basename(filename) != "DICOMDIR" and filter_images(filename):
+                image_callback(filename, pydicom.dcmread(file))
+                                    #pydicom.filereader.dcmread(file)   
 
 def visit_dicom_file_collection(mri_data_root, image_callback, max_dirs=2):
     mri_data_collection = sorted([s.path for s in os.scandir(mri_data_root) if s.is_dir()], key=lambda x: int(os.path.basename(x)))
