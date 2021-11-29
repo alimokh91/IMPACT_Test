@@ -12,7 +12,7 @@ pip install -r requirements.txt
 
 ## DICOM Reader 
 
-Dataset-wide analysis is available from `freiburg_full_dataset_analysis.ipynb`.
+Dataset-wide analysis is available from `freiburg_dicom_full_dataset_analysis.ipynb`.
 
 Single-study conversion is implemented in Jupyter notebook `freiburg_dicom_reader.ipynb`. To run, use
 

@@ -23,4 +23,4 @@ set -x
 
 mkdir -p "/hpc-predict-data/decrypt/${output_root}/${mri_sample_id}" || true
 
-papermill -p hpc_predict_data_root /hpc-predict-data -p mri_data_root "${mri_data_root}" -p output_root "${output_root}" -y "{mri_samples:[${mri_sample_id}]}" "/src/hpc-predict/hpc-predict-io/mri_datasource/freiburg/freiburg_dicom_reader.ipynb" "/hpc-predict-data/decrypt/${output_root}/${mri_sample_id}/freiburg_dicom_reader_papermilled.ipynb"
+papermill -p hpc_predict_data_root /hpc-predict-data -p mri_data_root "${mri_data_root}" -p output_root "${output_root}" -y "{mri_samples:[${mri_sample_id}]}" "/src/hpc-predict/hpc-predict-io/mri_datasource/dicom/freiburg_dicom_reader.ipynb" "/hpc-predict-data/decrypt/${output_root}/${mri_sample_id}/freiburg_dicom_reader_papermilled.ipynb"

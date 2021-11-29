@@ -2,6 +2,7 @@ python/venv
 python/__pycache__
 python/*.pyc
 python/config.txt
+python/visualization/.ipynb_checkpoints
 test/__pycache__
 fortran/*.o
 fortran/*.mod

@@ -3,7 +3,7 @@ import numpy as np
 import argparse
 import logging
 import scipy.io as sio
-from mr_io import FlowMRI # Requires adding ../python to PYTHONPATH
+from mr_io import FlowMRI # Requires adding ../../python to PYTHONPATH
 
 # Parse data input and output directories
 def parse_args():

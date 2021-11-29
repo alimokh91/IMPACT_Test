@@ -5,7 +5,7 @@ import glob
 import argparse
 import logging
 import functools
-from mr_io import SegmentedFlowMRI # Requires adding ../python to PYTHONPATH
+from mr_io import SegmentedFlowMRI # Requires adding ../../python to PYTHONPATH
 import json
 import pdb
 import math

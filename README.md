@@ -1,6 +1,6 @@
 # Fortran-Python MRI data communication layer for HPC-PREDICT
 
-The functionality to communicate MRI objects across Python and Fortran is contained in the `python` and `fortran` directories. Integration apps accessing various data sources are kept in `mri_datasource` directory. 
+The functionality to communicate MRI objects across Python and Fortran is contained in the `python` and `fortran` directories. Integration code to interface the HPC-PREDICT pipeline with various external data sources (DICOM, experimental datasets, etc.) is maintained in `mri_datasource` directory. 
 
 ## Communication library
 
