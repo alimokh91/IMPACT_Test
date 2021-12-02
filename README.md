@@ -27,6 +27,8 @@ To build the Fortran library and install it, run
 mkdir build
 cd build
 cmake -DCMAKE_Fortran_COMPILER=mpifort \
+      -DCMAKE_C_COMPILER=mpicc \
+      -DCMAKE_CXX_COMPILER=mpic++ \
       -DIMPACT_DIR=/path/to/IMPACT/prog/ \
       -DHDF5_ROOT=/path/where/hdf5/can/be/found \
       -DCMAKE_INSTALL_PREFIX=/path/where/you/want/to/install/hpc-predict-io \
