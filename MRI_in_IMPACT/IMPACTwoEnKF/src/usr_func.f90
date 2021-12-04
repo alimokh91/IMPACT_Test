@@ -645,7 +645,7 @@ MODULE usr_func
 
   IMPLICIT NONE
 
-  INTEGER            :: i,j,k,l,ii,jj,kk,m,n
+  INTEGER            :: i,j,k,l,ii,jj,kk,m,n,process_Rank, ierror,size_Of_Cluster
   INTEGER, DIMENSION(2,3) :: bounds, bounds2
   REAL :: vel_voxel(1:3), deltaT
   INTEGER :: ph_1,ph_2 !,inflow_bds
@@ -661,6 +661,11 @@ MODULE usr_func
   CALL h5open_f(herror) 
   !mri_inst%velocity_mean%array = mri_inst%velocity_mean%array/U_ref
   !mri_inst%velocity_cov%array  = mri_inst%velocity_cov%array/U_ref/U_ref
+
+
+CALL MPI_COMM_SIZE(MPI_COMM_WORLD, size_Of_Cluster, merror)
+CALL MPI_COMM_RANK(MPI_COMM_WORLD, process_Rank,merror)
+
 
   bounds(1,1) = lbound(mri_inst%velocity_mean%array,3)
   bounds(2,1) = ubound(mri_inst%velocity_mean%array,3)
@@ -690,9 +695,9 @@ MODULE usr_func
   DO k = bounds(1,3), bounds(2,3)
     DO j = bounds(1,2), bounds(2,2)
       DO i = bounds(1,1), bounds(2,1)
-        DO kk = (k-1)*kalman_num_spatial_refinements(3)+1,k*kalman_num_spatial_refinements(3)+1
-          DO jj = (j-1)*kalman_num_spatial_refinements(2)+1,j*kalman_num_spatial_refinements(2)+1
-            DO ii = (i-1)*kalman_num_spatial_refinements(1)+1,i*kalman_num_spatial_refinements(1)+1
+        DO kk = (k-1)*kalman_num_spatial_refinements(3)+1,k*kalman_num_spatial_refinements(3)
+          DO jj = (j-1)*kalman_num_spatial_refinements(2)+1,j*kalman_num_spatial_refinements(2)
+            DO ii = (i-1)*kalman_num_spatial_refinements(1)+1,i*kalman_num_spatial_refinements(1)
               wgt_interp(ii,jj,kk) = wgt_interp(ii,jj,kk) + 1
             END DO
           END DO
@@ -740,9 +745,9 @@ MODULE usr_func
           !m = m + (j-bounds(1,2))*size(mri_inst%mri%velocity_mean%array,3)
           !m = m + (k-bounds(1,3))*size(mri_inst%mri%velocity_mean%array,3)*size(mri_inst%mri%velocity_mean%array,4)
  
-          DO kk = (k-1)*kalman_num_spatial_refinements(3)+1,k*kalman_num_spatial_refinements(3)+1
-            DO jj = (j-1)*kalman_num_spatial_refinements(2)+1,j*kalman_num_spatial_refinements(2)+1
-              DO ii = (i-1)*kalman_num_spatial_refinements(1)+1,i*kalman_num_spatial_refinements(1)+1
+          DO kk = (k-1)*kalman_num_spatial_refinements(3)+1,k*kalman_num_spatial_refinements(3)
+            DO jj = (j-1)*kalman_num_spatial_refinements(2)+1,j*kalman_num_spatial_refinements(2)
+              DO ii = (i-1)*kalman_num_spatial_refinements(1)+1,i*kalman_num_spatial_refinements(1)
                 !n =      ii-((bounds(1,1)-1)*kalman_num_spatial_refinements(1)+1)
                 !n = n + (jj-((bounds(1,2)-1)*kalman_num_spatial_refinements(2)+1))* &
                 !        (size(mri_inst%mri%velocity_mean%array,3)*kalman_num_spatial_refinements(1)+1)
@@ -784,18 +789,19 @@ MODULE usr_func
   DO k = bounds(1,3), bounds(2,3)
     DO j = bounds(1,2), bounds(2,2)
       DO i = bounds(1,1), bounds(2,1)
-        DO l = 1, M1
-         if (mri_inst%segmentation_prob%array(ph_1,i,j,k) .eq. 1.0 .and. y1p(l) .GT. 6.8 ) then ! value for inflow BC
-         print *, 'Beginning fringe : ', y1p(l)
+         if (mri_inst%segmentation_prob%array(ph_1,i,j,k) .eq. 1.0) then ! value for inflow BC
+         !print *, 'Beginning fringe : ', y1p(l)
          !if (mri_inst%segmentation_prob%array(ph_1,i,j,k) .eq. 1.0 ) then
           !print *, mri_inst%mri%segmentation_prob%array(ph_1,i,j,k) 
           !m =      i-bounds(1,1)
           !m = m + (j-bounds(1,2))*size(mri_inst%mri%velocity_mean%array,3)
           !m = m + (k-bounds(1,3))*size(mri_inst%mri%velocity_mean%array,3)*size(mri_inst%mri%velocity_mean%array,4)
  
-          DO kk = (k-1)*kalman_num_spatial_refinements(3)+1,k*kalman_num_spatial_refinements(3)+1
-            DO jj = (j-1)*kalman_num_spatial_refinements(2)+1,j*kalman_num_spatial_refinements(2)+1
-              DO ii = (i-1)*kalman_num_spatial_refinements(1)+1,i*kalman_num_spatial_refinements(1)+1
+          DO kk = (k-1)*kalman_num_spatial_refinements(3)+1,k*kalman_num_spatial_refinements(3)
+            DO jj = (j-1)*kalman_num_spatial_refinements(2)+1,j*kalman_num_spatial_refinements(2)
+              DO ii = (i-1)*kalman_num_spatial_refinements(1)+1,i*kalman_num_spatial_refinements(1)
+              print *, "ii= ", ii , "jj=" , jj, "kk=", kk, "i=", i, "j=", j, "k=",k
+              if (x1p(ii) .lt. 0.0915 .and. x1p(ii) .gt. 0.085) then  !value for inflow BC                      
                 !n =      ii-((bounds(1,1)-1)*kalman_num_spatial_refinements(1)+1)
                 !n = n + (jj-((bounds(1,2)-1)*kalman_num_spatial_refinements(2)+1))* &
                 !        (size(mri_inst%mri%velocity_mean%array,3)*kalman_num_spatial_refinements(1)+1)
@@ -814,13 +820,14 @@ MODULE usr_func
                 nl(ii,jj,kk,2) = nl(ii,jj,kk,2)-(vel_voxel(2)-vel(ii,jj,kk,2))/(dtime*aRK(substep))/wgt_interp(ii,jj,kk)
                 nl(ii,jj,kk,3) = nl(ii,jj,kk,3)-(vel_voxel(3)-vel(ii,jj,kk,3))/(dtime*aRK(substep))/wgt_interp(ii,jj,kk)
 
-              END DO
+                   end if
+
+               END DO
             END DO
           END DO
 
          end if
-        END DO
-      END DO
+       END DO
     END DO
   END DO
   !print *, 'forcing BC done'

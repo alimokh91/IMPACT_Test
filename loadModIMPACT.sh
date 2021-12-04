@@ -12,6 +12,8 @@ then
   fi
 fi
 
+export PROJECT_DIR=$(pwd)
+
 #module load vim
 #module purge
 module load cray-hdf5-parallel
@@ -36,7 +38,7 @@ export F77=ftn
 export CRAYPE_LINK_TYPE=dynamic
 export CRAY_ADD_RPATH=yes
 
-export HPC_PREDICT_IO_DIR=/scratch/snx3000/amokhtar/IMPACT_NewEnKF/MRI_in_IMPACT/hpc-predict-io/install/
+export HPC_PREDICT_IO_DIR=$PROJECT_DIR/MRI_in_IMPACT/hpc-predict-io/install
 
 # aliases
 alias mpicc="cc" 

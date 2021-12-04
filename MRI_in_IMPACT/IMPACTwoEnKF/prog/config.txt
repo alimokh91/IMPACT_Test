@@ -36,8 +36,8 @@ NB3         2
 #kalman_num_time_refinements           2
 kalman_num_spatial_refinements        2 2 2
 # hpc-predict-io MRI file paths
-kalman_mri_input_file_path                   /scratch/snx3000/amokhtar/valerie/IMPACT_newEnKF/MRI_in_IMPACT/IMPACTwoEnKF/prog/sevSten_invitroMR_hpcH5.h5
-kalman_mri_output_file_path                  /scratch/snx3000/amokhtar/valerie/IMPACT_newEnKF/MRI_in_IMPACT/IMPACTwoEnKF/prog/sevSten_invitroMR_hpcH5_data_assimilated.h5
+kalman_mri_input_file_path                 /scratch/snx3000/amokhtar/IMPACT_NewEnKF/MRI_in_IMPACT/IMPACTwoEnKF/prog/sevSten_invitroMR_hpcH5.h5
+kalman_mri_output_file_path                /scratch/snx3000/amokhtar/IMPACT_NewEnKF/MRI_in_IMPACT/IMPACTwoEnKF/prog/sevSten_invitroMR_hpcH5_data_assimilated.h5
 
 # MRI attributes currently have to be supplied through the config file due to compiler error in hpc-predict-io
 kalman_mri_input_attr_t_heart_cycle_period   1.0
