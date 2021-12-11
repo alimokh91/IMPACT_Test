@@ -108,7 +108,7 @@ MODULE mod_inout
            END DO
         END DO
      END DO
-     !IF (write_large) CALL write_hdf('velX_large_'//count_char,'velX',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,nl(b1L,b2L,b3L,1)) ! TEST!!! velX --> vel1, etc. umbenennen!!
+     IF (write_large) CALL write_hdf('velX_large_'//count_char,'velX',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,nl(b1L,b2L,b3L,1)) ! TEST!!! velX --> vel1, etc. umbenennen!!
      IF (write_med  ) CALL write_hdf('velX_med_'  //count_char,'velX',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_med  ,nl(b1L,b2L,b3L,1))
      IF (write_small) CALL write_hdf('velX_small_'//count_char,'velX',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_small,nl(b1L,b2L,b3L,1))
   ELSE
@@ -137,7 +137,7 @@ MODULE mod_inout
            END DO
         END DO
      END DO
-     !IF (write_large) CALL write_hdf('velY_large_'//count_char,'velY',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,nl(b1L,b2L,b3L,2))
+     IF (write_large) CALL write_hdf('velY_large_'//count_char,'velY',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,nl(b1L,b2L,b3L,2))
      IF (write_med  ) CALL write_hdf('velY_med_'  //count_char,'velY',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_med  ,nl(b1L,b2L,b3L,2))
      IF (write_small) CALL write_hdf('velY_small_'//count_char,'velY',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_small,nl(b1L,b2L,b3L,2))
   ELSE
@@ -166,7 +166,7 @@ MODULE mod_inout
            END DO
         END DO
      END DO
-     !IF (write_large) CALL write_hdf('velZ_large_'//count_char,'velZ',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,nl(b1L,b2L,b3L,3))
+     IF (write_large) CALL write_hdf('velZ_large_'//count_char,'velZ',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,nl(b1L,b2L,b3L,3))
      IF (write_med  ) CALL write_hdf('velZ_med_'  //count_char,'velZ',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_med  ,nl(b1L,b2L,b3L,3))
      IF (write_small) CALL write_hdf('velZ_small_'//count_char,'velZ',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_small,nl(b1L,b2L,b3L,3))
   END IF
