@@ -1,0 +1,15 @@
+<map id="mod_diff::divergence_transp" name="mod_diff::divergence_transp">
+<area shape="rect" id="node2" href="$namespacemod__laplace.html#af0780de7d82deb5220088b416e53bbd7" title="subroutine that computes the transpose of the Laplacian " alt="" coords="199,149,348,191"/>
+<area shape="rect" id="node11" href="$namespacemod__solvers.html#a2bc4ad51576a0ef7594bc571bf328a68" title="subroutine that first calculates the transpose of the div and grad stencils and then solves for the n..." alt="" coords="795,31,981,58"/>
+<area shape="rect" id="node14" href="$namespacemod__test.html#ab23c32c6cafa33ce94911c3dd5ea39f0" title="mod_test::analyze_matrix" alt="" coords="1037,318,1211,345"/>
+<area shape="rect" id="node3" href="$namespacemod__solvers.html#aa77dc5380b0363190fe50aef7cdb51e5" title="subroutine for solving LDEs with the iterative bi&#45;conjugate gradient stabilized method. The subroutine is used both for the preconditioned pressure iteration (Poisson problem) as well as for the velocity iteration (Helmholtz problems). The routine is only called with problem_type={1,2,3,4} unlike BiCGstab2 which is called only with problem_type=5. " alt="" coords="402,182,557,209"/>
+<area shape="rect" id="node13" href="$namespacemod__solvers.html#ab9c2d56c08166a23af330fb2ae9a0018" title="mod_solvers::richardson" alt="" coords="396,131,563,158"/>
+<area shape="rect" id="node4" href="$namespacemod__solvers.html#a1f51a55d7943aedbded43e22208daac4" title="mod_solvers::outer\l_iteration" alt="" coords="820,144,956,185"/>
+<area shape="rect" id="node7" href="$namespacemod__solvers.html#abf7f4fcd9d7186cdf08baf1c35e1add5" title="mod_solvers::explicit" alt="" coords="815,263,961,290"/>
+<area shape="rect" id="node8" href="$namespacemod__solvers.html#ab784a20d9dcc9b4fc0ed0cd045f8c7c7" title="mod_solvers::twostep" alt="" coords="813,213,963,239"/>
+<area shape="rect" id="node9" href="$namespacemod__solvers.html#adc333df8193656734a4f428be4038fd7" title="mod_solvers::force\l_massflow" alt="" coords="611,207,746,248"/>
+<area shape="rect" id="node10" href="$namespacemod__solvers.html#aa6273a4b3bdfc1645ff35caf9cde17a7" title="subroutine that solves the nullspace " alt="" coords="611,24,747,65"/>
+<area shape="rect" id="node12" href="$namespacemod__solvers.html#ae5a8061efa5e4423e03e8021ceba8286" title="mod_solvers::solve\l_helmholtz" alt="" coords="611,141,747,183"/>
+<area shape="rect" id="node5" href="$namespacemod__timeint.html#a481262183fa43a7abe56b74c7af82f2a" title="public subroutine that forms the center of the DNS simulation. " alt="" coords="1029,213,1219,239"/>
+<area shape="rect" id="node6" href="$impact_8f90.html#a5081faae3f9d2c8ac0786a77368babfe" title="Main routine of IMPACT. All of the initialization is done here. Depending on the parameter task eithe..." alt="" coords="1267,266,1328,293"/>
+</map>

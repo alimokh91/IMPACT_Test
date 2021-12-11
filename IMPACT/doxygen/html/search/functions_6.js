@@ -1,0 +1,27 @@
+var searchData=
+[
+  ['get_5fbeta',['get_beta',['../namespacemod__lib.html#a69a793c9c639425cb382ef0ee4c4dcb5',1,'mod_lib']]],
+  ['get_5fblock_5fdims',['get_block_dims',['../namespaceusr__func.html#a50eb05256c7ee14aa6ae4f46a3bab3f3',1,'usr_func']]],
+  ['get_5fboundary_5fblock_5fdims',['get_boundary_block_dims',['../namespaceusr__func.html#a2c47bfe3d2db2e31a87c518da0566eb4',1,'usr_func']]],
+  ['get_5fcoords',['get_coords',['../usr__geometry_8f90.html#a6d992ead19c4ad9878948e2fd61abe8b',1,'usr_geometry.f90']]],
+  ['get_5fdtime',['get_dtime',['../namespacemod__lib.html#a95378f527c8a88e37f2fc98ebbe41ad5',1,'mod_lib']]],
+  ['get_5fnorms',['get_norms',['../namespacemod__solvers.html#ac12141be9c65519dc74506d8c317868d',1,'mod_solvers']]],
+  ['get_5fnorms2',['get_norms2',['../namespacemod__solvers.html#a57170f2bd7737eaa4368377fdb8434ad',1,'mod_solvers']]],
+  ['get_5fnullspace',['get_nullspace',['../namespacemod__solvers.html#a2bc4ad51576a0ef7594bc571bf328a68',1,'mod_solvers']]],
+  ['get_5fstencil',['get_stencil',['../namespacemod__coeffs.html#af0e52a5934c898f030637a9b322bbacd',1,'mod_coeffs']]],
+  ['get_5fstencil_5fhelm',['get_stencil_helm',['../namespacemod__coeffs.html#a104f9de477f61a670e146ee3621ddeec',1,'mod_coeffs']]],
+  ['get_5fstencil_5ftransp',['get_stencil_transp',['../namespacemod__coeffs.html#adccdcf78ab8b7883ba87af0ed79aa57b',1,'mod_coeffs']]],
+  ['get_5fweights',['get_weights',['../namespacemod__coeffs.html#a6757ca0772d1e7d676e9d93be32cb69f',1,'mod_coeffs']]],
+  ['global_5fcart2id_5fglob_5fcon',['global_cart2id_glob_con',['../namespaceusr__func.html#ad3b177db68d22ebd77c0a2cff6026310',1,'usr_func']]],
+  ['global_5fcart2id_5floc_5fcon',['global_cart2id_loc_con',['../namespaceusr__func.html#acc1de750ebf58c1891cc328be9b578c2',1,'usr_func']]],
+  ['global_5fcart2id_5floc_5fcon2',['global_cart2id_loc_con2',['../namespaceusr__func.html#a8e9b339830cf1f5fd8f8dea036c1f4da',1,'usr_func']]],
+  ['global_5fid2cart_5fglob_5fcon',['global_id2cart_glob_con',['../namespaceusr__func.html#a155b917d40211080254e5a2694f5cffa',1,'usr_func']]],
+  ['global_5fid2cart_5floc_5fcon',['global_id2cart_loc_con',['../namespaceusr__func.html#ae8e394776a6a3af5b517feff39a46b06',1,'usr_func']]],
+  ['global_5fid2cart_5floc_5fcon2',['global_id2cart_loc_con2',['../namespaceusr__func.html#a8df9865f7147d6068b8e7172321128b7',1,'usr_func']]],
+  ['global_5fto_5flocal_5fnode_5fid_5floc_5fcon_5fallperiodic',['global_to_local_node_id_loc_con_allperiodic',['../namespaceusr__func.html#a2abc1b15e5bd420ec6c8c651e0237320',1,'usr_func']]],
+  ['global_5fto_5flocal_5fnode_5fid_5floc_5fcon_5fallperiodic2',['global_to_local_node_id_loc_con_allperiodic2',['../namespaceusr__func.html#a1b6b1c35d04bdfe373d4d8c7b3116cd9',1,'usr_func']]],
+  ['gq_5fint',['gq_int',['../namespacemod__ibm.html#a0e854da68fd31dc3b0e9b9ef71926290',1,'mod_ibm']]],
+  ['gradient',['gradient',['../namespacemod__diff.html#a63bfc3c1ef14839544459019657a01af',1,'mod_diff']]],
+  ['gradient_5ftransp',['gradient_transp',['../namespacemod__diff.html#a5dd547ae2d45a98d28daed35e8821d1b',1,'mod_diff']]],
+  ['gradient_5ftransp_5f1d',['gradient_transp_1d',['../namespacemod__solvers.html#a26b6602411d57714b2840fc18f2ee8f7',1,'mod_solvers']]]
+];

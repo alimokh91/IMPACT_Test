@@ -1,0 +1,5 @@
+<map id="mod_ibm::setup_mass_matrix" name="mod_ibm::setup_mass_matrix">
+<area shape="rect" id="node2" href="$namespacemod__ibm.html#a492b20d155124d0e84300136eab46498" title="mod_ibm::fe_setup_triangular\l_3node" alt="" coords="209,5,408,47"/>
+<area shape="rect" id="node3" href="$namespacemod__ibm.html#a122eac480e19ba1c45b0882fa0f73ba6" title="subroutine to initialize the IB, setup parameters, allocate fields and to make sure only one process ..." alt="" coords="456,13,575,39"/>
+<area shape="rect" id="node4" href="$impact_8f90.html#a5081faae3f9d2c8ac0786a77368babfe" title="Main routine of IMPACT. All of the initialization is done here. Depending on the parameter task eithe..." alt="" coords="623,13,684,39"/>
+</map>

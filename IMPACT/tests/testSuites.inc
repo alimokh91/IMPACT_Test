@@ -1,0 +1,2 @@
+ADD_TEST_SUITE(gaussquadTests_suite)
+ADD_TEST_SUITE(restartrwTests_suite)

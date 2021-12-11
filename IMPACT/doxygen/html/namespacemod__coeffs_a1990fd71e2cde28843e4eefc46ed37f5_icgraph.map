@@ -1,0 +1,6 @@
+<map id="mod_coeffs::diff_coeffs" name="mod_coeffs::diff_coeffs">
+<area shape="rect" id="node2" href="$namespacemod__coeffs.html#aa607ead392b00af0cc933f309f2819d2" title="subroutine to compute FD coefficients " alt="" coords="235,5,387,32"/>
+<area shape="rect" id="node4" href="$namespacemod__coeffs.html#a104f9de477f61a670e146ee3621ddeec" title="subroutine that creates the Helmholtz operator for the velocity equaiton? " alt="" coords="212,56,411,83"/>
+<area shape="rect" id="node5" href="$namespacemod__coeffs.html#aa3a2d41adcf2522103520cf7447d10e7" title="subroutine to restrict coefficients from a finer to a coarser grid (pressure equation). " alt="" coords="227,107,395,133"/>
+<area shape="rect" id="node3" href="$impact_8f90.html#a5081faae3f9d2c8ac0786a77368babfe" title="Main routine of IMPACT. All of the initialization is done here. Depending on the parameter task eithe..." alt="" coords="459,56,520,83"/>
+</map>
