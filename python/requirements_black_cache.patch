@@ -1,0 +1,19 @@
+--- cache.py.original   2021-05-12 22:55:23.450836456 +0000
++++ cache.py    2021-05-12 22:55:57.490942030 +0000
+@@ -21,7 +21,7 @@
+
+
+ CACHE_DIR = Path(user_cache_dir("black", version=__version__))
+-
++CACHE_DIR.mkdir(parents=True, exist_ok=True)
+
+ def read_cache(mode: Mode) -> Cache:
+     """Read the cache if it exists and is well formed.
+@@ -71,7 +71,6 @@
+     """Update the cache file."""
+     cache_file = get_cache_file(mode)
+     try:
+-        CACHE_DIR.mkdir(parents=True, exist_ok=True)
+         new_cache = {
+             **cache,
+             **{str(src.resolve()): get_cache_info(src) for src in sources}
