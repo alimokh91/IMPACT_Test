@@ -1,5 +1,0 @@
-<map id="mod_laplace::product_div_grad_relax" name="mod_laplace::product_div_grad_relax">
-<area shape="rect" id="node2" href="$namespacemod__exchange.html#a05beb18318cb748053c191fdf85e3636" title="mod_exchange::exchange\l_relax" alt="" coords="203,5,381,47"/>
-<area shape="rect" id="node4" href="$namespacemod__laplace.html#a298151b06ab44774ac1a239368f9bf94" title="sets the pressure to zero at corners and edges to not create a residuum in the iterative solver ..." alt="" coords="219,71,365,112"/>
-<area shape="rect" id="node3" href="$sub__other_8f90.html#a8238394447e69f8cacd32c4fe1128995" title="pseudo call for mod_exchange::exchange. " alt="" coords="429,13,515,39"/>
-</map>

@@ -1,8 +1,0 @@
-<map id="mod_solvers::plain_restrict" name="mod_solvers::plain_restrict">
-<area shape="rect" id="node2" href="$namespacemod__solvers.html#adecf06c92a18a6f279fb08f4f9a21e4f" title="mod_solvers::apply\l_nullspace2" alt="" coords="191,5,328,47"/>
-<area shape="rect" id="node4" href="$namespacemod__solvers.html#af00be9de2ff518efb960771322e067e2" title="mod_solvers::restrict" alt="" coords="187,71,332,98"/>
-<area shape="rect" id="node7" href="$namespacemod__solvers.html#aa05449e63019ad4e708d85853a8d5604" title="mod_solvers::restrict\l_helmholtz" alt="" coords="187,123,332,164"/>
-<area shape="rect" id="node3" href="$namespacemod__solvers.html#a5838d57041090837ef8c4a829e0fd704" title="mod_solvers::handle\l_corner_rhs" alt="" coords="397,5,542,47"/>
-<area shape="rect" id="node5" href="$namespacemod__exchange.html#a05beb18318cb748053c191fdf85e3636" title="mod_exchange::exchange\l_relax" alt="" coords="380,96,559,137"/>
-<area shape="rect" id="node6" href="$sub__other_8f90.html#a8238394447e69f8cacd32c4fe1128995" title="pseudo call for mod_exchange::exchange. " alt="" coords="607,103,692,130"/>
-</map>

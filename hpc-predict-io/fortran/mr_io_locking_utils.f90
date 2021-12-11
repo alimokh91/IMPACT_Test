@@ -207,7 +207,7 @@ end function mr_io_h5_writer_close_f
 ! ***** Parallel reading/writing of HDF5 *****
 
 function mr_io_h5_parallel_reader_open_f(mr_io_mpi_comm, mr_io_mpi_info, path)
-
+  
   use iso_c_binding, only: c_null_char
   implicit none
 
@@ -216,7 +216,7 @@ function mr_io_h5_parallel_reader_open_f(mr_io_mpi_comm, mr_io_mpi_info, path)
   character(len=*), intent(in) :: path
   character(len=len(path)+1) :: c_filename
   integer(hid_t) :: mr_io_h5_parallel_reader_open_f    ! File identifier
-
+  !write(0,*) "Entering mr_io_h5_parallel_reader_open_f - c-f90 binding"
   c_filename = trim(path)//c_null_char
   mr_io_h5_parallel_reader_open_f = mr_io_h5_parallel_reader_open(mr_io_mpi_comm, mr_io_mpi_info, c_filename);
 

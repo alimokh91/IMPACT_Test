@@ -1,5 +1,0 @@
-<map id="mod_inout::read2_2d_hdf" name="mod_inout::read2_2d_hdf">
-<area shape="rect" id="node2" href="$namespacemod__inout.html#a234ef95ed28edbb722d6d6f090d1ff11" title="subroutine for recovering real valued attribute data from hdf5 files " alt="" coords="227,5,371,47"/>
-<area shape="rect" id="node3" href="$namespacemod__inout.html#aca6582ad8da2f2b9c6756910e9476c1e" title="subroutine for recovering integer valued attribute data from hdf5 files. " alt="" coords="227,71,371,112"/>
-<area shape="rect" id="node4" href="$namespacemod__inout.html#a3dfc0f73a8ed438789917a91e7b9c12e" title="mod_inout::read_hdf\l_infolog" alt="" coords="227,136,371,177"/>
-</map>

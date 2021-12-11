@@ -1,6 +1,0 @@
-<map id="usr_func::windkessel_integration_step" name="usr_func::windkessel_integration_step">
-<area shape="rect" id="node2" href="$usr__force_8f90.html#a385c4a7e691f2167035f0381da42e49d" title="volume forcing of the momentum equation " alt="" coords="199,13,285,39"/>
-<area shape="rect" id="node3" href="$namespacemod__rhs.html#a3f1ddf58b8e176fa55aea43a57dda2cc" title="computes the rhs of the velocity " alt="" coords="333,13,457,39"/>
-<area shape="rect" id="node4" href="$namespacemod__timeint.html#a481262183fa43a7abe56b74c7af82f2a" title="public subroutine that forms the center of the DNS simulation. " alt="" coords="505,13,695,39"/>
-<area shape="rect" id="node5" href="$impact_8f90.html#a5081faae3f9d2c8ac0786a77368babfe" title="Main routine of IMPACT. All of the initialization is done here. Depending on the parameter task eithe..." alt="" coords="743,13,804,39"/>
-</map>

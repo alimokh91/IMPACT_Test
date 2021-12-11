@@ -129,37 +129,37 @@
   !         and right of MRI voxels with data 
   !
   ! kalman_num_data_voxels_per_process_1
-    IF (INDEX(text,'kalman_num_data_voxels_per_process_1' ) == 1) READ(UNIT=text,FMT=*) dummy, &
-                                                                  kalman_num_data_voxels_per_process(1)
+  !  IF (INDEX(text,'kalman_num_data_voxels_per_process_1' ) == 1) READ(UNIT=text,FMT=*) dummy, &
+  !                                                                kalman_num_data_voxels_per_process(1)
   ! kalman_num_padding_data_voxels_lhs_1
-    IF (INDEX(text,'kalman_num_padding_data_voxels_lhs_1' ) == 1) READ(UNIT=text,FMT=*) dummy, &
-                                                                  kalman_domain_padding%lhs(1)
+  !  IF (INDEX(text,'kalman_num_padding_data_voxels_lhs_1' ) == 1) READ(UNIT=text,FMT=*) dummy, &
+  !                                                                kalman_domain_padding%lhs(1)
   ! kalman_num_padding_data_voxels_rhs_1
-    IF (INDEX(text,'kalman_num_padding_data_voxels_rhs_1' ) == 1) READ(UNIT=text,FMT=*) dummy, &
-                                                                  kalman_domain_padding%rhs(1)
+  !  IF (INDEX(text,'kalman_num_padding_data_voxels_rhs_1' ) == 1) READ(UNIT=text,FMT=*) dummy, &
+  !                                                                kalman_domain_padding%rhs(1)
   
   ! kalman_num_data_voxels_per_process_2
-    IF (INDEX(text,'kalman_num_data_voxels_per_process_2' ) == 1) READ(UNIT=text,FMT=*) dummy, &
-                                                                  kalman_num_data_voxels_per_process(2)
+  !  IF (INDEX(text,'kalman_num_data_voxels_per_process_2' ) == 1) READ(UNIT=text,FMT=*) dummy, &
+  !                                                                kalman_num_data_voxels_per_process(2)
   ! kalman_num_padding_data_voxels_lhs_2
-    IF (INDEX(text,'kalman_num_padding_data_voxels_lhs_2' ) == 1) READ(UNIT=text,FMT=*) dummy, &
-                                                                  kalman_domain_padding%lhs(2)
+  !  IF (INDEX(text,'kalman_num_padding_data_voxels_lhs_2' ) == 1) READ(UNIT=text,FMT=*) dummy, &
+  !                                                                kalman_domain_padding%lhs(2)
   ! kalman_num_padding_data_voxels_rhs_2
-    IF (INDEX(text,'kalman_num_padding_data_voxels_rhs_2' ) == 1) READ(UNIT=text,FMT=*) dummy, &
-                                                                  kalman_domain_padding%rhs(2)
+  !  IF (INDEX(text,'kalman_num_padding_data_voxels_rhs_2' ) == 1) READ(UNIT=text,FMT=*) dummy, &
+  !                                                                kalman_domain_padding%rhs(2)
 
   ! kalman_num_data_voxels_per_process_3
-    IF (INDEX(text,'kalman_num_data_voxels_per_process_3' ) == 1) READ(UNIT=text,FMT=*) dummy, &
-                                                                  kalman_num_data_voxels_per_process(3)
+  !  IF (INDEX(text,'kalman_num_data_voxels_per_process_3' ) == 1) READ(UNIT=text,FMT=*) dummy, &
+  !                                                                kalman_num_data_voxels_per_process(3)
   ! kalman_num_padding_data_voxels_lhs_3
-    IF (INDEX(text,'kalman_num_padding_data_voxels_lhs_3' ) == 1) READ(UNIT=text,FMT=*) dummy, &
-                                                                  kalman_domain_padding%lhs(3)
+  !  IF (INDEX(text,'kalman_num_padding_data_voxels_lhs_3' ) == 1) READ(UNIT=text,FMT=*) dummy, &
+  !                                                                kalman_domain_padding%lhs(3)
   ! kalman_num_padding_data_voxels_rhs_3
-    IF (INDEX(text,'kalman_num_padding_data_voxels_rhs_3' ) == 1) READ(UNIT=text,FMT=*) dummy, &
-                                                                  kalman_domain_padding%rhs(3)
+  !  IF (INDEX(text,'kalman_num_padding_data_voxels_rhs_3' ) == 1) READ(UNIT=text,FMT=*) dummy, &
+  !                                                                kalman_domain_padding%rhs(3)
 
-    IF (INDEX(text,'kalman_num_time_refinements' ) == 1) READ(UNIT=text,FMT=*) dummy, &
-                                                                  kalman_num_time_refinements
+  !  IF (INDEX(text,'kalman_num_time_refinements' ) == 1) READ(UNIT=text,FMT=*) dummy, &
+  !                                                                kalman_num_time_refinements
 
     IF (INDEX(text,'kalman_num_spatial_refinements' ) == 1) READ(UNIT=text,FMT=*) dummy, &
                                                                   kalman_num_spatial_refinements(1), &
@@ -188,7 +188,7 @@
 
   !--- Reynolds number ---
   !Re = 1500. 
-    IF (INDEX(text,'Re'                          ) == 1) READ(UNIT=text,FMT=*) dummy, Re
+  !  IF (INDEX(text,'Re'                          ) == 1) READ(UNIT=text,FMT=*) dummy, Re
   
   
   !===========================================================================================================
@@ -543,14 +543,14 @@
   
   !--- time interval of other ouput (kalman filter) ---
   !dtime_out_kalm = 1.
-    IF (INDEX(text,'dtime_out_kalm'              ) == 1) READ(UNIT=text,FMT=*) dummy, dtime_out_kalm
+  !  IF (INDEX(text,'dtime_out_kalm'              ) == 1) READ(UNIT=text,FMT=*) dummy, dtime_out_kalm
   
   !--- number of intervals for the period (statistics) ---
   !dtime_out_scal = 1.
-    IF (INDEX(text,'intervals'                      ) == 1) then
-       READ(UNIT=text,FMT=*) dummy, intervals
-       intervals = intervals/kalman_num_time_refinements
-    END IF
+  !  IF (INDEX(text,'intervals'                      ) == 1) then
+  !     READ(UNIT=text,FMT=*) dummy, intervals
+  !     intervals = intervals/kalman_num_time_refinements
+  !  END IF
 
   !--- compute and write lambda2 fields from velocity ---
   !write_lambda2_yes = .TRUE.
@@ -560,7 +560,7 @@
   !--- output force density received from FSI coupling (Moonolith) ---
     IF (INDEX(text,'write_force_yes'             ) == 1) READ(UNIT=text,FMT=*) dummy, write_force_yes
   ! --- writing covariance into xdmf file  
-    IF (INDEX(text,'write_covariance_yes'        ) == 1) READ(UNIT=text,FMT=*) dummy, write_covariance_yes
+  !  IF (INDEX(text,'write_covariance_yes'        ) == 1) READ(UNIT=text,FMT=*) dummy, write_covariance_yes
   !--- output .xmf files for reading in Paraview and Visit ---
     IF (INDEX(text,'write_xdmf_yes'             ) == 1) READ(UNIT=text,FMT=*) dummy, write_xdmf_yes
 

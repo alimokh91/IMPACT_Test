@@ -801,16 +801,18 @@ MODULE mod_vars
   
   INTEGER , TARGET       ::  stride_large(1:3), stride_med(1:3), stride_small(1:3)
   LOGICAL                ::  write_large, write_med, write_small
-  INTEGER                ::  interval
+  !INTEGER                ::  interval
   REAL                   ::  time_out_vect, dtime_out_vect
   REAL                   ::  time_out_scal, dtime_out_scal
-  REAL                   ::  time_out_kalm, dtime_out_kalm
-  REAL   , ALLOCATABLE   ::  dtime_phases(:), dtime_kalm_phases(:)
+  !REAL                   ::  time_out_kalm, dtime_out_kalm
+  !REAL   , ALLOCATABLE   ::  dtime_phases(:), dtime_kalm_phases(:)
   
-  LOGICAL                ::  write_out_kalm, write_out_scal, write_out_vect
+  !LOGICAL                ::  write_out_kalm, write_out_scal, write_out_vect
+  LOGICAL                ::  write_out_scal, write_out_vect
   LOGICAL                ::  new_dtime, finish_yes
     
-  INTEGER                ::  write_count,write_stats_count,write_kalm_count
+  INTEGER                ::  write_count
+  !,write_stats_count,write_kalm_count
   INTEGER                ::  restart
   CHARACTER(LEN=3)       ::  restart_char
   
@@ -837,9 +839,9 @@ MODULE mod_vars
   LOGICAL                ::  write_restart_yes
   LOGICAL                ::  write_lambda2_yes
   LOGICAL                ::  write_test_yes
-  LOGICAL                ::  write_covariance_yes !for writing covariance into xdmf file    defined in config.txt
-  INTEGER                ::  intervals   !define number of intervals in the output of a periodic flow
-  INTEGER                ::  phase       !define number of interval  in the output of a periodic flow
+!  LOGICAL                ::  write_covariance_yes !for writing covariance into xdmf file    defined in config.txt
+!  INTEGER                ::  intervals   !define number of intervals in the output of a periodic flow
+!  INTEGER                ::  phase       !define number of interval  in the output of a periodic flow
 
   !--- globale Laufindizes -----------------------------------------------------------------------------------
   INTEGER                ::  direction
@@ -989,19 +991,20 @@ MODULE mod_vars
   REAL, ALLOCATABLE, TARGET      ::  vel_old(:,:,:,:)        !< velocity of previous timestep (used in Picard iterations)
 
   INTEGER, ALLOCATABLE :: wgt_interp(:,:,:)
-  REAL, ALLOCATABLE :: mean_f(:,:,:,:,:), covar_f(:,:,:,:,:)
-  REAL, ALLOCATABLE :: re_tau_mean(:,:)
+  !REAL, ALLOCATABLE :: mean_f(:,:,:,:,:), covar_f(:,:,:,:,:)
+  !REAL, ALLOCATABLE :: re_tau_mean(:,:)
 
-  TYPE kalman_t
-     INTEGER :: m,n
-     REAL, POINTER :: Pf(:,:,:),obs_data(:,:),obs_covar(:,:),obs_oper(:,:),K(:,:),K_vx(:,:),PfHt(:,:) !kalman
-     TYPE(kalman_t), POINTER :: next
-  END TYPE kalman_t
+  !TYPE kalman_t
+  !   INTEGER :: m,n
+  !   REAL, POINTER :: Pf(:,:,:),obs_data(:,:),obs_covar(:,:),obs_oper(:,:),K(:,:),K_vx(:,:),PfHt(:,:) !kalman
+  !   TYPE(kalman_t), POINTER :: next
+  !END TYPE kalman_t
 
-  TYPE(kalman_t), pointer :: kalman_first
+  !TYPE(kalman_t), pointer :: kalman_first
 
-  type(DistSegmentedFlowMRIPadded), pointer :: mri_inst
-  type(DistSegmentedFlowMRIPadded), pointer :: mri_flow
+  !type(DistSegmentedFlowMRIPadded), pointer :: mri_inst
+  type(DistSegmentedFlowMRI), pointer :: mri_inst
+  !type(DistSegmentedFlowMRIPadded), pointer :: mri_flow
 
   ! MRI file paths
   character(len=300) :: kalman_mri_input_file_path
@@ -1011,10 +1014,10 @@ MODULE mod_vars
   REAL*8 :: kalman_mri_input_attr_t_heart_cycle_period
 
   ! MRI grid layout parameters
-  INTEGER, DIMENSION(3) :: kalman_num_data_voxels_per_process = (/-1, -1, -1/)
-  INTEGER :: kalman_num_time_refinements = -1
+  !INTEGER, DIMENSION(3) :: kalman_num_data_voxels_per_process = (/-1, -1, -1/)
+  !INTEGER :: kalman_num_time_refinements = -1
   INTEGER, DIMENSION(3) :: kalman_num_spatial_refinements = (/-1, -1, -1/)
-  TYPE(DomainPadding) :: kalman_domain_padding
+!  TYPE(DomainPadding) :: kalman_domain_padding
 
 
 #ifndef FTOPY
@@ -1599,16 +1602,17 @@ MODULE mod_vars
   
   INTEGER                ::  stride_large(1:3), stride_med(1:3), stride_small(1:3)
   LOGICAL                ::  write_large, write_med, write_small 
-  INTEGER                ::  interval
-  REAL                   ::  time_out_vect, dtime_out_vect
+  !INTEGER                ::  interval
+  !REAL                   ::  time_out_vect, dtime_out_vect
   REAL                   ::  time_out_scal, dtime_out_scal
-  REAL                   ::  time_out_kalm, dtime_out_kalm 
-  REAL   , ALLOCATABLE   ::  dtime_phases(:), dtime_kalm_phases(:)
-  
-  LOGICAL                ::  write_out_kalm, write_out_scal, write_out_vect
+  !REAL                   ::  time_out_kalm, dtime_out_kalm 
+  !REAL   , ALLOCATABLE   ::  dtime_phases(:), dtime_kalm_phases(:)
+  LOGICAL 		 ::  write_out_scal
+  !LOGICAL                ::  write_out_kalm, write_out_scal, write_out_vect
   LOGICAL                ::  new_dtime, finish_yes
     
-  INTEGER                ::  write_count,write_stats_count,write_kalm_count
+  INTEGER                ::  write_count
+ !,write_stats_count,write_kalm_count
   INTEGER                ::  restart
   CHARACTER(LEN=3)       ::  restart_char
   
@@ -1628,9 +1632,9 @@ MODULE mod_vars
   LOGICAL                ::  write_restart_yes
   LOGICAL                ::  write_lambda2_yes
   LOGICAL                ::  write_test_yes
-  LOGICAL                ::  write_covariance_yes !for writing covariance into xdmf file    defined in config.txt
-  INTEGER                ::  intervals   !define number of intervals in the output of a periodic flow
-  INTEGER                ::  phase       !define number of interval  in the output of a periodic flow
+  !LOGICAL                ::  write_covariance_yes !for writing covariance into xdmf file    defined in config.txt
+  !INTEGER                ::  intervals   !define number of intervals in the output of a periodic flow
+  !INTEGER                ::  phase       !define number of interval  in the output of a periodic flow
 
   !--- globale Laufindizes -----------------------------------------------------------------------------------
   INTEGER                ::  direction
@@ -1758,33 +1762,33 @@ MODULE mod_vars
   REAL :: fd(b1L:(N1+b1U),b2L:(N2+b2U),b3L:(N3+b3U),1:3)
   REAL :: vel_old(b1L:(N1+b1U),b2L:(N2+b2U),b3L:(N3+b3U),1:3)        !< vel of previous timestep (used in Picard iterations)
 
-  INTEGER, ALLOCATABLE :: wgt_interp(:,:,:)
-  REAL, ALLOCATABLE :: mean_f(:,:,:,:,:), covar_f(:,:,:,:,:)
-  REAL, ALLOCATABLE :: re_tau_mean(:,:)
+  !INTEGER, ALLOCATABLE :: wgt_interp(:,:,:)
+  !REAL, ALLOCATABLE :: mean_f(:,:,:,:,:), covar_f(:,:,:,:,:)
+  !REAL, ALLOCATABLE :: re_tau_mean(:,:)
 
-  TYPE kalman_t
-     INTEGER :: m,n
-     REAL, POINTER :: Pf(:,:,:),obs_data(:,:),obs_covar(:,:),obs_oper(:,:),K(:,:),K_vx(:,:),PfHt(:,:) !kalman
-     TYPE(kalman_t), POINTER :: next
-  END TYPE kalman_t
+  !TYPE kalman_t
+  !   INTEGER :: m,n
+  !   REAL, POINTER :: Pf(:,:,:),obs_data(:,:),obs_covar(:,:),obs_oper(:,:),K(:,:),K_vx(:,:),PfHt(:,:) !kalman
+  !   TYPE(kalman_t), POINTER :: next
+  !END TYPE kalman_t
 
-  TYPE(kalman_t), pointer :: kalman_first
+  !TYPE(kalman_t), pointer :: kalman_first
 
-  type(DistSegmentedFlowMRIPadded), pointer :: mri_inst
-  type(DistSegmentedFlowMRIPadded), pointer :: mri_flow
+  !type(DistSegmentedFlowMRIPadded), pointer :: mri_inst
+  !type(DistSegmentedFlowMRIPadded), pointer :: mri_flow
 
   ! MRI file paths
-  character(len=300) :: kalman_mri_input_file_path
-  character(len=300) :: kalman_mri_output_file_path
+  !character(len=300) :: kalman_mri_input_file_path
+  !character(len=300) :: kalman_mri_output_file_path
 
   ! Attributes of input MRI (currently supplied through config due to compiler error in hpc-predict-io)
-  REAL*8 :: kalman_mri_input_attr_t_heart_cycle_period
+  !REAL*8 :: kalman_mri_input_attr_t_heart_cycle_period
 
   ! MRI grid layout parameters
-  INTEGER, DIMENSION(3) :: kalman_num_data_voxels_per_process = (/-1, -1, -1/)
-  INTEGER :: kalman_num_time_refinements = -1
-  INTEGER, DIMENSION(3) :: kalman_num_spatial_refinements = (/-1, -1, -1/)
-  TYPE(DomainPadding) :: kalman_domain_padding
+  !INTEGER, DIMENSION(3) :: kalman_num_data_voxels_per_process = (/-1, -1, -1/)
+  !INTEGER :: kalman_num_time_refinements = -1
+  !INTEGER, DIMENSION(3) :: kalman_num_spatial_refinements = (/-1, -1, -1/)
+  !TYPE(DomainPadding) :: kalman_domain_padding
 
 
 #endif

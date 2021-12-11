@@ -115,9 +115,6 @@ def write_space_time_voxel_matrix_feature(grp, name, voxel_feature):
     voxel_feature_transposed = voxel_feature.transpose((2,1,0,3,5,4))
     ds = grp.create_dataset(name, voxel_feature_transposed.shape, data=voxel_feature_transposed, dtype="float64")
 
-def write_empty_feature(grp, name):
-    ds = grp.create_dataset(name, data=h5py.Empty("float64"))
-
 class SpaceTimeMRI:
     """MRI datatype for time-dependent vectorial measurements in 3d including axis information
     
@@ -215,8 +212,7 @@ class FlowMRI:
         validate_spacetime_coordinates(geometry, time)
         validate_spacetime_scalar_feature(FlowMRI, geometry, time, intensity)
         validate_spacetime_vector_feature(FlowMRI, geometry, time, velocity_mean)
-        if velocity_cov is not None:
-            validate_spacetime_matrix_feature(FlowMRI, geometry, time, velocity_cov)
+        validate_spacetime_matrix_feature(FlowMRI, geometry, time, velocity_cov)
 
         self.geometry = geometry
         self.time = time
@@ -249,10 +245,7 @@ class FlowMRI:
         write_space_time_coordinates(grp, self.geometry, self.time)
         write_space_time_voxel_scalar_feature(grp, "intensity", self.intensity)
         write_space_time_voxel_vector_feature(grp, "velocity_mean", self.velocity_mean)
-        if self.velocity_cov is not None:
-            write_space_time_voxel_matrix_feature(grp, "velocity_cov", self.velocity_cov)
-        else:
-            write_empty_feature(grp, "velocity_cov")
+        write_space_time_voxel_matrix_feature(grp, "velocity_cov", self.velocity_cov)
         lock.close()
 
 
@@ -288,7 +281,7 @@ class FlowMRI:
                             time_heart_cycle_period=time_heart_cycle_period,
                             intensity=f[FlowMRI.group_name]["intensity"][()].transpose((2,1,0,3)),
                             velocity_mean=f[FlowMRI.group_name]["velocity_mean"][()].transpose((2,1,0,3,4)),
-                            velocity_cov=f[FlowMRI.group_name]["velocity_cov"][()].transpose((2,1,0,3,5,4)) if not isinstance(f[FlowMRI.group_name]["velocity_cov"][()], h5py.Empty) else None)
+                            velocity_cov=f[FlowMRI.group_name]["velocity_cov"][()].transpose((2,1,0,3,5,4)))
         lock.close()
         return mri
 
@@ -403,127 +396,9 @@ class SegmentedFlowMRI:
         lock.close()
         return mri
 
-class AnomalySegmentedFlowMRI:
-    """MRI datatype for time-dependent intensity & velocity measurements in 3d including axis and segmentation as well as anomaly information
-    
-    instance fields:
-    geometry         ([np.ndarray(shape=(x_dim,), dtype=float), 
-                       np.ndarray(shape=(y_dim,), dtype=float), 
-                       np.ndarray(shape=(z_dim,), dtype=float)]):                     spatial coordinates along each axis
-    time              (np.ndarray(shape=(t_dim,), dtype=float)):                      time coordinates
-    intensity         (np.ndarray(shape=(x_dim,y_dim,z_dim,t_dim), dtype=float)):     intensity values over 
-                                                                                      x_dim x y_dim x z_dim x t_dim - dimensional grid
-    velocity_mean     (np.ndarray(shape=(x_dim,y_dim,z_dim,t_dim,3), dtype=float)):   mean velocity values over 
-                                                                                      x_dim x y_dim x z_dim x t_dim - dimensional grid
-    velocity_cov      (np.ndarray(shape=(x_dim,y_dim,z_dim,t_dim,3,3), dtype=float)): velocity covariance values over 
-                                                                                      x_dim x y_dim x z_dim x t_dim - dimensional grid
-    segmentation_prob (np.ndarray(shape=(x_dim,y_dim,z_dim,t_dim), dtype=float)):     segmentation probability values over
-                                                                                      x_dim x y_dim x z_dim x t_dim - dimensional grid
-    anomaly_prob      (np.ndarray(shape=(x_dim,y_dim,z_dim,t_dim), dtype=float)):     anomaly probability values over
-                                                                                      x_dim x y_dim x z_dim x t_dim - dimensional grid
-    class-level fields:
-    group_name :  string                                                              path of datasets in HDF5-file
-    """
-
-    group_name = "anomaly-segmented-flow-mri"
-    
-    def __init__(self, geometry: List[np.ndarray], time: np.ndarray, time_heart_cycle_period: float, intensity: np.ndarray, velocity_mean: np.ndarray, velocity_cov: np.ndarray, segmentation_prob: np.ndarray, anomaly_prob: np.ndarray):
-        """Voxel-based parameters must be specified in (x,y,z,t,i)-order, Fortran will treat it in (i,t,x,y,z)-order.
-           The index i is used as the component index (i.e. between 0..2 for mean and 0..5 for covariance of velocity field)
-        """
-        validate_spacetime_coordinates(geometry, time)
-        validate_spacetime_scalar_feature(AnomalySegmentedFlowMRI, geometry, time, intensity)
-        validate_spacetime_vector_feature(AnomalySegmentedFlowMRI, geometry, time, velocity_mean)
-        validate_spacetime_matrix_feature(AnomalySegmentedFlowMRI, geometry, time, velocity_cov)
-        validate_spacetime_scalar_feature(AnomalySegmentedFlowMRI, geometry, time, segmentation_prob)
-        validate_spacetime_scalar_feature(AnomalySegmentedFlowMRI, geometry, time, anomaly_prob)
-
-        self.geometry = geometry
-        self.time = time
-        self.time_heart_cycle_period = time_heart_cycle_period
-        self.intensity= intensity
-        self.velocity_mean = velocity_mean
-        self.velocity_cov= velocity_cov
-        self.segmentation_prob = segmentation_prob
-        self.anomaly_prob = anomaly_prob
-
-
-    def write_hdf5(self, path: str):
-        """Write this MRI to hpc-predict-io HDF5-format at path"""
-        # file handling
-        if os.path.exists(path):
-            raise FileExistsError("Tried to open file %s, which exists already" % path)
-    
-        # with h5py.File(path, "w") as f:
-        #     # here comes the actual serialization code (transposition to use Fortran memory layout)
-        #     grp = f.create_group(AnomalySegmentedFlowMRI.group_name)
-        #     write_group_attribute(grp, "t_heart_cycle_period", self.time_heart_cycle_period)
-        #     write_space_time_coordinates(grp, self.geometry, self.time)
-        #     write_space_time_voxel_scalar_feature(grp, "intensity", self.intensity)
-        #     write_space_time_voxel_vector_feature(grp, "velocity_mean", self.velocity_mean)
-        #     write_space_time_voxel_matrix_feature(grp, "velocity_cov", self.velocity_cov)
-        #     write_space_time_voxel_scalar_feature(grp, "segmentation_prob", self.segmentation_prob)
-        #     write_space_time_voxel_scalar_feature(grp, "anomaly_prob", self.anomaly_prob)
-
-        lock = LockedFileExclusiveH5Writer(path)
-        lock.open()
-        f = lock.file()
-        # here comes the actual serialization code (transposition to use Fortran memory layout)
-        grp = f.create_group(AnomalySegmentedFlowMRI.group_name)
-        write_group_attribute(grp, "t_heart_cycle_period", self.time_heart_cycle_period)
-        write_space_time_coordinates(grp, self.geometry, self.time)
-        write_space_time_voxel_scalar_feature(grp, "intensity", self.intensity)
-        write_space_time_voxel_vector_feature(grp, "velocity_mean", self.velocity_mean)
-        write_space_time_voxel_matrix_feature(grp, "velocity_cov", self.velocity_cov)
-        write_space_time_voxel_scalar_feature(grp, "segmentation_prob", self.segmentation_prob)
-        write_space_time_voxel_scalar_feature(grp, "anomaly_prob", self.anomaly_prob)
-        lock.close()
-
-
-    def read_hdf5(path: str):
-        """Read MRI from file at path as hpc-predict-io HDF5-format"""
-        # with h5py.File(path, "r") as f:
-        #     # here comes the actual deserialization code
-        #     if "t_heart_cycle_period" not in f[AnomalySegmentedFlowMRI.group_name].attrs:
-        #         logging.warning("Reading a AnomalySegmentedFlowMRI with t_heart_cycle_period not set - using None in Python object.")
-        #         time_heart_cycle_period = None
-        #     else:
-        #         time_heart_cycle_period = f[AnomalySegmentedFlowMRI.group_name].attrs["t_heart_cycle_period"]
-        #     return AnomalySegmentedFlowMRI(geometry=[f[AnomalySegmentedFlowMRI.group_name][coord_name][()] \
-        #                                   for coord_name in ["x_coordinates", "y_coordinates", "z_coordinates"]],
-        #                         time=f[AnomalySegmentedFlowMRI.group_name]["t_coordinates"][()],
-        #                         time_heart_cycle_period=time_heart_cycle_period,
-        #                         intensity=f[AnomalySegmentedFlowMRI.group_name]["intensity"][()].transpose((2,1,0,3)),
-        #                         velocity_mean=f[AnomalySegmentedFlowMRI.group_name]["velocity_mean"][()].transpose((2,1,0,3,4)),
-        #                         velocity_cov=f[AnomalySegmentedFlowMRI.group_name]["velocity_cov"][()].transpose((2,1,0,3,5,4)),
-        #                         segmentation_prob=f[AnomalySegmentedFlowMRI.group_name]["segmentation_prob"][()].transpose((2,1,0,3)))
-        #                         anomaly_prob=f[AnomalySegmentedFlowMRI.group_name]["anomaly_prob"][()].transpose((2,1,0,3)))
-
-        lock = LockedFileH5Reader(path)
-        lock.open()
-        f = lock.file()
-        # here comes the actual deserialization code
-        if "t_heart_cycle_period" not in f[AnomalySegmentedFlowMRI.group_name].attrs:
-            logging.warning("Reading a AnomalySegmentedFlowMRI with t_heart_cycle_period not set - using None in Python object.")
-            time_heart_cycle_period = None
-        else:
-            time_heart_cycle_period = f[AnomalySegmentedFlowMRI.group_name].attrs["t_heart_cycle_period"]
-        mri = AnomalySegmentedFlowMRI(geometry=[f[AnomalySegmentedFlowMRI.group_name][coord_name][()] \
-                                      for coord_name in ["x_coordinates", "y_coordinates", "z_coordinates"]],
-                            time=f[AnomalySegmentedFlowMRI.group_name]["t_coordinates"][()],
-                            time_heart_cycle_period=time_heart_cycle_period,
-                            intensity=f[AnomalySegmentedFlowMRI.group_name]["intensity"][()].transpose((2,1,0,3)),
-                            velocity_mean=f[AnomalySegmentedFlowMRI.group_name]["velocity_mean"][()].transpose((2,1,0,3,4)),
-                            velocity_cov=f[AnomalySegmentedFlowMRI.group_name]["velocity_cov"][()].transpose((2,1,0,3,5,4)),
-                            segmentation_prob=f[AnomalySegmentedFlowMRI.group_name]["segmentation_prob"][()].transpose((2,1,0,3)),
-                            anomaly_prob=f[AnomalySegmentedFlowMRI.group_name]["anomaly_prob"][()].transpose((2,1,0,3)))
-        lock.close()
-        return mri
-
-
 def read_hdf5(path: str):
     """Read MRI from file at path as hpc-predict-io HDF5-format"""
-    mr_io_classes = { cls.group_name : cls.read_hdf5 for cls in [AnomalySegmentedFlowMRI, SegmentedFlowMRI, FlowMRI, SpaceTimeMRI, SpatialMRI] }
+    mr_io_classes = { cls.group_name : cls.read_hdf5 for cls in [SegmentedFlowMRI, FlowMRI, SpaceTimeMRI, SpatialMRI] }
     mr_io_reader = None
 
     lock = LockedFileH5Reader(path)

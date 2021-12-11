@@ -1,7 +1,0 @@
-<map id="mod_inout::read2_hdf" name="mod_inout::read2_hdf">
-<area shape="rect" id="node2" href="$namespacemod__inout.html#a234ef95ed28edbb722d6d6f090d1ff11" title="subroutine for recovering real valued attribute data from hdf5 files " alt="" coords="223,5,367,47"/>
-<area shape="rect" id="node3" href="$namespacemod__inout.html#aca6582ad8da2f2b9c6756910e9476c1e" title="subroutine for recovering integer valued attribute data from hdf5 files. " alt="" coords="223,71,367,112"/>
-<area shape="rect" id="node4" href="$namespacemod__inout.html#a3dfc0f73a8ed438789917a91e7b9c12e" title="mod_inout::read_hdf\l_infolog" alt="" coords="223,136,367,177"/>
-<area shape="rect" id="node5" href="$namespacemod__exchange.html#a846feba7017358200b7c213847f573ae" title="subroutine for exchanging data between ghost cells. " alt="" coords="205,202,384,229"/>
-<area shape="rect" id="node6" href="$sub__other_8f90.html#a8238394447e69f8cacd32c4fe1128995" title="pseudo call for mod_exchange::exchange. " alt="" coords="432,202,517,229"/>
-</map>

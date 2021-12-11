@@ -1,8 +1,0 @@
-<map id="usr_func::poiseuille_parabola" name="usr_func::poiseuille_parabola">
-<area shape="rect" id="node2" href="$usr__boundcond_8f90.html#a929a31d5cdf2b0d923648505bedf963b" title="boundary_vel_stat" alt="" coords="391,5,521,32"/>
-<area shape="rect" id="node6" href="$namespaceusr__func.html#a701b8c4053ba141820d28527e3476d93" title="usr_func::apply_fringe\l_forcing" alt="" coords="189,54,343,95"/>
-<area shape="rect" id="node3" href="$namespacemod__rhs.html#a3f1ddf58b8e176fa55aea43a57dda2cc" title="computes the rhs of the velocity " alt="" coords="569,32,693,59"/>
-<area shape="rect" id="node4" href="$namespacemod__timeint.html#a481262183fa43a7abe56b74c7af82f2a" title="public subroutine that forms the center of the DNS simulation. " alt="" coords="741,32,931,59"/>
-<area shape="rect" id="node5" href="$impact_8f90.html#a5081faae3f9d2c8ac0786a77368babfe" title="Main routine of IMPACT. All of the initialization is done here. Depending on the parameter task eithe..." alt="" coords="979,32,1040,59"/>
-<area shape="rect" id="node7" href="$usr__force_8f90.html#a385c4a7e691f2167035f0381da42e49d" title="volume forcing of the momentum equation " alt="" coords="413,57,499,84"/>
-</map>

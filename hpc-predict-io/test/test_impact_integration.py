@@ -3,7 +3,7 @@ import os
 import logging
 import numpy as np
 
-from mr_io import FlowMRI, SpaceTimeMRI
+from mr_io import SegmentedFlowMRI, SpaceTimeMRI
 from mr_io_domain_decomp import mpi_cart_rank
 from test_common import filename_mri_in, filename_mri_out, filename_out, filename_err, remove_test_files, \
                         spatial_hyperslab_dims_test, \
@@ -76,6 +76,7 @@ class TestImpactInput(unittest.TestCase):
         time = np.linspace(0.,1.,11)
         time_heart_cycle_period = 1.
         intensity = np.random.rand(*TestImpactInput.num_vox,11)
+        segmentation_prob = np.random.rand(*TestImpactInput.num_vox,11)
         velocity_mean = np.random.rand(*TestImpactInput.num_vox,11,3)
         velocity_cov = np.random.rand(*TestImpactInput.num_vox,11,3,3)
    
@@ -87,7 +88,7 @@ class TestImpactInput(unittest.TestCase):
                     np.linspace(0.,TestImpactInput.domain_length[i],
                                    2*TestImpactInput.num_vox[i]+1)[::2] for i in range(3)]
    
-        self.mri = FlowMRI(geometry, time, time_heart_cycle_period, intensity, velocity_mean, velocity_cov)
+        self.mri = SegmentedFlowMRI(geometry, time, time_heart_cycle_period, intensity, velocity_mean, velocity_cov, segmentation_prob)
         self.mpi_cart_dims = spatial_hyperslab_dims_test(type(self), self.mri.intensity)
    
         test_cls.num_pad_vox_lhs = [0]*3
@@ -127,6 +128,7 @@ class TestImpactInputPadding(unittest.TestCase):
         time = np.linspace(0.,1.,11)
         time_heart_cycle_period = 1.
         intensity = np.random.rand(*test_cls.num_vox,11)
+        segmentation_prob = np.random.rand(*test_cls.num_vox,11)
         velocity_mean = np.random.rand(*test_cls.num_vox,11,3)
         velocity_cov = np.random.rand(*test_cls.num_vox,11,3,3)
   
@@ -148,7 +150,7 @@ class TestImpactInputPadding(unittest.TestCase):
                                np.linspace(0, test_cls.domain_length[i],
                                            2*num_ext_vox[i]+1)[::2] for i in range(3)]
           
-        self.mri = FlowMRI(geometry, time, time_heart_cycle_period, intensity, velocity_mean, velocity_cov)
+        self.mri = SegmentedFlowMRI(geometry, time, time_heart_cycle_period, intensity, velocity_mean, velocity_cov, segmentation_prob)
   
         print("MPI cartesian dims: {}\nMRI voxels: {}\nDesired padding voxels: {}\nExtended MRI voxels: {}\nComputed padding voxels: {} {}".format(\
               self.mpi_cart_dims, test_cls.num_vox, num_pad_vox, num_ext_vox, test_cls.num_pad_vox_lhs, test_cls.num_pad_vox_rhs))
@@ -183,6 +185,7 @@ class TestImpactMRI(unittest.TestCase): # FIXME: coordinates test...
         time = np.linspace(0.,1.,11)
         time_heart_cycle_period = 1.
         intensity = np.random.rand(*test_cls.num_vox,11)
+        segmentation_prob = np.random.rand(*test_cls.num_vox,11)
         velocity_mean = np.random.rand(*test_cls.num_vox,11,3)
         velocity_cov = np.random.rand(*test_cls.num_vox,11,3,3)
  
@@ -204,7 +207,7 @@ class TestImpactMRI(unittest.TestCase): # FIXME: coordinates test...
                                np.linspace(0, test_cls.domain_length[i],
                                            2*num_ext_vox[i]+1)[::2] for i in range(3)]
          
-        self.mri = FlowMRI(geometry, time, time_heart_cycle_period, intensity, velocity_mean, velocity_cov)
+        self.mri = SegmentedFlowMRI(geometry, time, time_heart_cycle_period, intensity, velocity_mean, velocity_cov, segmentation_prob)
  
         print("MPI cartesian dims: {}\nMRI voxels: {}\nDesired padding voxels: {}\nExtended MRI voxels: {}\nComputed padding voxels: {} {}".format(\
               self.mpi_cart_dims, test_cls.num_vox, num_pad_vox, num_ext_vox, test_cls.num_pad_vox_lhs, test_cls.num_pad_vox_rhs))

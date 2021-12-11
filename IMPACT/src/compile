@@ -42,7 +42,6 @@ endif
 #       M15 mod_geometry:   mod_dims, mod_vars
 #       M16 mod_rhs:        mod_dims, mod_vars, mod_diff
 #       M17 mod_timeint:    mod_dims, mod_vars, mod_exchange, mod_diff     , mod_inout    , mod_coeffs , mod_lib  , mod_rhs, mod_solvers, mod_ibm
-#       M18 mod_impact_core:          mod_vars,                                             mod_coeffs, mod_geometry, mod_setup, mod_test, mod_lib
 #       M14 mod_ibm:        mod_dims, mod_vars,                                                          mod_lib 
 #
 #	U1  usr_vars:       mod_*
@@ -54,19 +53,15 @@ endif
 #       U7  usr_initcond:   mod_*, usr_vars, usr_func
 #       U8  usr_stats:      mod_*, usr_vars, usr_func
 #       U9  usr_post:       mod_*, usr_vars, usr_func, usr_stats
-#       U10 usr_kalman:     mod_*, usr_vars, usr_func
 
 
 
 #--- name of the executable ---
 NAME = impact
 EXE  = $(NAME).exe
-NAME_DEBUG = impact_debug
-EXE_DEBUG  = $(NAME_DEBUG).exe
 
 #--- objects and subunits ---
 OBJ   = $(NAME).o
-OBJ_DEBUG = $(NAME_DEBUG).o
 
 MOD1  = mod_dims
 MOD2  = mod_vars
@@ -83,12 +78,11 @@ MOD13 = mod_solvers
 MOD15 = mod_geometry
 MOD16 = mod_rhs
 MOD17 = mod_timeint
-MOD18 = mod_impact_core
 SUB1  = sub_other
 
 MOD   = $(DST)/$(MOD1).o  $(DST)/$(MOD2).o  $(DST)/$(MOD3).o  $(DST)/$(MOD4).o  $(DST)/$(MOD5).o  $(DST)/$(MOD6).o  \
         $(DST)/$(MOD7).o  $(DST)/$(MOD8).o  $(DST)/$(MOD9).o  $(DST)/$(MOD10).o $(DST)/$(MOD11).o  \
-        $(DST)/$(MOD13).o  $(DST)/$(MOD15).o $(DST)/$(MOD16).o $(DST)/$(MOD17).o $(DST)/$(MOD18).o $(DST)/$(SUB1).o
+        $(DST)/$(MOD13).o  $(DST)/$(MOD15).o $(DST)/$(MOD16).o $(DST)/$(MOD17).o $(DST)/$(SUB1).o
 
 USR1  = usr_vars
 USR2  = usr_func
@@ -99,10 +93,9 @@ USR6  = usr_boundcond
 USR7  = usr_initcond
 USR8  = usr_stats
 USR9  = usr_post
-USR10 = usr_kalman
 
 USR   = $(DST)/$(USR1).o  $(DST)/$(USR2).o  $(DST)/$(USR3).o  $(DST)/$(USR4).o  $(DST)/$(USR5).o  $(DST)/$(USR6).o  \
-        $(DST)/$(USR7).o  $(DST)/$(USR8).o  $(DST)/$(USR9).o  $(DST)/$(USR10).o 
+        $(DST)/$(USR7).o  $(DST)/$(USR8).o  $(DST)/$(USR9).o
 
 
 ##############################################################################################################
@@ -115,9 +108,8 @@ ifeq ($(CUSR),FALSE)
 
 #--- dependencies and compilation of the EXECUTABLE ---
 
-build:  $(DST)/$(OBJ) $(DST)/$(OBJ_DEBUG) $(MOD) $(USR)
+build:  $(DST)/$(OBJ) $(MOD) $(USR)
 	$(COMP) -o $(DST)/$(EXE) $(FLAG1) $(MOD) $(USR) $(DST)/$(OBJ) $(LIBS)
-	$(COMP) -o $(DST)/$(EXE_DEBUG) $(FLAG1) $(MOD) $(USR) $(DST)/$(OBJ_DEBUG) $(LIBS)
 	ar rcs $(DST)/lib$(NAME).a $(MOD) $(USR)
 
 #--- dependencies and compilation of the OBJECT ---
@@ -125,8 +117,6 @@ build:  $(DST)/$(OBJ) $(DST)/$(OBJ_DEBUG) $(MOD) $(USR)
 $(DST)/$(OBJ): $(MOD) $(USR) $(NAME).f90
 	$(COMP) -o $(DST)/$(NAME).o $(FLAG2) -c $(NAME).f90
 
-$(DST)/$(OBJ_DEBUG): $(MOD) $(USR) $(NAME_DEBUG).f90
-	$(COMP) -o $(DST)/$(NAME_DEBUG).o $(FLAG2) -c $(NAME_DEBUG).f90
 
 #--- dependencies and compilation of the MODULES ---
 
@@ -175,9 +165,6 @@ $(DST)/$(MOD16).o: $(DST)/$(MOD1).o $(DST)/$(MOD2).o $(DST)/$(MOD4).o $(MOD16).f
 $(DST)/$(MOD17).o: $(DST)/$(MOD1).o $(DST)/$(MOD2).o $(DST)/$(MOD3).o $(DST)/$(MOD4).o $(DST)/$(MOD5).o $(DST)/$(MOD8).o $(DST)/$(MOD10).o $(DST)/$(MOD11).o $(DST)/$(MOD13).o $(DST)/$(MOD16).o $(MOD17).f90
 	$(COMP) -o $(DST)/$(MOD17).o $(FLAG2) -c $(MOD17).f90
 
-$(DST)/$(MOD18).o: $(DST)/$(MOD2).o $(DST)/$(MOD5).o $(DST)/$(MOD15).o $(DST)/$(MOD9).o $(DST)/$(MOD11).o $(DST)/$(MOD8).o
-	$(COMP) -o $(DST)/$(MOD18).o $(FLAG2) -c $(MOD18).f90
-
 $(DST)/$(SUB1).o: $(SUB1).f90
 	$(COMP) -o $(DST)/$(SUB1).o $(FLAG2) -c $(SUB1).f90
 
@@ -210,8 +197,6 @@ $(DST)/$(USR8).o: $(MOD) $(DST)/$(USR1).o $(DST)/$(USR2).o $(USR8).f90
 $(DST)/$(USR9).o: $(MOD) $(DST)/$(USR1).o $(DST)/$(USR2).o $(DST)/$(USR8).o $(USR9).f90
 	$(COMP) -o $(DST)/$(USR9).o $(FLAG2) -c $(USR9).f90
 
-$(DST)/$(USR10).o: $(MOD) $(DST)/$(USR1).o $(DST)/$(USR2).o $(USR10).f90
-	$(COMP) -o $(DST)/$(USR10).o $(FLAG2) -c $(USR10).f90
 
 ##############################################################################################################
 
@@ -221,17 +206,15 @@ else
 
 #--- dependencies and compilation of the EXECUTABLE ---
 
-build:  $(DST)/$(OBJ) $(DST)/$(OBJ_DEBUG) $(USR)
+build:  $(DST)/$(OBJ) $(USR)
 	$(COMP) -o $(DST)/$(EXE) $(FLAG1) $(MOD) $(USR) $(DST)/$(OBJ) $(LIBS)
-        $(COMP) -o $(DST)/$(EXE_DEBUG) $(FLAG1) $(MOD) $(USR) $(DST)/$(OBJ_DEBUG) $(LIBS)
+
 
 #--- dependencies and compilation of the OBJECT ---
 
 $(DST)/$(OBJ): $(USR) $(NAME).f90
 	$(COMP) -o $(DST)/$(NAME).o $(FLAG2) -c $(NAME).f90
 
-$(DST)/$(OBJ_DEBUG): $(USR) $(NAME_DEBUG).f90
-	$(COMP) -o $(DST)/$(NAME_DEBUG).o $(FLAG2) -c $(NAME_DEBUG).f90
 
 #--- dependencies and compilation of the MODULES ---
 
@@ -262,9 +245,7 @@ $(DST)/$(USR8).o: $(DST)/$(USR1).o $(DST)/$(USR2).o $(USR8).f90
 $(DST)/$(USR9).o: $(DST)/$(USR1).o $(DST)/$(USR2).o $(DST)/$(USR8).o $(USR9).f90
 	$(COMP) -o $(DST)/$(USR9).o $(FLAG2) -c $(USR9).f90
 
-$(DST)/$(USR10).o: $(DST)/$(USR1).o $(DST)/$(USR2).o $(DST)/$(USR10).o
-	$(COMP) -o $(DST)/$(USR10).o $(FLAG2) -c $(USR10).f90
-	
+
 endif
 
 ##############################################################################################################
@@ -283,48 +264,46 @@ DIRSIG = f2py/signature
 DIREXT = f2py/ext_mod
 DIRBLD = f2py/build
 EXCL   = $(DIRPRE)/$(MOD4).f90 $(DIRPRE)/$(MOD5).f90 $(DIRPRE)/$(MOD6).f90 $(DIRPRE)/$(MOD7).f90 $(DIRPRE)/$(MOD8).f90 \
-	 $(DIRPRE)/$(MOD9).f90 $(DIRPRE)/$(MOD10).f90 $(DIRPRE)/$(MOD11).f90 $(DIRPRE)/$(MOD13).f90 \
-	 $(DIRPRE)/$(MOD15).f90 $(DIRPRE)/$(MOD16).f90 $(DIRPRE)/$(MOD17).f90 $(DIRPRE)/$(MOD18).f90 $(DIRPRE)/$(USR1).f90 \
+	 $(DIRPRE)/$(MOD9).f90 $(DIRPRE)/$(MOD10).f90 $(DIRPRE)/$(MOD11).f90 $(DIRPRE)/$(MOD12).f90 $(DIRPRE)/$(MOD13).f90 \
+	 $(DIRPRE)/$(MOD14).f90 $(DIRPRE)/$(MOD15).f90 $(DIRPRE)/$(MOD16).f90 $(DIRPRE)/$(MOD17).f90 $(DIRPRE)/$(USR1).f90 \
 	 $(DIRPRE)/$(USR2).f90 $(DIRPRE)/$(USR3).f90 $(DIRPRE)/$(USR4).f90 $(DIRPRE)/$(USR5).f90 $(DIRPRE)/$(USR6).f90 \
-	 $(DIRPRE)/$(USR7).f90 $(DIRPRE)/$(USR8).f90 $(DIRPRE)/$(USR9).f90 
+	 $(DIRPRE)/$(USR7).f90 $(DIRPRE)/$(USR8).f90 $(DIRPRE)/$(USR9).f90
 INTERF = $(DIRPRE)/$(MOD1).f90 $(DIRPRE)/$(MOD2).f90 $(DIRPRE)/$(MOD3).f90 $(DIRPRE)/$(MOD4).f90 $(DIRPRE)/$(MOD5).f90 $(DIRPRE)/$(MOD8).f90 \
-	 $(DIRPRE)/$(MOD9).f90 $(DIRPRE)/$(MOD10).f90 $(DIRPRE)/$(MOD11).f90 $(DIRPRE)/$(MOD13).f90 \
-	 $(DIRPRE)/$(MOD15).f90 $(DIRPRE)/$(MOD16).f90 $(DIRPRE)/$(MOD17).f90 $(DIRPRE)/$(MOD18).f90 $(DIRPRE)/$(USR1).f90 \
-	 $(DIRPRE)/$(USR2).f90 $(DIRPRE)/$(USR3).f90 $(DIRPRE)/$(USR7).f90 $(DIRPRE)/$(USR8).f90 $(DIRPRE)/$(USR9).f90  
+	 $(DIRPRE)/$(MOD9).f90 $(DIRPRE)/$(MOD10).f90 $(DIRPRE)/$(MOD11).f90 $(DIRPRE)/$(MOD13).f90 $(DIRPRE)/$(MOD14).f90 \
+	 $(DIRPRE)/$(MOD15).f90 $(DIRPRE)/$(MOD16).f90 $(DIRPRE)/$(MOD17).f90 $(DIRPRE)/$(USR1).f90 \
+	 $(DIRPRE)/$(USR2).f90 $(DIRPRE)/$(USR3).f90 $(DIRPRE)/$(USR7).f90 $(DIRPRE)/$(USR8).f90 $(DIRPRE)/$(USR9).f90
 FSRC = $(filter-out $(DIRPRE)/alloc.f90, $(wildcard $(DIRPRE)/*.f90))
-#FSRC = $(DIRPRE)/$(MOD1).f90 $(DIRPRE)/$(MOD2).f90 $(DIRPRE)/$(MOD3).f90 $(DIRPRE)/$(MOD4).f90 $(DIRPRE)/$(MOD5).f90 $(DIRPRE)/$(MOD6).f90 \
-#	$(DIRPRE)/$(MOD7).f90 $(DIRPRE)/$(MOD8).f90 $(DIRPRE)/$(MOD9).f90 $(DIRPRE)/$(MOD10).f90 $(DIRPRE)/$(MOD4).f90
 preprocess:
-	$(COMP) -o $(DIRPRE)/$(MOD1).f90  -E $(PRE) $(SRC)/$(MOD1).f90 -cpp
-	$(COMP) -o $(DIRPRE)/$(MOD2).f90  -E $(PRE) $(SRC)/$(MOD2).f90 -cpp
-	$(COMP) -o $(DIRPRE)/$(MOD3).f90  -E $(PRE) $(SRC)/$(MOD3).f90 -cpp
-	$(COMP) -o $(DIRPRE)/$(MOD4).f90  -E $(PRE) $(SRC)/$(MOD4).f90 -cpp
-	$(COMP) -o $(DIRPRE)/$(MOD5).f90  -E $(PRE) $(SRC)/$(MOD5).f90 -cpp
-	$(COMP) -o $(DIRPRE)/$(MOD6).f90  -E $(PRE) $(SRC)/$(MOD6).f90 -cpp
-	$(COMP) -o $(DIRPRE)/$(MOD7).f90  -E $(PRE) $(SRC)/$(MOD7).f90 -cpp
-	$(COMP) -o $(DIRPRE)/$(MOD8).f90  -E $(PRE) $(SRC)/$(MOD8).f90 -cpp
-	$(COMP) -o $(DIRPRE)/$(MOD9).f90  -E $(PRE) $(SRC)/$(MOD9).f90 -cpp
+	$(COMP) -o $(DIRPRE)/$(MOD1).f90 -E $(PRE) $(SRC)/$(MOD1).f90 -cpp
+	$(COMP) -o $(DIRPRE)/$(MOD2).f90 -E $(PRE) $(SRC)/$(MOD2).f90 -cpp
+	$(COMP) -o $(DIRPRE)/$(MOD3).f90 -E $(PRE) $(SRC)/$(MOD3).f90 -cpp
+	$(COMP) -o $(DIRPRE)/$(MOD4).f90 -E $(PRE) $(SRC)/$(MOD4).f90 -cpp
+	$(COMP) -o $(DIRPRE)/$(MOD5).f90 -E $(PRE) $(SRC)/$(MOD5).f90 -cpp
+	$(COMP) -o $(DIRPRE)/$(MOD6).f90 -E $(PRE) $(SRC)/$(MOD6).f90 -cpp
+	$(COMP) -o $(DIRPRE)/$(MOD7).f90 -E $(PRE) $(SRC)/$(MOD7).f90 -cpp
+	$(COMP) -o $(DIRPRE)/$(MOD8).f90 -E $(PRE) $(SRC)/$(MOD8).f90 -cpp
+	$(COMP) -o $(DIRPRE)/$(MOD9).f90 -E $(PRE) $(SRC)/$(MOD9).f90 -cpp
 	$(COMP) -o $(DIRPRE)/$(MOD10).f90 -E $(PRE) $(SRC)/$(MOD10).f90 -cpp
 	$(COMP) -o $(DIRPRE)/$(MOD11).f90 -E $(PRE) $(SRC)/$(MOD11).f90 -cpp
 	$(COMP) -o $(DIRPRE)/$(MOD13).f90 -E $(PRE) $(SRC)/$(MOD13).f90 -cpp
+	$(COMP) -o $(DIRPRE)/$(MOD14).f90 -E $(PRE) $(SRC)/$(MOD14).f90 -cpp
 	$(COMP) -o $(DIRPRE)/$(MOD15).f90 -E $(PRE) $(SRC)/$(MOD15).f90 -cpp
 	$(COMP) -o $(DIRPRE)/$(MOD16).f90 -E $(PRE) $(SRC)/$(MOD16).f90 -cpp
 	$(COMP) -o $(DIRPRE)/$(MOD17).f90 -E $(PRE) $(SRC)/$(MOD17).f90 -cpp
-	$(COMP) -o $(DIRPRE)/$(MOD18).f90 -E $(PRE) $(SRC)/$(MOD18).f90 -cpp
-	$(COMP) -o $(DIRPRE)/$(SUB1).f90  -E $(PRE) $(SRC)/$(SUB1).f90 -cpp
-	$(COMP) -o $(DIRPRE)/$(USR1).f90  -E $(PRE) $(SRC)/$(USR1).f90 -cpp
-	$(COMP) -o $(DIRPRE)/$(USR2).f90  -E $(PRE) $(SRC)/$(USR2).f90 -cpp
-	$(COMP) -o $(DIRPRE)/$(USR3).f90  -E $(PRE) $(SRC)/$(USR3).f90 -cpp
-	$(COMP) -o $(DIRPRE)/$(USR4).f90  -E $(PRE) $(SRC)/$(USR4).f90 -cpp
-	$(COMP) -o $(DIRPRE)/$(USR5).f90  -E $(PRE) $(SRC)/$(USR5).f90 -cpp
-	$(COMP) -o $(DIRPRE)/$(USR6).f90  -E $(PRE) $(SRC)/$(USR6).f90 -cpp
-	$(COMP) -o $(DIRPRE)/$(USR7).f90  -E $(PRE) $(SRC)/$(USR7).f90 -cpp
-	$(COMP) -o $(DIRPRE)/$(USR8).f90  -E $(PRE) $(SRC)/$(USR8).f90 -cpp
-	$(COMP) -o $(DIRPRE)/$(USR9).f90  -E $(PRE) $(SRC)/$(USR9).f90 -cpp
-	$(COMP) -o $(DIRPRE)/alloc.f90    -E $(PRE) $(SRC)/alloc.f90   -cpp
+	$(COMP) -o $(DIRPRE)/$(SUB1).f90 -E $(PRE) $(SRC)/$(SUB1).f90 -cpp
+	$(COMP) -o $(DIRPRE)/$(USR1).f90 -E $(PRE) $(SRC)/$(USR1).f90 -cpp
+	$(COMP) -o $(DIRPRE)/$(USR2).f90 -E $(PRE) $(SRC)/$(USR2).f90 -cpp
+	$(COMP) -o $(DIRPRE)/$(USR3).f90 -E $(PRE) $(SRC)/$(USR3).f90 -cpp
+	$(COMP) -o $(DIRPRE)/$(USR4).f90 -E $(PRE) $(SRC)/$(USR4).f90 -cpp
+	$(COMP) -o $(DIRPRE)/$(USR5).f90 -E $(PRE) $(SRC)/$(USR5).f90 -cpp
+	$(COMP) -o $(DIRPRE)/$(USR6).f90 -E $(PRE) $(SRC)/$(USR6).f90 -cpp
+	$(COMP) -o $(DIRPRE)/$(USR7).f90 -E $(PRE) $(SRC)/$(USR7).f90 -cpp
+	$(COMP) -o $(DIRPRE)/$(USR8).f90 -E $(PRE) $(SRC)/$(USR8).f90 -cpp
+	$(COMP) -o $(DIRPRE)/$(USR9).f90 -E $(PRE) $(SRC)/$(USR9).f90 -cpp
+	$(COMP) -o $(DIRPRE)/alloc.f90   -E $(PRE) $(SRC)/alloc.f90   -cpp
 
 signature: preprocess
-	f2py --include-paths $(MPI_HOME)/include:$(HDF5_DIR)/include -m $(NAME) -h $(DIRSIG)/$(NAME).pyf $(FSRC) skip: handle_corner_rhs restrict fitted_pressure global_node_difference get_boundary_block_dims get_start_and_end_indices get_block_dims id2cart local_elem_base_loc_con global_id2cart_glob_con global_cart2id_glob_con periodic_pressure poiseuille_paraboloid compute_distances_to_vicinity_coordinates exchange_1d gradient_transp_1d divergence_transp_1d bc_extrapolation_transp_1d product_div_grad_transp_1d bicgstab2_1d setup_mass_matrix2 read_hdf_ib : # $(INTERF) only: init_alarm configuration test_parameter init_general init_parallel init_boundaries init_limits coordinates init_ib fd_coeffs get_stencil get_stencil_helm interp_coeffs interp_coeffs_helm restr_coeffs restr_coeffs_helm test_coeffs get_weights get_beta timeintegration postprocess analyze_matrix init_hdf5 init_mpi finl_hdf5 finl_mpi print_fcomm_size pass_mpi_comm initial_conditions_vel explicit twostep outer_iteration test_divergence compute_stats get_dtime get_nullspace read_restart write_fields write_restart write_restart_stats read_restart_stats get_stencil_transp get_stencil init_bc open_stats interpolate_vel_to_ib update_boundary calculate_displacements fe_setup_triangular_3node compute_force rhs_vel  check_signal level_pressure iteration_stats close_stats fill_corners exchange_all_all interpolate_vel mpi_bcast_fort : # routines starting from initial_conditions_vel are only needed if timeintegration is written in python
+	f2py -m $(NAME) -h $(DIRSIG)/$(NAME).pyf $(FSRC) skip: compute_distances_to_vicinity_coordinates exchange_1d gradient_transp_1d divergence_transp_1d bc_extrapolation_transp_1d product_div_grad_transp_1d bicgstab2_1d setup_mass_matrix2 read_hdf_ib : # $(INTERF) only: init_alarm configuration test_parameter init_general init_parallel init_boundaries init_limits coordinates init_ib fd_coeffs get_stencil get_stencil_helm interp_coeffs interp_coeffs_helm restr_coeffs restr_coeffs_helm test_coeffs get_weights get_beta timeintegration postprocess analyze_matrix init_hdf5 init_mpi finl_hdf5 finl_mpi print_fcomm_size pass_mpi_comm initial_conditions_vel explicit twostep outer_iteration test_divergence compute_stats get_dtime get_nullspace read_restart write_fields write_restart write_restart_stats read_restart_stats get_stencil_transp get_stencil init_bc open_stats interpolate_vel_to_ib update_boundary calculate_displacements fe_setup_triangular_3node compute_force rhs_vel  check_signal level_pressure iteration_stats close_stats fill_corners exchange_all_all interpolate_vel mpi_bcast_fort : # routines starting from initial_conditions_vel are only needed if timeintegration is written in python
 	sed -i s~size\(ncb1c\)~4~g $(DIRSIG)/impact.pyf
 	sed -i s~size\(ncb1d\)~4~g $(DIRSIG)/impact.pyf
 	sed -i s~size\(ncb1g\)~4~g $(DIRSIG)/impact.pyf
@@ -511,12 +490,13 @@ signature: preprocess
 	sed -i s~nn\(2,1+1\)~nn\[2,1+1\]~g $(DIRSIG)/impact.pyf
 	sed -i s~nn\(3,1+1\)~nn\[3,1+1\]~g $(DIRSIG)/impact.pyf
 
-ftopy: FLAG3 = -L/usr/lib -lm -ldl -llapack -L$(MPI_HOME)/lib -L$(HDF5_DIR)/lib -lhdf5_fortran -lhdf5_hl -lhdf5 -lz -lm -ldl -I/usr/include -I$(HDF5_DIR)/include -I$(MPI_HOME)/include -I$(DST)  
-ftopy: FLAG4 = $(PRE) $(LIBS) $(INCL) -ffree-form -ffree-line-length-none -cpp -fdefault-real-8 -fPIC
+ftopy: FLAG1 = $(PRE) $(LIBS) $(INCL) -I$(DST) 
+ftopy: FLAG2 = $(OPT1) $(PRE) $(LIBS) $(INCL) 
+ftopy: FLAG3 = $(FLAG2) -I$(DST)
 ftopy: DEBUG = --noopt --noarch --verbose --debug-capi
-ftopy: signature $(MOD) #$(USR) 
-	f2py -c $(FLAG3) $(DIRSIG)/$(NAME).pyf $(FSRC) --f90exec=$(COMP) --f90flags='$(FLAG4)'  --build-dir $(DIRBLD) > f2py.log 
-#      $(info $$EXCL is [${EXCL}])
+ftopy: signature $(MOD) $(USR) 
+	f2py -c $(FLAG1) $(DIRSIG)/$(NAME).pyf $(FSRC) --f90exec=$(COMP) --f90flags='$(FLAG3)' --opt='$(OPT1)' --build-dir $(DIRBLD) > f2py.log 
+#	$(info $$EXCL is [${EXCL}])
 
 f2py-clean:
 	rm -f $(DIRPRE)/*.f90 $(DIRSIG)/*.pyf *.so -rf f2py/build/* 
@@ -527,12 +507,12 @@ ifeq ($(CUSR),FALSE)
 
 clean: f2py-clean
 clean:
-	rm -f $(DST)/*.o $(DST)/*.mod $(DST)/$(EXE) $(DST)/$(EXE_DEBUG) $(DST)/lib$(NAME).a
+	rm -f $(DST)/*.o $(DST)/*.mod $(DST)/$(EXE)
 
 else
 
 clean: f2py-clean
 clean:
-	rm -f $(DST)/usr_*.o $(DST)/usr_*.mod $(DST)/$(NAME).o $(DST)/$(EXE) $(DST)/$(NAME_DEBUG).o $(DST)/$(EXE_DEBUG) $(DST)/lib$(NAME).a
+	rm -f $(DST)/usr_*.o $(DST)/usr_*.mod $(DST)/$(NAME).o $(DST)/$(EXE)
 
 endif

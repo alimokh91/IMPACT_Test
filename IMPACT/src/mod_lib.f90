@@ -57,7 +57,8 @@ MODULE mod_lib
   REAL                   ::  kdx_max_visc(1:3)
   
   REAL                   ::  array_real(1:2)
-  LOGICAL                ::  array_log (1:5)
+  !LOGICAL                ::  array_log (1:5)
+  LOGICAL                ::  array_log (1:4)
   
   REAL                   ::  newtime
   REAL                   ::  pi
@@ -66,7 +67,7 @@ MODULE mod_lib
   REAL                   ::  u_max, h_min, u_max_global, h_min_global
   !----------------------------------------------------------------------------------------------------------!
   ! Anmerkungen: - Die Auswertung bezieht sich generell nur auf den Feldbereich. Bei Ausfluss-Rand-          !
-  !                bedingungen ist die CFL-Bedingung naturgem√§ss irrelevant, Einfluss-Randbedingungen        !
+  !                bedingungen ist die CFL-Bedingung naturgem‰ss irrelevant, Einfluss-Randbedingungen        !
   !                sollten generell implizit in der Zeit diskretisiert werden (Dirichlet-, Neumann- oder     !
   !                Robin-Randbedingungen).                                                                   !
   !              - Bei den Geschwindigkeiten werden der Einfachheit halber nur die Druck-Gitterpunkte be-    !
@@ -74,8 +75,8 @@ MODULE mod_lib
   !                der sicheren Seite liegen.                                                                !
   !              - Explizite Differenzen: k^2_mod_max <= ||L||_inf                                           !
   !              - Implizite Differenzen: k^2_mod_max <= max((kdx_max/dx)^2)  (angenommen, nicht exakt!)     !
-  !              - Imagin√§rteile (z.B. bei schiefen Randstencils) werden der Einfachheit halber vernach-     !
-  !                l√§ssigt.                                                                                  !
+  !              - Imagin‰rteile (z.B. bei schiefen Randstencils) werden der Einfachheit halber vernach-     !
+  !                l‰ssigt.                                                                                  !
   !----------------------------------------------------------------------------------------------------------!
   
   
@@ -229,11 +230,11 @@ MODULE mod_lib
         new_dtime      = .TRUE.
      END IF
      
-     IF (newtime .GE. time_out_kalm .AND. dtime_out_kalm /= 0.) THEN
-        dtime          = time_out_kalm - time
-        write_out_kalm = .TRUE.
-        new_dtime      = .TRUE.
-     END IF
+    ! IF (newtime .GE. time_out_kalm .AND. dtime_out_kalm /= 0.) THEN
+    !    dtime          = time_out_kalm - time
+    !    write_out_kalm = .TRUE.
+    !    new_dtime      = .TRUE.
+    ! END IF
  
      IF (newtime .GE. time_end) THEN
         dtime          = time_end - time
@@ -245,7 +246,8 @@ MODULE mod_lib
      END IF
      
      array_real = (/time,dtime/)
-     array_log  = (/finish_yes,new_dtime,write_out_vect,write_out_scal,write_out_kalm/)
+     !array_log  = (/finish_yes,new_dtime,write_out_vect,write_out_scal,write_out_kalm/)
+     array_log  = (/finish_yes,new_dtime,write_out_vect,write_out_scal/)  
   END IF
   
   CALL MPI_BCAST(array_real,2,MPI_REAL8  ,0,COMM_CART,merror)
@@ -258,7 +260,7 @@ MODULE mod_lib
   new_dtime      = array_log(2)
   write_out_vect = array_log(3)
   write_out_scal = array_log(4)
-  write_out_kalm = array_log(5)
+  !write_out_kalm = array_log(5)
   
   
   IF (timestep == 0) dtime_old = dtime

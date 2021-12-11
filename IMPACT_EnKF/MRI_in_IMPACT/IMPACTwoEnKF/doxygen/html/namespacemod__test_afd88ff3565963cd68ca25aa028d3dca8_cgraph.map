@@ -1,5 +1,0 @@
-<map id="mod_test::test_divergence" name="mod_test::test_divergence">
-<area shape="rect" id="node2" href="$namespacemod__diff.html#a7a79d530c985383255b80da2be9b5614" title="subroutine that computes the divergence (on the pressure grid) in all spacial dimensions ..." alt="" coords="232,5,385,32"/>
-<area shape="rect" id="node3" href="$namespacemod__exchange.html#a846feba7017358200b7c213847f573ae" title="subroutine for exchanging data between ghost cells. " alt="" coords="433,5,612,32"/>
-<area shape="rect" id="node4" href="$sub__other_8f90.html#a8238394447e69f8cacd32c4fe1128995" title="pseudo call for mod_exchange::exchange. " alt="" coords="660,5,745,32"/>
-</map>

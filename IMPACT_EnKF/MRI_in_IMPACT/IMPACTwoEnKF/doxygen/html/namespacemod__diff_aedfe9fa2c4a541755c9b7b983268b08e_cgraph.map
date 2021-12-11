@@ -1,4 +1,0 @@
-<map id="mod_diff::divergence_transp" name="mod_diff::divergence_transp">
-<area shape="rect" id="node2" href="$namespacemod__exchange.html#a846feba7017358200b7c213847f573ae" title="subroutine for exchanging data between ghost cells. " alt="" coords="199,13,377,39"/>
-<area shape="rect" id="node3" href="$sub__other_8f90.html#a8238394447e69f8cacd32c4fe1128995" title="pseudo call for mod_exchange::exchange. " alt="" coords="425,13,511,39"/>
-</map>

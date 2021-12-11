@@ -62,6 +62,7 @@ void mr_io_file_writer_close(int fd);
 
 int mr_io_file_reader_open(char *fname){
     // Make sure input file exists before accessing it
+    //printf("Entering mr_io_file_reader_open");
     int access_ret = -1;
     while( (access_ret = access(fname, F_OK)) != 0) {
         if (errno != ENOENT) {
@@ -75,6 +76,8 @@ int mr_io_file_reader_open(char *fname){
         printf("Failed to open file %s.\n", fname);
         exit(-1);
     }
+    //release_lock(fd_in);
+    //printf("Lock release reader");
     acquire_shared_lock_blocking(fd_in);
     return fd_in;
 }
@@ -90,6 +93,7 @@ int mr_io_file_writer_open(char *fname) {
         printf("Failed to open file %s.\n", fname);
         exit(-1);
     }
+    //release_lock(fd_out);
     acquire_exclusive_lock_blocking(fd_out);
     return fd_out;
 }
@@ -249,7 +253,7 @@ int mr_io_h5_deregister_writer(hid_t h5_file);
 MPI_Comm mr_io_h5_get_comm( hid_t h5_file);
 
 hid_t mr_io_h5_parallel_reader_open(MPI_Comm mr_io_mpi_comm, MPI_Info mr_io_mpi_info, char *name){
-
+    //printf("Entering mr_io_h5_parallel_reader_open - c");
     // Need to block on file until writing is finished
     int reader_fd = mr_io_file_reader_open(name);
 
@@ -257,6 +261,7 @@ hid_t mr_io_h5_parallel_reader_open(MPI_Comm mr_io_mpi_comm, MPI_Info mr_io_mpi_
     hid_t plist_id = H5Pcreate(H5P_FILE_ACCESS);
     H5Pset_fapl_mpio(plist_id, mr_io_mpi_comm, mr_io_mpi_info);
     hid_t h5_file = H5Fopen(name, H5F_ACC_RDONLY, plist_id);
+    //hid_t h5_file = H5Fopen(name);
     H5Pclose(plist_id);
 
     mr_io_h5_register_reader(h5_file, reader_fd);

@@ -1,7 +1,0 @@
-<map id="mod_coeffs::get_stencil_helm" name="mod_coeffs::get_stencil_helm">
-<area shape="rect" id="node2" href="$namespacemod__coeffs.html#a1990fd71e2cde28843e4eefc46ed37f5" title="subroutine for computing the difference coefficients for derivatives of order ABL in direction DIR..." alt="" coords="252,78,411,105"/>
-<area shape="rect" id="node3" href="$namespacemod__coeffs.html#a8dc03562ab6417755eb2dc932ee854a0" title="subroutine to compute FD coefficients exactly, the routine is only called if there is &lt;= 7 coefficien..." alt="" coords="459,5,617,47"/>
-<area shape="rect" id="node4" href="$namespacemod__coeffs.html#accda6a03ee0fdf3bfaf20ae2a3ebdd5d" title="routine that solves for the FD differentiation and transfer coefficients by matrix inversion..." alt="" coords="462,71,614,112"/>
-<area shape="rect" id="node6" href="$namespacemod__coeffs.html#acca28b4fea1be7eccba3461510631f95" title="mod_coeffs::fd_coeffs\l_solver_integral" alt="" coords="462,136,614,177"/>
-<area shape="rect" id="node5" href="$namespacemod__coeffs.html#a3ae4314e5618acec83312bdc70456223" title="mod_coeffs::matrix\l_invert" alt="" coords="665,104,800,145"/>
-</map>

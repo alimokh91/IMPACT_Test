@@ -55,10 +55,10 @@
   !==========================================================================================================
 
   !=== WINDKESSEL LOADING ===================================================================================
-  IF (WK_yes) THEN
-    CALL windkessel_integration_step
-    CALL apply_windkessel_loading
-  END IF
+  !IF (WK_yes) THEN
+  !  CALL windkessel_integration_step
+  !  CALL apply_windkessel_loading
+  !END IF
   !==========================================================================================================
 
   !*** debugging

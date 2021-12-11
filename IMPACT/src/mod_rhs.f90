@@ -14,13 +14,13 @@ MODULE mod_rhs
   USE mod_dims
   USE mod_vars
   USE mod_diff
-  !USE mpi  
+  USE mpi  
   
   PRIVATE
   
   PUBLIC rhs_vel
   
-  INCLUDE 'mpif.h'
+  !INCLUDE 'mpif.h'
   
   CONTAINS
   

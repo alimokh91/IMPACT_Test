@@ -1,7 +1,0 @@
-<map id="usr_func::poiseuille_paraboloid" name="usr_func::poiseuille_paraboloid">
-<area shape="rect" id="node2" href="$namespaceusr__func.html#a701b8c4053ba141820d28527e3476d93" title="usr_func::apply_fringe\l_forcing" alt="" coords="189,5,343,47"/>
-<area shape="rect" id="node3" href="$usr__force_8f90.html#a385c4a7e691f2167035f0381da42e49d" title="volume forcing of the momentum equation " alt="" coords="391,13,477,39"/>
-<area shape="rect" id="node4" href="$namespacemod__rhs.html#a3f1ddf58b8e176fa55aea43a57dda2cc" title="computes the rhs of the velocity " alt="" coords="525,13,649,39"/>
-<area shape="rect" id="node5" href="$namespacemod__timeint.html#a481262183fa43a7abe56b74c7af82f2a" title="public subroutine that forms the center of the DNS simulation. " alt="" coords="697,13,887,39"/>
-<area shape="rect" id="node6" href="$impact_8f90.html#a5081faae3f9d2c8ac0786a77368babfe" title="Main routine of IMPACT. All of the initialization is done here. Depending on the parameter task eithe..." alt="" coords="935,13,996,39"/>
-</map>

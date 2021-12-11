@@ -1,5 +1,0 @@
-<map id="mod_solvers::apply_nullspace" name="mod_solvers::apply_nullspace">
-<area shape="rect" id="node2" href="$namespacemod__solvers.html#a1f51a55d7943aedbded43e22208daac4" title="mod_solvers::outer\l_iteration" alt="" coords="191,5,327,47"/>
-<area shape="rect" id="node3" href="$namespacemod__timeint.html#a481262183fa43a7abe56b74c7af82f2a" title="public subroutine that forms the center of the DNS simulation. " alt="" coords="375,13,564,39"/>
-<area shape="rect" id="node4" href="$impact_8f90.html#a5081faae3f9d2c8ac0786a77368babfe" title="Main routine of IMPACT. All of the initialization is done here. Depending on the parameter task eithe..." alt="" coords="612,13,673,39"/>
-</map>

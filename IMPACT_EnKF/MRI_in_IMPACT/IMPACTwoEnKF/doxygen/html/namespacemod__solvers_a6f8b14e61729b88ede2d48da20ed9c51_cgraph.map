@@ -1,9 +1,0 @@
-<map id="mod_solvers::bicgstab2_1d" name="mod_solvers::bicgstab2_1d">
-<area shape="rect" id="node2" href="$namespacemod__solvers.html#a6a3c9f1b186c206e685da2edbc1a915d" title="mod_solvers::product\l_div_grad_transp_1d" alt="" coords="237,71,387,112"/>
-<area shape="rect" id="node8" href="$namespacemod__solvers.html#aef27dd0101c74c716e5b1692b26137dd" title="checks whether iteration criterion was met or whether maximum numbers of iterations have been reached..." alt="" coords="242,136,382,177"/>
-<area shape="rect" id="node3" href="$namespacemod__solvers.html#a27dcf5e019a56d6d4e1f4e3c9375ccd8" title="mod_solvers::divergence\l_transp_1d" alt="" coords="451,5,621,47"/>
-<area shape="rect" id="node6" href="$namespacemod__solvers.html#ac1525a14097dd7c354b4f1de0a3af736" title="mod_solvers::bc_extrapolation\l_transp_1d" alt="" coords="435,71,637,112"/>
-<area shape="rect" id="node7" href="$namespacemod__solvers.html#a26b6602411d57714b2840fc18f2ee8f7" title="mod_solvers::gradient\l_transp_1d" alt="" coords="459,136,613,177"/>
-<area shape="rect" id="node4" href="$namespacemod__solvers.html#a04d1687a5484e7bafa5528ff42c69a24" title="mod_solvers::exchange_1d" alt="" coords="685,78,871,105"/>
-<area shape="rect" id="node5" href="$sub__other_8f90.html#a8238394447e69f8cacd32c4fe1128995" title="pseudo call for mod_exchange::exchange. " alt="" coords="919,78,1004,105"/>
-</map>

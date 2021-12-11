@@ -469,7 +469,7 @@ MODULE mod_inout
          !-----------------------------------------------------------------------------------------------------------
          ! Open the dataset:
          CALL h5dopen_f(file_id,'velX_restart',dset_id,herror)
-         CALL read_hdf_infoREAL(1,.TRUE. ,.TRUE.,'dtime_out_kalm' ,scalar=old_dtime_out_kalm)
+         !CALL read_hdf_infoREAL(1,.TRUE. ,.TRUE.,'dtime_out_kalm' ,scalar=old_dtime_out_kalm)
          CALL read_hdf_infoREAL(1,.TRUE. ,.TRUE.,'dtime_out_scal' ,scalar=old_dtime_out_scal)
          CALL read_hdf_infoREAL(1,.TRUE. ,.TRUE.,'dtime_out_vect' ,scalar=old_dtime_out_vect)
          CALL h5dclose_f(dset_id,herror)
@@ -479,7 +479,7 @@ MODULE mod_inout
 
          time_out_vect = (time_out_vect-old_dtime_out_vect) + dtime_out_vect
          time_out_scal = (time_out_scal-old_dtime_out_scal) + dtime_out_scal
-         time_out_kalm = (time_out_kalm-old_dtime_out_kalm) + dtime_out_kalm
+         !time_out_kalm = (time_out_kalm-old_dtime_out_kalm) + dtime_out_kalm
 
          ! catch values less than or equal to 'time'
          if(time_out_vect .le. time) then
@@ -488,9 +488,9 @@ MODULE mod_inout
          if(time_out_scal .le. time) then
             time_out_scal = time + dtime
          end if
-         if(time_out_kalm .le. time) then
-            time_out_kalm = time + dtime
-         end if
+         !if(time_out_kalm .le. time) then
+         !   time_out_kalm = time + dtime
+         !end if
 
   
   END SUBROUTINE read_restart
@@ -600,23 +600,23 @@ MODULE mod_inout
   attr_yes = .TRUE.
   CALL write_hdf_infoINT (1     ,.TRUE. ,attr_yes,'restart'          ,scalar=restart          )
   CALL write_hdf_infoINT (1     ,.TRUE. ,attr_yes,'write_count'      ,scalar=write_count      )
-  CALL write_hdf_infoINT (1     ,.TRUE. ,attr_yes,'write_stats_count',scalar=write_stats_count)
-  CALL write_hdf_infoINT (1     ,.TRUE. ,attr_yes,'write_kalm_count' ,scalar=write_kalm_count )
+!  CALL write_hdf_infoINT (1     ,.TRUE. ,attr_yes,'write_stats_count',scalar=write_stats_count)
+!  CALL write_hdf_infoINT (1     ,.TRUE. ,attr_yes,'write_kalm_count' ,scalar=write_kalm_count )
   CALL write_hdf_infoREAL(1     ,.TRUE. ,attr_yes,'time_out_vect'    ,scalar=time_out_vect    )
   CALL write_hdf_infoREAL(1     ,.TRUE. ,attr_yes,'time_out_scal'    ,scalar=time_out_scal    )
-  CALL write_hdf_infoREAL(1     ,.TRUE. ,attr_yes,'time_out_kalm'    ,scalar=time_out_kalm    )
+!  CALL write_hdf_infoREAL(1     ,.TRUE. ,attr_yes,'time_out_kalm'    ,scalar=time_out_kalm    )
   CALL write_hdf_infoREAL(1     ,.TRUE. ,attr_yes,'dtime_out_vect'   ,scalar=dtime_out_vect   )
   CALL write_hdf_infoREAL(1     ,.TRUE. ,attr_yes,'dtime_out_scal'   ,scalar=dtime_out_scal   )
-  CALL write_hdf_infoREAL(1     ,.TRUE. ,attr_yes,'dtime_out_kalm'   ,scalar=dtime_out_kalm   )
+!  CALL write_hdf_infoREAL(1     ,.TRUE. ,attr_yes,'dtime_out_kalm'   ,scalar=dtime_out_kalm   )
   CALL write_hdf_infoLOG (1     ,.TRUE. ,attr_yes,'write_out_vect'   ,scalar=write_out_vect   )
   CALL write_hdf_infoLOG (1     ,.TRUE. ,attr_yes,'write_out_scal'   ,scalar=write_out_scal   )
-  CALL write_hdf_infoLOG (1     ,.TRUE. ,attr_yes,'write_out_kalm'   ,scalar=write_out_kalm   )
+!  CALL write_hdf_infoLOG (1     ,.TRUE. ,attr_yes,'write_out_kalm'   ,scalar=write_out_kalm   )
   CALL write_hdf_infoLOG (1     ,.TRUE. ,attr_yes,'new_dtime'        ,scalar=new_dtime        )
   !--- ddemarinis: DA additions
-  CALL write_hdf_infoINT (1         ,.TRUE. ,attr_yes,'write_kalm_count' ,scalar=write_kalm_count )
-  CALL write_hdf_infoREAL(1         ,.TRUE. ,attr_yes,'time_out_kalm'    ,scalar=time_out_kalm    )
-  CALL write_hdf_infoREAL(1         ,.TRUE. ,attr_yes,'dtime_out_kalm'   ,scalar=dtime_out_kalm   )
-  CALL write_hdf_infoLOG (1         ,.TRUE. ,attr_yes,'write_out_kalm'   ,scalar=write_out_kalm   )
+!  CALL write_hdf_infoINT (1         ,.TRUE. ,attr_yes,'write_kalm_count' ,scalar=write_kalm_count )
+!  CALL write_hdf_infoREAL(1         ,.TRUE. ,attr_yes,'time_out_kalm'    ,scalar=time_out_kalm    )
+!  CALL write_hdf_infoREAL(1         ,.TRUE. ,attr_yes,'dtime_out_kalm'   ,scalar=dtime_out_kalm   )
+!  CALL write_hdf_infoLOG (1         ,.TRUE. ,attr_yes,'write_out_kalm'   ,scalar=write_out_kalm   )
   
   CALL write_hdf_infoINT (3     ,.FALSE.,attr_yes,'M1  M2  M3 '      ,array =(/M1 ,M2 ,M3 /)  )
   CALL write_hdf_infoINT (3     ,.FALSE.,attr_yes,'S1w S2w S3w'      ,array =(/S1w,S2w,S3w/)  )
@@ -781,17 +781,17 @@ MODULE mod_inout
   attr_yes = .TRUE.
   CALL write_hdf_infoINT (1     ,.TRUE. ,attr_yes,'restart'          ,scalar=restart          )
   CALL write_hdf_infoINT (1     ,.TRUE. ,attr_yes,'write_count'      ,scalar=write_count      )
-  CALL write_hdf_infoINT (1     ,.TRUE. ,attr_yes,'write_stats_count',scalar=write_stats_count)
-  CALL write_hdf_infoINT (1     ,.TRUE. ,attr_yes,'write_kalm_count' ,scalar=write_kalm_count )
+!  CALL write_hdf_infoINT (1     ,.TRUE. ,attr_yes,'write_stats_count',scalar=write_stats_count)
+!  CALL write_hdf_infoINT (1     ,.TRUE. ,attr_yes,'write_kalm_count' ,scalar=write_kalm_count )
   CALL write_hdf_infoREAL(1     ,.TRUE. ,attr_yes,'time_out_vect'    ,scalar=time_out_vect    )
   CALL write_hdf_infoREAL(1     ,.TRUE. ,attr_yes,'time_out_scal'    ,scalar=time_out_scal    )
-  CALL write_hdf_infoREAL(1     ,.TRUE. ,attr_yes,'time_out_kalm'    ,scalar=time_out_kalm    )
+!  CALL write_hdf_infoREAL(1     ,.TRUE. ,attr_yes,'time_out_kalm'    ,scalar=time_out_kalm    )
   CALL write_hdf_infoREAL(1     ,.TRUE. ,attr_yes,'dtime_out_vect'   ,scalar=dtime_out_vect   )
   CALL write_hdf_infoREAL(1     ,.TRUE. ,attr_yes,'dtime_out_scal'   ,scalar=dtime_out_scal   )
-  CALL write_hdf_infoREAL(1     ,.TRUE. ,attr_yes,'dtime_out_kalm'   ,scalar=dtime_out_kalm   )
+!  CALL write_hdf_infoREAL(1     ,.TRUE. ,attr_yes,'dtime_out_kalm'   ,scalar=dtime_out_kalm   )
   CALL write_hdf_infoLOG (1     ,.TRUE. ,attr_yes,'write_out_vect'   ,scalar=write_out_vect   )
   CALL write_hdf_infoLOG (1     ,.TRUE. ,attr_yes,'write_out_scal'   ,scalar=write_out_scal   )
-  CALL write_hdf_infoLOG (1     ,.TRUE. ,attr_yes,'write_out_kalm'   ,scalar=write_out_kalm   )
+!  CALL write_hdf_infoLOG (1     ,.TRUE. ,attr_yes,'write_out_kalm'   ,scalar=write_out_kalm   )
   CALL write_hdf_infoLOG (1     ,.TRUE. ,attr_yes,'new_dtime'        ,scalar=new_dtime        )
   
   CALL write_hdf_infoINT (3     ,.FALSE.,attr_yes,'M1  M2  M3 '      ,array =(/M1 ,M2 ,M3 /)  )
@@ -1102,17 +1102,17 @@ MODULE mod_inout
   attr_yes = .TRUE.
   CALL write_hdf_infoINT (1     ,.TRUE. ,attr_yes,'restart'          ,scalar=restart          )
   CALL write_hdf_infoINT (1     ,.TRUE. ,attr_yes,'write_count'      ,scalar=write_count      )
-  CALL write_hdf_infoINT (1     ,.TRUE. ,attr_yes,'write_stats_count',scalar=write_stats_count)
-  CALL write_hdf_infoINT (1     ,.TRUE. ,attr_yes,'write_kalm_count' ,scalar=write_kalm_count )
+!  CALL write_hdf_infoINT (1     ,.TRUE. ,attr_yes,'write_stats_count',scalar=write_stats_count)
+!  CALL write_hdf_infoINT (1     ,.TRUE. ,attr_yes,'write_kalm_count' ,scalar=write_kalm_count )
   CALL write_hdf_infoREAL(1     ,.TRUE. ,attr_yes,'time_out_vect'    ,scalar=time_out_vect    )
   CALL write_hdf_infoREAL(1     ,.TRUE. ,attr_yes,'time_out_scal'    ,scalar=time_out_scal    )
-  CALL write_hdf_infoREAL(1     ,.TRUE. ,attr_yes,'time_out_kalm'    ,scalar=time_out_kalm    )
+!  CALL write_hdf_infoREAL(1     ,.TRUE. ,attr_yes,'time_out_kalm'    ,scalar=time_out_kalm    )
   CALL write_hdf_infoREAL(1     ,.TRUE. ,attr_yes,'dtime_out_vect'   ,scalar=dtime_out_vect   )
   CALL write_hdf_infoREAL(1     ,.TRUE. ,attr_yes,'dtime_out_scal'   ,scalar=dtime_out_scal   )
-  CALL write_hdf_infoREAL(1     ,.TRUE. ,attr_yes,'dtime_out_kalm'   ,scalar=dtime_out_kalm   )
+!  CALL write_hdf_infoREAL(1     ,.TRUE. ,attr_yes,'dtime_out_kalm'   ,scalar=dtime_out_kalm   )
   CALL write_hdf_infoLOG (1     ,.TRUE. ,attr_yes,'write_out_vect'   ,scalar=write_out_vect   )
   CALL write_hdf_infoLOG (1     ,.TRUE. ,attr_yes,'write_out_scal'   ,scalar=write_out_scal   )
-  CALL write_hdf_infoLOG (1     ,.TRUE. ,attr_yes,'write_out_kalm'   ,scalar=write_out_kalm   )
+!  CALL write_hdf_infoLOG (1     ,.TRUE. ,attr_yes,'write_out_kalm'   ,scalar=write_out_kalm   )
   CALL write_hdf_infoLOG (1     ,.TRUE. ,attr_yes,'new_dtime'        ,scalar=new_dtime        )
   
   CALL write_hdf_infoINT (2     ,.FALSE.,attr_yes,'S1w S2w'          ,array =(/S1w,S2w/)      )
@@ -1407,14 +1407,14 @@ MODULE mod_inout
   CALL read_hdf_infoREAL(1,.TRUE.,attr_yes,'dtime'            ,scalar=dtime            )
   CALL read_hdf_infoREAL(1,.TRUE.,attr_yes,'time_out_vect'    ,scalar=time_out_vect    )
   CALL read_hdf_infoREAL(1,.TRUE.,attr_yes,'time_out_scal'    ,scalar=time_out_scal    )
-  CALL read_hdf_infoREAL(1,.TRUE.,attr_yes,'time_out_kalm'    ,scalar=time_out_kalm    )
+!  CALL read_hdf_infoREAL(1,.TRUE.,attr_yes,'time_out_kalm'    ,scalar=time_out_kalm    )
   CALL read_hdf_infoINT (1,.TRUE.,attr_yes,'timestep'         ,scalar=timestep         )
   CALL read_hdf_infoINT (1,.TRUE.,attr_yes,'write_count'      ,scalar=write_count      )
-  CALL read_hdf_infoINT (1,.TRUE.,attr_yes,'write_stats_count',scalar=write_stats_count)
-  CALL read_hdf_infoINT (1,.TRUE.,attr_yes,'write_kalm_count' ,scalar=write_kalm_count )
+!  CALL read_hdf_infoINT (1,.TRUE.,attr_yes,'write_stats_count',scalar=write_stats_count)
+!  CALL read_hdf_infoINT (1,.TRUE.,attr_yes,'write_kalm_count' ,scalar=write_kalm_count )
   CALL read_hdf_infoLOG (1,.TRUE.,attr_yes,'write_out_vect'   ,scalar=write_out_vect   )
   CALL read_hdf_infoLOG (1,.TRUE.,attr_yes,'write_out_scal'   ,scalar=write_out_scal   )
-  CALL read_hdf_infoLOG (1,.TRUE.,attr_yes,'write_out_kalm'   ,scalar=write_out_kalm   )
+!  CALL read_hdf_infoLOG (1,.TRUE.,attr_yes,'write_out_kalm'   ,scalar=write_out_kalm   )
   CALL read_hdf_infoLOG (1,.TRUE.,attr_yes,'new_dtime'        ,scalar=new_dtime        )
   !-----------------------------------------------------------------------------------------------------------
   ! Get file space / create memory space:
@@ -1545,21 +1545,21 @@ MODULE mod_inout
   CALL read_hdf_infoREAL(1,.TRUE. ,attr_yes,'dtime'            ,scalar=dtime            )
   CALL read_hdf_infoREAL(1,.TRUE. ,attr_yes,'time_out_vect'    ,scalar=time_out_vect    )
   CALL read_hdf_infoREAL(1,.TRUE. ,attr_yes,'time_out_scal'    ,scalar=time_out_scal    )
-  CALL read_hdf_infoREAL(1,.TRUE. ,attr_yes,'time_out_kalm'    ,scalar=time_out_kalm    )
+!  CALL read_hdf_infoREAL(1,.TRUE. ,attr_yes,'time_out_kalm'    ,scalar=time_out_kalm    )
   CALL read_hdf_infoINT (1,.TRUE. ,attr_yes,'timestep'         ,scalar=timestep         )
   CALL read_hdf_infoINT (1,.TRUE. ,attr_yes,'write_count'      ,scalar=write_count      )
-  CALL read_hdf_infoINT (1,.TRUE. ,attr_yes,'write_stats_count',scalar=write_stats_count)
-  CALL read_hdf_infoINT (1,.TRUE. ,attr_yes,'write_kalm_count' ,scalar=write_kalm_count )
+!  CALL read_hdf_infoINT (1,.TRUE. ,attr_yes,'write_stats_count',scalar=write_stats_count)
+!  CALL read_hdf_infoINT (1,.TRUE. ,attr_yes,'write_kalm_count' ,scalar=write_kalm_count )
   CALL read_hdf_infoLOG (1,.TRUE. ,attr_yes,'write_out_vect'   ,scalar=write_out_vect   )
   CALL read_hdf_infoLOG (1,.TRUE. ,attr_yes,'write_out_scal'   ,scalar=write_out_scal   )
-  CALL read_hdf_infoLOG (1,.TRUE. ,attr_yes,'write_out_kalm'   ,scalar=write_out_kalm   )
+!  CALL read_hdf_infoLOG (1,.TRUE. ,attr_yes,'write_out_kalm'   ,scalar=write_out_kalm   )
   CALL read_hdf_infoLOG (1,.TRUE. ,attr_yes,'new_dtime'        ,scalar=new_dtime        )
   CALL read_hdf_infoINT (3,.FALSE.,attr_yes,'S1w S2w S3w'      ,array =Siw              )
   CALL read_hdf_infoINT (3,.FALSE.,attr_yes,'M1w M2w M3w'      ,array =Miw              )
   !--- ddemarinis: DA additions
-  CALL read_hdf_infoINT (1,.TRUE. ,attr_yes,'write_kalm_count' ,scalar=write_kalm_count )
-  CALL read_hdf_infoREAL(1,.TRUE. ,attr_yes,'time_out_kalm'    ,scalar=time_out_kalm    )
-  CALL read_hdf_infoLOG (1,.TRUE. ,attr_yes,'write_out_kalm'   ,scalar=write_out_kalm   )
+!  CALL read_hdf_infoINT (1,.TRUE. ,attr_yes,'write_kalm_count' ,scalar=write_kalm_count )
+!  CALL read_hdf_infoREAL(1,.TRUE. ,attr_yes,'time_out_kalm'    ,scalar=time_out_kalm    )
+!  CALL read_hdf_infoLOG (1,.TRUE. ,attr_yes,'write_out_kalm'   ,scalar=write_out_kalm   )
  
   !-----------------------------------------------------------------------------------------------------------
   CALL h5dclose_f(dset_id,herror)
@@ -1830,14 +1830,14 @@ MODULE mod_inout
   CALL read_hdf_infoREAL(1,.TRUE. ,attr_yes,'dtime'            ,scalar=dtime            )
   CALL read_hdf_infoREAL(1,.TRUE. ,attr_yes,'time_out_vect'    ,scalar=time_out_vect    )
   CALL read_hdf_infoREAL(1,.TRUE. ,attr_yes,'time_out_scal'    ,scalar=time_out_scal    )
-  CALL read_hdf_infoREAL(1,.TRUE. ,attr_yes,'time_out_kalm'    ,scalar=time_out_kalm    )
+!  CALL read_hdf_infoREAL(1,.TRUE. ,attr_yes,'time_out_kalm'    ,scalar=time_out_kalm    )
   CALL read_hdf_infoINT (1,.TRUE. ,attr_yes,'timestep'         ,scalar=timestep         )
   CALL read_hdf_infoINT (1,.TRUE. ,attr_yes,'write_count'      ,scalar=write_count      )
-  CALL read_hdf_infoINT (1,.TRUE. ,attr_yes,'write_stats_count',scalar=write_stats_count)
-  CALL read_hdf_infoINT (1,.TRUE. ,attr_yes,'write_kalm_count' ,scalar=write_kalm_count )
+!  CALL read_hdf_infoINT (1,.TRUE. ,attr_yes,'write_stats_count',scalar=write_stats_count)
+!  CALL read_hdf_infoINT (1,.TRUE. ,attr_yes,'write_kalm_count' ,scalar=write_kalm_count )
   CALL read_hdf_infoLOG (1,.TRUE. ,attr_yes,'write_out_vect'   ,scalar=write_out_vect   )
   CALL read_hdf_infoLOG (1,.TRUE. ,attr_yes,'write_out_scal'   ,scalar=write_out_scal   )
-  CALL read_hdf_infoLOG (1,.TRUE. ,attr_yes,'write_out_kalm'   ,scalar=write_out_kalm   )
+!  CALL read_hdf_infoLOG (1,.TRUE. ,attr_yes,'write_out_kalm'   ,scalar=write_out_kalm   )
   CALL read_hdf_infoLOG (1,.TRUE. ,attr_yes,'new_dtime'        ,scalar=new_dtime        )
   CALL read_hdf_infoINT (2,.FALSE.,attr_yes,'S1w S2w'          ,array =Siw              )
   CALL read_hdf_infoINT (2,.FALSE.,attr_yes,'M1w M2w'          ,array =Miw              )
@@ -2249,8 +2249,8 @@ MODULE mod_inout
   attr_yes = .TRUE.
   CALL write_hdf_infoINT (1     ,.TRUE. ,attr_yes,'restart'          ,scalar=restart          )
   CALL write_hdf_infoINT (1     ,.TRUE. ,attr_yes,'write_count'      ,scalar=write_count      )
-  CALL write_hdf_infoINT (1     ,.TRUE. ,attr_yes,'write_stats_count',scalar=write_stats_count)
-  CALL write_hdf_infoINT (1     ,.TRUE. ,attr_yes,'write_kalm_count' ,scalar=write_kalm_count )
+!  CALL write_hdf_infoINT (1     ,.TRUE. ,attr_yes,'write_stats_count',scalar=write_stats_count)
+!  CALL write_hdf_infoINT (1     ,.TRUE. ,attr_yes,'write_kalm_count' ,scalar=write_kalm_count )
   CALL write_hdf_infoREAL(1     ,.TRUE. ,attr_yes,'time_out_vect'    ,scalar=time_out_vect    )
   CALL write_hdf_infoREAL(1     ,.TRUE. ,attr_yes,'time'             ,scalar=time             )
 
@@ -2475,16 +2475,16 @@ MODULE mod_inout
   ! Write the attributes:
   attr_yes = .TRUE.
   CALL write_hdf_infoINT (1     ,.TRUE. ,attr_yes,'restart'          ,scalar=restart          )
-  CALL write_hdf_infoINT (1     ,.TRUE. ,attr_yes,'write_stats_count',scalar=write_stats_count)
+  !CALL write_hdf_infoINT (1     ,.TRUE. ,attr_yes,'write_stats_count',scalar=write_stats_count)
   CALL write_hdf_infoREAL(1     ,.TRUE. ,attr_yes,'time_out_vect'    ,scalar=time_out_vect    )
   CALL write_hdf_infoREAL(1     ,.TRUE. ,attr_yes,'time_out_scal'    ,scalar=time_out_scal    )
-  CALL write_hdf_infoREAL(1     ,.TRUE. ,attr_yes,'time_out_kalm'    ,scalar=time_out_kalm    )
+  !CALL write_hdf_infoREAL(1     ,.TRUE. ,attr_yes,'time_out_kalm'    ,scalar=time_out_kalm    )
   CALL write_hdf_infoREAL(1     ,.TRUE. ,attr_yes,'dtime_out_vect'   ,scalar=dtime_out_vect   )
   CALL write_hdf_infoREAL(1     ,.TRUE. ,attr_yes,'dtime_out_scal'   ,scalar=dtime_out_scal   )
-  CALL write_hdf_infoREAL(1     ,.TRUE. ,attr_yes,'dtime_out_kalm'   ,scalar=dtime_out_kalm   )
+  !CALL write_hdf_infoREAL(1     ,.TRUE. ,attr_yes,'dtime_out_kalm'   ,scalar=dtime_out_kalm   )
   CALL write_hdf_infoLOG (1     ,.TRUE. ,attr_yes,'write_out_vect'   ,scalar=write_out_vect   )
   CALL write_hdf_infoLOG (1     ,.TRUE. ,attr_yes,'write_out_scal'   ,scalar=write_out_scal   )
-  CALL write_hdf_infoLOG (1     ,.TRUE. ,attr_yes,'write_out_kalm'   ,scalar=write_out_kalm   )
+  !CALL write_hdf_infoLOG (1     ,.TRUE. ,attr_yes,'write_out_kalm'   ,scalar=write_out_kalm   )
   
   CALL write_hdf_infoINT (2     ,.FALSE.,attr_yes,'SS1 SS2'          ,array =(/SS1,SS2/)      )
   CALL write_hdf_infoINT (2     ,.FALSE.,attr_yes,'NN1 NN2'          ,array =(/NN1,NN2/)      )
@@ -3388,7 +3388,7 @@ MODULE mod_inout
 
     CHARACTER(*)    , INTENT(in)  ::  filebase, stride_string
     CHARACTER(LEN=8), INTENT(in)  ::  count_char
-    CHARACTER(LEN=8)              ::  count_char2
+!    CHARACTER(LEN=8)              ::  count_char2
 
     INTEGER, INTENT(in)           ::  dim1, dim2, dim3
     INTEGER                       ::  xmf=995
@@ -3399,8 +3399,8 @@ MODULE mod_inout
     CHARACTER(*), PARAMETER       ::  fmt4 = "(a,f15.9,a)"
     CHARACTER(*), PARAMETER       ::  fmt5 = "(a,f15.6,a,i0,a)"
     CHARACTER(*), PARAMETER       ::  fmt6 = "(a,f15.6,a,i0,1x,i0,1x,i0,a)"
-    CHARACTER(LEN=2)              ::  id,phs
-    CHARACTER(LEN=50)             ::  write_dir
+!    CHARACTER(LEN=2)              ::  id,phs
+!    CHARACTER(LEN=50)             ::  write_dir
 
     !=== Open file to write into ==============================================================================
     OPEN(xmf, FILE=filebase//'_'//stride_string//'_'//count_char//'.xmf')
@@ -3508,39 +3508,39 @@ MODULE mod_inout
     END IF
 
     !---- Covariance
-    IF (write_covariance_yes) THEN
-      if (dtime_out_kalm.ne.0.0) then
-         phase = mod(write_kalm_count-1,intervals) + 1
-         CALL num_to_string(2,phase,phs)
-         write_dir = './kf_result/phase_'//phs//'/'
-         CALL num_to_string(8,write_kalm_count,count_char2)
+!    IF (write_covariance_yes) THEN
+!      if (dtime_out_kalm.ne.0.0) then
+!         phase = mod(write_kalm_count-1,intervals) + 1
+!         CALL num_to_string(2,phase,phs)
+!         write_dir = './kf_result/phase_'//phs//'/'
+!         CALL num_to_string(8,write_kalm_count,count_char2)
          !--- Kalman gain ------------------------------------------------------------------------------------------------------------------------------
          !--- data_XX
-         WRITE(xmf,fmt1) '        <Attribute Name="GainX" Center="Node">'
-         IF (scale_output_yes) WRITE(xmf,fmt6) '          <DataItem ItemType="Function" Function="',U_ref,' * $0" Dimensions="',dim3,dim2,dim1,'" NumberType="Float" Precision="8">'
-         WRITE(xmf,fmt3) '          <DataItem Format="HDF" Dimensions="',dim3,dim2,dim1,'" NumberType="Float" Precision="8">'
-         WRITE(xmf,fmt1) '            '//trim(write_dir)//'gainX_phase'//phs//'_'//count_char2//'.h5:/gainX'
-         WRITE(xmf,fmt1) '          </DataItem>'
-         IF (scale_output_yes) WRITE(XMF,fmt1) '          </DataItem>'
-         WRITE(xmf,fmt1) '        </Attribute>'
+!         WRITE(xmf,fmt1) '        <Attribute Name="GainX" Center="Node">'
+!         IF (scale_output_yes) WRITE(xmf,fmt6) '          <DataItem ItemType="Function" Function="',U_ref,' * $0" Dimensions="',dim3,dim2,dim1,'" NumberType="Float" Precision="8">'
+!         WRITE(xmf,fmt3) '          <DataItem Format="HDF" Dimensions="',dim3,dim2,dim1,'" NumberType="Float" Precision="8">'
+!         WRITE(xmf,fmt1) '            '//trim(write_dir)//'gainX_phase'//phs//'_'//count_char2//'.h5:/gainX'
+!         WRITE(xmf,fmt1) '          </DataItem>'
+!         IF (scale_output_yes) WRITE(XMF,fmt1) '          </DataItem>'
+!         WRITE(xmf,fmt1) '        </Attribute>'
          !--- data_YY
-         WRITE(xmf,fmt1) '        <Attribute Name="GainY" Center="Node">'
-         IF (scale_output_yes) WRITE(xmf,fmt6) '          <DataItem ItemType="Function" Function="',U_ref,' * $0" Dimensions="',dim3,dim2,dim1,'" NumberType="Float" Precision="8">'
-         WRITE(xmf,fmt3) '          <DataItem Format="HDF" Dimensions="',dim3,dim2,dim1,'" NumberType="Float" Precision="8">'
-         WRITE(xmf,fmt1) '            '//trim(write_dir)//'gainY_phase'//phs//'_'//count_char2//'.h5:/gainY'
-         WRITE(xmf,fmt1) '          </DataItem>'
-         IF (scale_output_yes) WRITE(XMF,fmt1) '          </DataItem>'
-         WRITE(xmf,fmt1) '        </Attribute>'
+!         WRITE(xmf,fmt1) '        <Attribute Name="GainY" Center="Node">'
+!         IF (scale_output_yes) WRITE(xmf,fmt6) '          <DataItem ItemType="Function" Function="',U_ref,' * $0" Dimensions="',dim3,dim2,dim1,'" NumberType="Float" Precision="8">'
+!         WRITE(xmf,fmt3) '          <DataItem Format="HDF" Dimensions="',dim3,dim2,dim1,'" NumberType="Float" Precision="8">'
+!         WRITE(xmf,fmt1) '            '//trim(write_dir)//'gainY_phase'//phs//'_'//count_char2//'.h5:/gainY'
+!         WRITE(xmf,fmt1) '          </DataItem>'
+!         IF (scale_output_yes) WRITE(XMF,fmt1) '          </DataItem>'
+!         WRITE(xmf,fmt1) '        </Attribute>'
          !--- data_ZZ
-         WRITE(xmf,fmt1) '        <Attribute Name="GainZ" Center="Node">'
-         IF (scale_output_yes) WRITE(xmf,fmt6) '          <DataItem ItemType="Function" Function="',U_ref,' * $0" Dimensions="',dim3,dim2,dim1,'" NumberType="Float" Precision="8">'
-         WRITE(xmf,fmt3) '          <DataItem Format="HDF" Dimensions="',dim3,dim2,dim1,'" NumberType="Float" Precision="8">'
-         WRITE(xmf,fmt1) '            '//trim(write_dir)//'gainZ_phase'//phs//'_'//count_char2//'.h5:/gainZ'
-         WRITE(xmf,fmt1) '          </DataItem>'
-         IF (scale_output_yes) WRITE(XMF,fmt1) '          </DataItem>'
-         WRITE(xmf,fmt1) '        </Attribute>'
-      end if
-    END IF
+!         WRITE(xmf,fmt1) '        <Attribute Name="GainZ" Center="Node">'
+!         IF (scale_output_yes) WRITE(xmf,fmt6) '          <DataItem ItemType="Function" Function="',U_ref,' * $0" Dimensions="',dim3,dim2,dim1,'" NumberType="Float" Precision="8">'
+!         WRITE(xmf,fmt3) '          <DataItem Format="HDF" Dimensions="',dim3,dim2,dim1,'" NumberType="Float" Precision="8">'
+!         WRITE(xmf,fmt1) '            '//trim(write_dir)//'gainZ_phase'//phs//'_'//count_char2//'.h5:/gainZ'
+!         WRITE(xmf,fmt1) '          </DataItem>'
+!         IF (scale_output_yes) WRITE(XMF,fmt1) '          </DataItem>'
+!         WRITE(xmf,fmt1) '        </Attribute>'
+!      end if
+!    END IF
 
     WRITE(xmf,fmt1) '    </Grid>'
     WRITE(xmf,fmt1) '  </Domain>'

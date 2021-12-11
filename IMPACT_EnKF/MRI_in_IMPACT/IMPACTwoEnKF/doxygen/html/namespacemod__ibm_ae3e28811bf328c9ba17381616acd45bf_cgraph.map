@@ -1,7 +1,0 @@
-<map id="mod_ibm::spread_force_dens_to_vel_grid" name="mod_ibm::spread_force_dens_to_vel_grid">
-<area shape="rect" id="node2" href="$namespacemod__ibm.html#a48d80b76869c289cb4635fa0da95c0d5" title="subroutine to find all Eulerian coordinates&#39; indices that are within the reach &#39;reach&#39; of the kernel ..." alt="" coords="244,5,397,47"/>
-<area shape="rect" id="node3" href="$namespacemod__ibm.html#acc35353a5d3a9cd2c129898c9109953b" title="mod_ibm::compute_distances\l_to_vicinity_coordinates" alt="" coords="221,71,420,112"/>
-<area shape="rect" id="node4" href="$namespacemod__ibm.html#a44b068bef45e2f89b270bbc408c818d7" title="function to compute a one&#45;dimensional discrete delta function " alt="" coords="237,137,404,163"/>
-<area shape="rect" id="node5" href="$namespacemod__exchange.html#a5fb0f4f988d2a395393f9da314de9992" title="mod_exchange::exchange_part" alt="" coords="216,187,425,214"/>
-<area shape="rect" id="node6" href="$sub__other_8f90.html#a8238394447e69f8cacd32c4fe1128995" title="pseudo call for mod_exchange::exchange. " alt="" coords="473,187,559,214"/>
-</map>
