@@ -1,0 +1,5 @@
+up 2
+set variable gdb = 1
+tui enable
+break impact_debug.f90:50
+continue

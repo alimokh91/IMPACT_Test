@@ -1,0 +1,6 @@
+<map id="mod_coeffs::diff_coeffs" name="mod_coeffs::diff_coeffs">
+<area shape="rect" id="node2" href="$namespacemod__coeffs.html#a8dc03562ab6417755eb2dc932ee854a0" title="subroutine to compute FD coefficients exactly, the routine is only called if there is &lt;= 7 coefficien..." alt="" coords="212,5,371,47"/>
+<area shape="rect" id="node3" href="$namespacemod__coeffs.html#accda6a03ee0fdf3bfaf20ae2a3ebdd5d" title="routine that solves for the FD differentiation and transfer coefficients by matrix inversion..." alt="" coords="215,71,367,112"/>
+<area shape="rect" id="node5" href="$namespacemod__coeffs.html#acca28b4fea1be7eccba3461510631f95" title="mod_coeffs::fd_coeffs\l_solver_integral" alt="" coords="215,136,367,177"/>
+<area shape="rect" id="node4" href="$namespacemod__coeffs.html#a3ae4314e5618acec83312bdc70456223" title="mod_coeffs::matrix\l_invert" alt="" coords="419,104,553,145"/>
+</map>

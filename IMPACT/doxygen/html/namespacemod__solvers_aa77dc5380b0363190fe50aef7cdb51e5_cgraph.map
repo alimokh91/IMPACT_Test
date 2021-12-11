@@ -1,0 +1,39 @@
+<map id="mod_solvers::bicgstab" name="mod_solvers::bicgstab">
+<area shape="rect" id="node2" href="$namespacemod__helmholtz.html#a0442f77860a8d27e4efd78d5de576c84" title="subroutine that constructs the Laplace operator. " alt="" coords="210,264,374,305"/>
+<area shape="rect" id="node6" href="$namespacemod__laplace.html#a554319de5d5801d92804bbec6f98986f" title="subroutine that computes the Laplacian operator " alt="" coords="217,354,367,396"/>
+<area shape="rect" id="node11" href="$namespacemod__laplace.html#af0780de7d82deb5220088b416e53bbd7" title="subroutine that computes the transpose of the Laplacian " alt="" coords="217,116,367,157"/>
+<area shape="rect" id="node15" href="$namespacemod__solvers.html#ac12141be9c65519dc74506d8c317868d" title="subroutine that compute infinity and/or two norms. " alt="" coords="208,420,376,447"/>
+<area shape="rect" id="node16" href="$namespacemod__solvers.html#aef27dd0101c74c716e5b1692b26137dd" title="checks whether iteration criterion was met or whether maximum numbers of iterations have been reached..." alt="" coords="222,472,362,513"/>
+<area shape="rect" id="node17" href="$namespacemod__solvers.html#a6e06016f1142ef1c70fb0b9468fba665" title="computed the element&#45;wise product of two fields (arrays) " alt="" coords="217,537,367,578"/>
+<area shape="rect" id="node18" href="$namespacemod__solvers.html#a18b3f642ae4d31553c9102ee9924a6d1" title="computes a V&#45;cycle MG smoothing (preconditioning) " alt="" coords="673,770,836,796"/>
+<area shape="rect" id="node36" href="$namespacemod__solvers.html#aa2e357c7ea0593531565715d2bcc6c89" title="mod_solvers::multigridf" alt="" coords="213,755,371,782"/>
+<area shape="rect" id="node3" href="$namespacemod__diff.html#a0728945da149ad51b4896796d9e73852" title="subroutine that computes the Helmholtz operator. " alt="" coords="452,247,589,274"/>
+<area shape="rect" id="node4" href="$namespacemod__exchange.html#a846feba7017358200b7c213847f573ae" title="subroutine for exchanging data between ghost cells. " alt="" coords="665,255,844,282"/>
+<area shape="rect" id="node5" href="$sub__other_8f90.html#a8238394447e69f8cacd32c4fe1128995" title="pseudo call for mod_exchange::exchange. " alt="" coords="1559,487,1644,514"/>
+<area shape="rect" id="node7" href="$namespacemod__diff.html#a63bfc3c1ef14839544459019657a01af" title="subroutine that computes the gradient in direction m " alt="" coords="456,298,585,324"/>
+<area shape="rect" id="node8" href="$namespacemod__diff.html#a57508f244e1b8d39898a1be2954f1ff9" title="subroutine that extrapolates boundary conditions for wall&#45;normal velocities onto the boundaries..." alt="" coords="431,450,610,476"/>
+<area shape="rect" id="node9" href="$namespacemod__diff.html#a11038deb48108971809bbdfd3f1c7fe2" title="subroutine that computes the divergece operator (on the pressure grid) in one spacial direction..." alt="" coords="448,348,593,375"/>
+<area shape="rect" id="node10" href="$namespacemod__laplace.html#a298151b06ab44774ac1a239368f9bf94" title="sets the pressure to zero at corners and edges to not create a residuum in the iterative solver ..." alt="" coords="1349,494,1494,536"/>
+<area shape="rect" id="node12" href="$namespacemod__diff.html#aedfe9fa2c4a541755c9b7b983268b08e" title="compute the transpose of the divergence operator " alt="" coords="448,116,593,157"/>
+<area shape="rect" id="node13" href="$namespacemod__diff.html#ab7029540af978be8552e9dff806c054e" title="extrapolates the boundary conditions for wall&#45;normal velocities to the boundaries for the transpose L..." alt="" coords="431,181,610,222"/>
+<area shape="rect" id="node14" href="$namespacemod__diff.html#a5dd547ae2d45a98d28daed35e8821d1b" title="computes the transpose of the gradient operator " alt="" coords="456,50,585,92"/>
+<area shape="rect" id="node19" href="$namespacemod__solvers.html#ab038bb9b230c26916a917963703fde61" title="performs a restriction step with a preliminary relaxation step " alt="" coords="909,657,1042,698"/>
+<area shape="rect" id="node31" href="$namespacemod__solvers.html#a059448cb561c3f64087869c15337723b" title="performs a relaxation step at the coarsest level " alt="" coords="909,813,1042,854"/>
+<area shape="rect" id="node33" href="$namespacemod__solvers.html#a344718b35fa19ae9cb5e5065892d30b4" title="interpolation with a relaxation step at each interpolation " alt="" coords="892,904,1059,945"/>
+<area shape="rect" id="node20" href="$namespacemod__solvers.html#adecf06c92a18a6f279fb08f4f9a21e4f" title="mod_solvers::apply\l_nullspace2" alt="" coords="1127,560,1264,601"/>
+<area shape="rect" id="node22" href="$namespacemod__laplace.html#a9bb93c6462cf776dbdc9d075baa82753" title="mod_laplace::relaxation\l_div_grad" alt="" coords="1114,756,1277,797"/>
+<area shape="rect" id="node24" href="$namespacemod__laplace.html#adbb6f3cfccc8562bc4ccb6611ddecf0f" title="mod_laplace::product\l_div_grad_relax" alt="" coords="1121,494,1270,536"/>
+<area shape="rect" id="node25" href="$namespacemod__solvers.html#af00be9de2ff518efb960771322e067e2" title="mod_solvers::restrict" alt="" coords="1123,443,1268,470"/>
+<area shape="rect" id="node26" href="$namespacemod__helmholtz.html#a8886dd5e0d01a1d3bd2218984fc56aff" title="mod_helmholtz::relaxation\l_helmholtz" alt="" coords="1107,886,1284,928"/>
+<area shape="rect" id="node27" href="$namespacemod__helmholtz.html#a3400820da904ec57885fcf5d95633fed" title="mod_helmholtz::product\l_helmholtz_relax" alt="" coords="1113,625,1277,666"/>
+<area shape="rect" id="node28" href="$namespacemod__solvers.html#aa05449e63019ad4e708d85853a8d5604" title="mod_solvers::restrict\l_helmholtz" alt="" coords="1123,377,1268,418"/>
+<area shape="rect" id="node29" href="$namespacemod__helmholtz.html#a2d7da9e4b7dccb0224f1a8009daac52a" title="mod_helmholtz::relaxation\l_helmholtz_coarse" alt="" coords="1107,821,1284,862"/>
+<area shape="rect" id="node30" href="$namespacemod__helmholtz.html#abbaac559182ce3e9e65c367c99ccfc1c" title="mod_helmholtz::product\l_helmholtz_relax_coarse" alt="" coords="1110,690,1281,732"/>
+<area shape="rect" id="node21" href="$namespacemod__solvers.html#a5838d57041090837ef8c4a829e0fd704" title="mod_solvers::handle\l_corner_rhs" alt="" coords="1349,560,1494,601"/>
+<area shape="rect" id="node23" href="$namespacemod__exchange.html#a05beb18318cb748053c191fdf85e3636" title="mod_exchange::exchange\l_relax" alt="" coords="1332,724,1511,765"/>
+<area shape="rect" id="node32" href="$namespacemod__laplace.html#a0b31641d2c59287afd499571a15bde81" title="mod_laplace::relaxation\l_div_grad_inv" alt="" coords="1114,952,1277,993"/>
+<area shape="rect" id="node34" href="$namespacemod__solvers.html#a84256811ce5b0662a23ceb2fa3c2eb41" title="mod_solvers::interpolate" alt="" coords="1112,1083,1279,1110"/>
+<area shape="rect" id="node35" href="$namespacemod__solvers.html#aa5884dc3c923e0e061dc6334d55024a0" title="mod_solvers::interpolate\l_helmholtz" alt="" coords="1112,1017,1279,1058"/>
+<area shape="rect" id="node37" href="$namespacemod__solvers.html#a08e239f3737bd0abe492ce74707a7127" title="mod_solvers::plain\l_restrict" alt="" coords="909,498,1042,540"/>
+<area shape="rect" id="node38" href="$namespacemod__solvers.html#aac8924a605de989ec021966d34f60efa" title="interpolation with a v&#45;cycle at each interpolation step " alt="" coords="424,948,617,975"/>
+</map>
