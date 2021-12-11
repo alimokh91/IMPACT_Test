@@ -1,0 +1,7 @@
+<map id="usr_func::windkessel_integration_step" name="usr_func::windkessel_integration_step">
+<area shape="rect" id="node2" href="$namespaceusr__func.html#ae69355b3d2d54bf4d5942e7334ab8377" title="subroutine that returns the RHS of the 3EWK model " alt="" coords="199,21,336,47"/>
+<area shape="rect" id="node6" href="$namespaceusr__func.html#a918228da6035de5253b9b9a345d8834f" title="subroutine that returns the RHS of the 4EWK model " alt="" coords="199,71,336,98"/>
+<area shape="rect" id="node3" href="$namespaceusr__func.html#a76eef6b728f70f2f85a7a632187fef23" title="function returns the correct flow or flow rate depending on the WK type at a desired location WK4 &#45;&gt; ..." alt="" coords="384,46,548,73"/>
+<area shape="rect" id="node4" href="$namespaceusr__func.html#af83e28cfec800f6e16498d2c0efbcc40" title="function returns the 2D flow along an axis " alt="" coords="596,5,729,47"/>
+<area shape="rect" id="node5" href="$namespaceusr__func.html#a14eac4a9ed3dcd86f0d6b732017db7d3" title="returns the flow in 3D through a circular opening in the direction of an axis " alt="" coords="596,71,729,112"/>
+</map>
