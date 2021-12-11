@@ -2,7 +2,6 @@ module mr_io
 
 use hdf5
 use mr_io_protocol
-use mr_io_locking_utils
 
 implicit none
 private
@@ -188,9 +187,8 @@ subroutine mr_io_read_spatial(path, mri_inst)
   mr_io_handle_error(error)
 
   ! Open an existing file.
-!  CALL h5fopen_f (trim(path), H5F_ACC_RDWR_F, file_id, error)
-!  mr_io_handle_error(error)
-  file_id = mr_io_h5_reader_open_f(path)
+  CALL h5fopen_f (trim(path), H5F_ACC_RDWR_F, file_id, error)
+  mr_io_handle_error(error)
 
   ! Open an existing group
   CALL h5gopen_f(file_id, SpatialMRI_group_name, grp_id, error)
@@ -205,10 +203,8 @@ subroutine mr_io_read_spatial(path, mri_inst)
   mr_io_handle_error(error)
 
   ! Close the file.
-!  CALL h5fclose_f(file_id, error)
-!  mr_io_handle_error(error)
-   error = mr_io_h5_reader_close_f(file_id)
-   mr_io_handle_error(error)
+  CALL h5fclose_f(file_id, error)
+  mr_io_handle_error(error)
 
   ! Close FORTRAN interface.
   CALL h5close_f(error)
@@ -234,9 +230,8 @@ subroutine mr_io_write_spatial(path, mri_inst)
   mr_io_handle_error(error)
 
   ! Create a new file using default properties.
-!  CALL h5fcreate_f(trim(path), H5F_ACC_TRUNC_F, file_id, error)
-!  mr_io_handle_error(error)
-  file_id = mr_io_h5_writer_open_f(path)
+  CALL h5fcreate_f(trim(path), H5F_ACC_TRUNC_F, file_id, error)
+  mr_io_handle_error(error)
 
   ! Create a new group
   CALL h5gcreate_f(file_id, SpatialMRI_group_name, grp_id, error)
@@ -250,9 +245,7 @@ subroutine mr_io_write_spatial(path, mri_inst)
   mr_io_handle_error(error)
 
   ! Close the file.
-!  CALL h5fclose_f(file_id, error)
-!  mr_io_handle_error(error)
-  error = mr_io_h5_writer_close_f(file_id)
+  CALL h5fclose_f(file_id, error)
   mr_io_handle_error(error)
 
   ! Close FORTRAN interface.
@@ -459,9 +452,8 @@ subroutine mr_io_read_spacetime(path, mri_inst)
   mr_io_handle_error(error)
 
   ! Open an existing file.
-!  CALL h5fopen_f (trim(path), H5F_ACC_RDWR_F, file_id, error)
-!  mr_io_handle_error(error)
-  file_id = mr_io_h5_reader_open_f(path)
+  CALL h5fopen_f (trim(path), H5F_ACC_RDWR_F, file_id, error)
+  mr_io_handle_error(error)
 
   ! Open an existing group
   CALL h5gopen_f(file_id, SpaceTimeMRI_group_name, grp_id, error)
@@ -488,8 +480,7 @@ subroutine mr_io_read_spacetime(path, mri_inst)
   mr_io_handle_error(error)
 
   ! Close the file.
-!  CALL h5fclose_f(file_id, error)
-  error = mr_io_h5_reader_close_f(file_id)
+  CALL h5fclose_f(file_id, error)
   mr_io_handle_error(error)
 
   ! Close FORTRAN interface.
@@ -517,9 +508,8 @@ subroutine mr_io_write_spacetime(path, mri_inst)
   mr_io_handle_error(error)
 
   ! Create a new file using default properties.
-!  CALL h5fcreate_f(trim(path), H5F_ACC_TRUNC_F, file_id, error)
-!  mr_io_handle_error(error)
-  file_id = mr_io_h5_writer_open_f(path)
+  CALL h5fcreate_f(trim(path), H5F_ACC_TRUNC_F, file_id, error)
+  mr_io_handle_error(error)
 
   ! Create a new group
   CALL h5gcreate_f(file_id, SpaceTimeMRI_group_name, grp_id, error)
@@ -541,8 +531,7 @@ subroutine mr_io_write_spacetime(path, mri_inst)
   mr_io_handle_error(error)
 
   ! Close the file.
-!  CALL h5fclose_f(file_id, error)
-  error = mr_io_h5_writer_close_f(file_id)
+  CALL h5fclose_f(file_id, error)
   mr_io_handle_error(error)
 
   ! Close FORTRAN interface.
@@ -745,9 +734,8 @@ subroutine mr_io_read_flow(path, mri_inst)
   mr_io_handle_error(error)
 
   ! Open an existing file.
-!  CALL h5fopen_f (trim(path), H5F_ACC_RDWR_F, file_id, error)
-!  mr_io_handle_error(error)
-  file_id = mr_io_h5_reader_open_f(path)
+  CALL h5fopen_f (trim(path), H5F_ACC_RDWR_F, file_id, error)
+  mr_io_handle_error(error)
 
   ! Open an existing group
   CALL h5gopen_f(file_id, FlowMRI_group_name, grp_id, error)
@@ -778,8 +766,7 @@ subroutine mr_io_read_flow(path, mri_inst)
   mr_io_handle_error(error)
 
   ! Close the file.
-!  CALL h5fclose_f(file_id, error)
-  error = mr_io_h5_reader_close_f(file_id)
+  CALL h5fclose_f(file_id, error)
   mr_io_handle_error(error)
 
   ! Close FORTRAN interface.
@@ -807,9 +794,8 @@ subroutine mr_io_write_flow(path, mri_inst)
   mr_io_handle_error(error)
 
   ! Create a new file using default properties.
-!  CALL h5fcreate_f(trim(path), H5F_ACC_TRUNC_F, file_id, error)
-!  mr_io_handle_error(error)
-  file_id = mr_io_h5_writer_open_f(path)
+  CALL h5fcreate_f(trim(path), H5F_ACC_TRUNC_F, file_id, error)
+  mr_io_handle_error(error)
 
   ! Create a new group
   CALL h5gcreate_f(file_id, FlowMRI_group_name, grp_id, error)
@@ -833,8 +819,7 @@ subroutine mr_io_write_flow(path, mri_inst)
   mr_io_handle_error(error)
 
   ! Close the file.
-!  CALL h5fclose_f(file_id, error)
-  error = mr_io_h5_writer_close_f(file_id)
+  CALL h5fclose_f(file_id, error)
   mr_io_handle_error(error)
 
   ! Close FORTRAN interface.
@@ -863,9 +848,8 @@ subroutine mr_io_read_segmentedflow(path, mri_inst)
   mr_io_handle_error(error)
 
   ! Open an existing file.
-!  CALL h5fopen_f (trim(path), H5F_ACC_RDWR_F, file_id, error)
-!  mr_io_handle_error(error)
-  file_id = mr_io_h5_reader_open_f(path)
+  CALL h5fopen_f (trim(path), H5F_ACC_RDWR_F, file_id, error)
+  mr_io_handle_error(error)
 
   ! Open an existing group
   CALL h5gopen_f(file_id, SegmentedFlowMRI_group_name, grp_id, error)
@@ -898,8 +882,7 @@ subroutine mr_io_read_segmentedflow(path, mri_inst)
   mr_io_handle_error(error)
 
   ! Close the file.
-!  CALL h5fclose_f(file_id, error)
-  error = mr_io_h5_reader_close_f(file_id)
+  CALL h5fclose_f(file_id, error)
   mr_io_handle_error(error)
 
   ! Close FORTRAN interface.
@@ -927,9 +910,8 @@ subroutine mr_io_write_segmentedflow(path, mri_inst)
   mr_io_handle_error(error)
 
   ! Create a new file using default properties.
-!  CALL h5fcreate_f(trim(path), H5F_ACC_TRUNC_F, file_id, error)
-!  mr_io_handle_error(error)
-  file_id = mr_io_h5_writer_open_f(path)
+  CALL h5fcreate_f(trim(path), H5F_ACC_TRUNC_F, file_id, error)
+  mr_io_handle_error(error)
 
   ! Create a new group
   CALL h5gcreate_f(file_id, SegmentedFlowMRI_group_name, grp_id, error)
@@ -954,8 +936,7 @@ subroutine mr_io_write_segmentedflow(path, mri_inst)
   mr_io_handle_error(error)
 
   ! Close the file.
-!  CALL h5fclose_f(file_id, error)
-  error = mr_io_h5_writer_close_f(file_id)
+  CALL h5fclose_f(file_id, error)
   mr_io_handle_error(error)
 
   ! Close FORTRAN interface.

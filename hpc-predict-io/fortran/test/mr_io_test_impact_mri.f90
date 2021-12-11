@@ -9,8 +9,8 @@ program mr_io_test_impact_mri
 
   implicit none
 
-  type(DistFlowMRIPadded) :: mri_inst
-  type(DistSpaceTimeMRI) :: mri_dest
+  type(DistFlowMRIPadded) :: mri_inst2
+  type(DistSpaceTimeMRI) :: mri_dest2
 
   INTEGER :: i, ix, iy, iz, it, iv ! Helper indices for writing results
 
@@ -36,15 +36,15 @@ program mr_io_test_impact_mri
 
   ! Assign domain-padding read from config file (kalman_num_data_voxels_per_process can be used to infer the
   ! size of the data voxel grid per process)
-  mri_inst%domain_padding = kalman_domain_padding
+  mri_inst2%domain_padding = kalman_domain_padding
   CALL mr_io_read_parallel_flow_padded(MPI_COMM_WORLD, MPI_INFO_NULL, (/NB1,NB2,NB3/), &
-       kalman_mri_input_file_path, mri_inst)
+       kalman_mri_input_file_path, mri_inst2)
   CALL h5open_f(herror) ! Required as hpc-predict-io closes HDF5 environment with h5close_f
 
-  ! The indices in distributed arrays of mri_inst are aligned with the pressure grid x1p/x2p/x3p.
+  ! The indices in distributed arrays of mri_inst2 are aligned with the pressure grid x1p/x2p/x3p.
   ! That is for 3-dimensional MRI voxel index i = (i1,i2,i3) e.g. used to access
   !
-  !              mri_inst%mri%intensity%array(i1,i2,i3)
+  !              mri_inst2%mri%intensity%array(i1,i2,i3)
   !
   ! and 3-dimensional refinement sr = (sr1,sr2,sr3) of the pressure grid relative to the MRI voxel grid
   ! all the pressure grid points with coordinates in
@@ -69,22 +69,22 @@ program mr_io_test_impact_mri
 
   write(0,*) "## cart MPI rank:",iB(1:3,1)-(/1,1,1/)
   write(0,*) "## MRI: intensity field ##"
-  write(0,*) "   local  shape: ",shape(mri_inst%mri%intensity%array)
-  write(0,*) "   local lbound: ",lbound(mri_inst%mri%intensity%array)
-  write(0,*) "   local ubound: ",ubound(mri_inst%mri%intensity%array)
-  write(0,*) "   MRI offset:   ",mri_inst%mri%intensity%time_offset,mri_inst%mri%intensity%offset
+  write(0,*) "   local  shape: ",shape(mri_inst2%mri%intensity%array)
+  write(0,*) "   local lbound: ",lbound(mri_inst2%mri%intensity%array)
+  write(0,*) "   local ubound: ",ubound(mri_inst2%mri%intensity%array)
+  write(0,*) "   MRI offset:   ",mri_inst2%mri%intensity%time_offset,mri_inst2%mri%intensity%offset
 
   write(0,*) "## MRI: velocity mean field ##"
-  write(0,*) "   local  shape: ",shape(mri_inst%mri%velocity_mean%array)
-  write(0,*) "   local lbound: ",lbound(mri_inst%mri%velocity_mean%array)
-  write(0,*) "   local ubound: ",ubound(mri_inst%mri%velocity_mean%array)
-  write(0,*) "   MRI offset:   ",0,mri_inst%mri%velocity_mean%time_offset,mri_inst%mri%velocity_mean%offset
+  write(0,*) "   local  shape: ",shape(mri_inst2%mri%velocity_mean%array)
+  write(0,*) "   local lbound: ",lbound(mri_inst2%mri%velocity_mean%array)
+  write(0,*) "   local ubound: ",ubound(mri_inst2%mri%velocity_mean%array)
+  write(0,*) "   MRI offset:   ",0,mri_inst2%mri%velocity_mean%time_offset,mri_inst2%mri%velocity_mean%offset
 
   write(0,*) "## MRI: velocity covariance field ##"
-  write(0,*) "   local  shape: ",shape(mri_inst%mri%velocity_cov%array)
-  write(0,*) "   local lbound: ",lbound(mri_inst%mri%velocity_cov%array)
-  write(0,*) "   local ubound: ",ubound(mri_inst%mri%velocity_cov%array)
-  write(0,*) "   MRI offset:   ",0,0,mri_inst%mri%velocity_cov%time_offset,mri_inst%mri%velocity_cov%offset
+  write(0,*) "   local  shape: ",shape(mri_inst2%mri%velocity_cov%array)
+  write(0,*) "   local lbound: ",lbound(mri_inst2%mri%velocity_cov%array)
+  write(0,*) "   local ubound: ",ubound(mri_inst2%mri%velocity_cov%array)
+  write(0,*) "   MRI offset:   ",0,0,mri_inst2%mri%velocity_cov%time_offset,mri_inst2%mri%velocity_cov%offset
 
   write(0,*) "Performing fluid simulation..."
   call sleep(1)
@@ -93,55 +93,55 @@ program mr_io_test_impact_mri
 
 
   ! Allocate amount of data to be written - TODO: Fix time dimensions
-  allocate(mri_dest%t_coordinates(size(mri_inst%mri%t_coordinates)*kalman_num_time_refinements))
-  allocate(mri_dest%x_coordinates(size(mri_inst%mri%x_coordinates)*kalman_num_spatial_refinements(1)))
-  allocate(mri_dest%y_coordinates(size(mri_inst%mri%y_coordinates)*kalman_num_spatial_refinements(2)))
-  allocate(mri_dest%z_coordinates(size(mri_inst%mri%z_coordinates)*kalman_num_spatial_refinements(3)))
-  allocate(mri_dest%vector_feature%array(  lbound(mri_inst%mri%velocity_mean%array,1):ubound(mri_inst%mri%velocity_mean%array,1), &
-                                         (lbound(mri_inst%mri%velocity_mean%array,2)-1)*kalman_num_time_refinements+1:ubound(mri_inst%mri%velocity_mean%array,2)*kalman_num_time_refinements, &
-                                         (lbound(mri_inst%mri%velocity_mean%array,3)-1)*kalman_num_spatial_refinements(1)+1:ubound(mri_inst%mri%velocity_mean%array,3)*kalman_num_spatial_refinements(1), &
-                                         (lbound(mri_inst%mri%velocity_mean%array,4)-1)*kalman_num_spatial_refinements(2)+1:ubound(mri_inst%mri%velocity_mean%array,4)*kalman_num_spatial_refinements(2), &
-                                         (lbound(mri_inst%mri%velocity_mean%array,5)-1)*kalman_num_spatial_refinements(3)+1:ubound(mri_inst%mri%velocity_mean%array,5)*kalman_num_spatial_refinements(3) ))
+  allocate(mri_dest2%t_coordinates(size(mri_inst2%mri%t_coordinates)*kalman_num_time_refinements))
+  allocate(mri_dest2%x_coordinates(size(mri_inst2%mri%x_coordinates)*kalman_num_spatial_refinements(1)))
+  allocate(mri_dest2%y_coordinates(size(mri_inst2%mri%y_coordinates)*kalman_num_spatial_refinements(2)))
+  allocate(mri_dest2%z_coordinates(size(mri_inst2%mri%z_coordinates)*kalman_num_spatial_refinements(3)))
+  allocate(mri_dest2%vector_feature%array(  lbound(mri_inst2%mri%velocity_mean%array,1):ubound(mri_inst2%mri%velocity_mean%array,1), &
+                                         (lbound(mri_inst2%mri%velocity_mean%array,2)-1)*kalman_num_time_refinements+1:ubound(mri_inst2%mri%velocity_mean%array,2)*kalman_num_time_refinements, &
+                                         (lbound(mri_inst2%mri%velocity_mean%array,3)-1)*kalman_num_spatial_refinements(1)+1:ubound(mri_inst2%mri%velocity_mean%array,3)*kalman_num_spatial_refinements(1), &
+                                         (lbound(mri_inst2%mri%velocity_mean%array,4)-1)*kalman_num_spatial_refinements(2)+1:ubound(mri_inst2%mri%velocity_mean%array,4)*kalman_num_spatial_refinements(2), &
+                                         (lbound(mri_inst2%mri%velocity_mean%array,5)-1)*kalman_num_spatial_refinements(3)+1:ubound(mri_inst2%mri%velocity_mean%array,5)*kalman_num_spatial_refinements(3) ))
 
   ! Write coordinates - TODO: Fix time dimensions values
   ! time
-  do i=0,size(mri_inst%mri%t_coordinates)-1  ! TODO: Fill with exact time (stepping) values
-      mri_dest%t_coordinates(i*kalman_num_time_refinements+1:(i+1)*kalman_num_time_refinements) = mri_inst%mri%t_coordinates(i+1)
+  do i=0,size(mri_inst2%mri%t_coordinates)-1  ! TODO: Fill with exact time (stepping) values
+      mri_dest2%t_coordinates(i*kalman_num_time_refinements+1:(i+1)*kalman_num_time_refinements) = mri_inst2%mri%t_coordinates(i+1)
   end do
-  mri_dest%t_dim = mri_inst%mri%t_dim*kalman_num_time_refinements
+  mri_dest2%t_dim = mri_inst2%mri%t_dim*kalman_num_time_refinements
 
   ! geometry
-  mri_dest%x_coordinates = 0.5*y1p(kalman_domain_padding%lhs(1)*kalman_num_spatial_refinements(1)+1:(kalman_domain_padding%lhs(1)+size(mri_inst%mri%x_coordinates))*kalman_num_spatial_refinements(1)+0) + &
-                           0.5*y1p(kalman_domain_padding%lhs(1)*kalman_num_spatial_refinements(1)+2:(kalman_domain_padding%lhs(1)+size(mri_inst%mri%x_coordinates))*kalman_num_spatial_refinements(1)+1)
-  mri_dest%x_dim = mri_inst%mri%x_dim*kalman_num_spatial_refinements(1)
-  mri_dest%y_coordinates = 0.5*y2p(kalman_domain_padding%lhs(2)*kalman_num_spatial_refinements(2)+1:(kalman_domain_padding%lhs(2)+size(mri_inst%mri%y_coordinates))*kalman_num_spatial_refinements(2)+0) + &
-                           0.5*y2p(kalman_domain_padding%lhs(2)*kalman_num_spatial_refinements(2)+2:(kalman_domain_padding%lhs(2)+size(mri_inst%mri%y_coordinates))*kalman_num_spatial_refinements(2)+1)
-  mri_dest%y_dim = mri_inst%mri%y_dim*kalman_num_spatial_refinements(2)
-  mri_dest%z_coordinates = 0.5*y3p(kalman_domain_padding%lhs(3)*kalman_num_spatial_refinements(3)+1:(kalman_domain_padding%lhs(3)+size(mri_inst%mri%z_coordinates))*kalman_num_spatial_refinements(3)+0) + &
-                           0.5*y3p(kalman_domain_padding%lhs(3)*kalman_num_spatial_refinements(3)+2:(kalman_domain_padding%lhs(3)+size(mri_inst%mri%z_coordinates))*kalman_num_spatial_refinements(3)+1)
-  mri_dest%z_dim = mri_inst%mri%z_dim*kalman_num_spatial_refinements(3)
+  mri_dest2%x_coordinates = 0.5*y1p(kalman_domain_padding%lhs(1)*kalman_num_spatial_refinements(1)+1:(kalman_domain_padding%lhs(1)+size(mri_inst2%mri%x_coordinates))*kalman_num_spatial_refinements(1)+0) + &
+                           0.5*y1p(kalman_domain_padding%lhs(1)*kalman_num_spatial_refinements(1)+2:(kalman_domain_padding%lhs(1)+size(mri_inst2%mri%x_coordinates))*kalman_num_spatial_refinements(1)+1)
+  mri_dest2%x_dim = mri_inst2%mri%x_dim*kalman_num_spatial_refinements(1)
+  mri_dest2%y_coordinates = 0.5*y2p(kalman_domain_padding%lhs(2)*kalman_num_spatial_refinements(2)+1:(kalman_domain_padding%lhs(2)+size(mri_inst2%mri%y_coordinates))*kalman_num_spatial_refinements(2)+0) + &
+                           0.5*y2p(kalman_domain_padding%lhs(2)*kalman_num_spatial_refinements(2)+2:(kalman_domain_padding%lhs(2)+size(mri_inst2%mri%y_coordinates))*kalman_num_spatial_refinements(2)+1)
+  mri_dest2%y_dim = mri_inst2%mri%y_dim*kalman_num_spatial_refinements(2)
+  mri_dest2%z_coordinates = 0.5*y3p(kalman_domain_padding%lhs(3)*kalman_num_spatial_refinements(3)+1:(kalman_domain_padding%lhs(3)+size(mri_inst2%mri%z_coordinates))*kalman_num_spatial_refinements(3)+0) + &
+                           0.5*y3p(kalman_domain_padding%lhs(3)*kalman_num_spatial_refinements(3)+2:(kalman_domain_padding%lhs(3)+size(mri_inst2%mri%z_coordinates))*kalman_num_spatial_refinements(3)+1)
+  mri_dest2%z_dim = mri_inst2%mri%z_dim*kalman_num_spatial_refinements(3)
 
   ! Local hyperslab dimensions - TODO: Fix time dimensions
-  mri_dest%vector_feature%time_offset = mri_inst%mri%velocity_mean%time_offset*kalman_num_time_refinements
-  mri_dest%vector_feature%time_dim = mri_inst%mri%velocity_mean%time_dim*kalman_num_time_refinements
-  mri_dest%vector_feature%offset = (/ mri_inst%mri%velocity_mean%offset(1)*kalman_num_spatial_refinements(1), &
-                                     mri_inst%mri%velocity_mean%offset(2)*kalman_num_spatial_refinements(2), &
-                                     mri_inst%mri%velocity_mean%offset(3)*kalman_num_spatial_refinements(3) /)
-  mri_dest%vector_feature%dims = (/ mri_inst%mri%velocity_mean%dims(1)*kalman_num_spatial_refinements(1), &
-                                   mri_inst%mri%velocity_mean%dims(2)*kalman_num_spatial_refinements(2), &
-                                   mri_inst%mri%velocity_mean%dims(3)*kalman_num_spatial_refinements(3) /)
+  mri_dest2%vector_feature%time_offset = mri_inst2%mri%velocity_mean%time_offset*kalman_num_time_refinements
+  mri_dest2%vector_feature%time_dim = mri_inst2%mri%velocity_mean%time_dim*kalman_num_time_refinements
+  mri_dest2%vector_feature%offset = (/ mri_inst2%mri%velocity_mean%offset(1)*kalman_num_spatial_refinements(1), &
+                                     mri_inst2%mri%velocity_mean%offset(2)*kalman_num_spatial_refinements(2), &
+                                     mri_inst2%mri%velocity_mean%offset(3)*kalman_num_spatial_refinements(3) /)
+  mri_dest2%vector_feature%dims = (/ mri_inst2%mri%velocity_mean%dims(1)*kalman_num_spatial_refinements(1), &
+                                   mri_inst2%mri%velocity_mean%dims(2)*kalman_num_spatial_refinements(2), &
+                                   mri_inst2%mri%velocity_mean%dims(3)*kalman_num_spatial_refinements(3) /)
 
   ! Local hyperslab boundary indexes - TODO: Fix time dimensions
-  lbound_v = lbound(mri_inst%mri%velocity_mean%array,1)
-  ubound_v = ubound(mri_inst%mri%velocity_mean%array,1)
-  lbound_t = (lbound(mri_inst%mri%velocity_mean%array,2)-1)*kalman_num_time_refinements+1
-  ubound_t = ubound(mri_inst%mri%velocity_mean%array,2)*kalman_num_time_refinements
-  lbound_x = (lbound(mri_inst%mri%velocity_mean%array,3)-1)*kalman_num_spatial_refinements(1)+1
-  ubound_x = ubound(mri_inst%mri%velocity_mean%array,3)*kalman_num_spatial_refinements(1)
-  lbound_y = (lbound(mri_inst%mri%velocity_mean%array,4)-1)*kalman_num_spatial_refinements(2)+1
-  ubound_y = ubound(mri_inst%mri%velocity_mean%array,4)*kalman_num_spatial_refinements(2)
-  lbound_z = (lbound(mri_inst%mri%velocity_mean%array,5)-1)*kalman_num_spatial_refinements(3)+1
-  ubound_z = ubound(mri_inst%mri%velocity_mean%array,5)*kalman_num_spatial_refinements(3)
+  lbound_v = lbound(mri_inst2%mri%velocity_mean%array,1)
+  ubound_v = ubound(mri_inst2%mri%velocity_mean%array,1)
+  lbound_t = (lbound(mri_inst2%mri%velocity_mean%array,2)-1)*kalman_num_time_refinements+1
+  ubound_t = ubound(mri_inst2%mri%velocity_mean%array,2)*kalman_num_time_refinements
+  lbound_x = (lbound(mri_inst2%mri%velocity_mean%array,3)-1)*kalman_num_spatial_refinements(1)+1
+  ubound_x = ubound(mri_inst2%mri%velocity_mean%array,3)*kalman_num_spatial_refinements(1)
+  lbound_y = (lbound(mri_inst2%mri%velocity_mean%array,4)-1)*kalman_num_spatial_refinements(2)+1
+  ubound_y = ubound(mri_inst2%mri%velocity_mean%array,4)*kalman_num_spatial_refinements(2)
+  lbound_z = (lbound(mri_inst2%mri%velocity_mean%array,5)-1)*kalman_num_spatial_refinements(3)+1
+  ubound_z = ubound(mri_inst2%mri%velocity_mean%array,5)*kalman_num_spatial_refinements(3)
 
   allocate(pressure_voxel_velocity(lbound_v:ubound_v, lbound_x:ubound_x, lbound_y:ubound_y, lbound_z:ubound_z))
 
@@ -167,21 +167,21 @@ program mr_io_test_impact_mri
   do it=lbound_t,ubound_t
 
       ! could be made time-dependent
-      do iz=(lbound(mri_inst%mri%velocity_mean%array,5)-1),(ubound(mri_inst%mri%velocity_mean%array,5)-1)
-          do iy=(lbound(mri_inst%mri%velocity_mean%array,4)-1),(ubound(mri_inst%mri%velocity_mean%array,4)-1)
-              do ix=(lbound(mri_inst%mri%velocity_mean%array,3)-1),(ubound(mri_inst%mri%velocity_mean%array,3)-1)
+      do iz=(lbound(mri_inst2%mri%velocity_mean%array,5)-1),(ubound(mri_inst2%mri%velocity_mean%array,5)-1)
+          do iy=(lbound(mri_inst2%mri%velocity_mean%array,4)-1),(ubound(mri_inst2%mri%velocity_mean%array,4)-1)
+              do ix=(lbound(mri_inst2%mri%velocity_mean%array,3)-1),(ubound(mri_inst2%mri%velocity_mean%array,3)-1)
                   do iv=1,3
                       pressure_voxel_velocity(iv, &
                           ix*kalman_num_spatial_refinements(1)+1:(ix+1)*kalman_num_spatial_refinements(1), &
                           iy*kalman_num_spatial_refinements(2)+1:(iy+1)*kalman_num_spatial_refinements(2), &
                           iz*kalman_num_spatial_refinements(3)+1:(iz+1)*kalman_num_spatial_refinements(3)) &
-                          = mri_inst%mri%velocity_mean%array(iv,(it-1)/kalman_num_time_refinements+1,ix+1,iy+1,iz+1) ! + pressure_voxel_mri_cell_pattern(iv,:,:,:)
+                          = mri_inst2%mri%velocity_mean%array(iv,(it-1)/kalman_num_time_refinements+1,ix+1,iy+1,iz+1) ! + pressure_voxel_mri_cell_pattern(iv,:,:,:)
                   end do
               end do
           end do
       end do
 
-      mri_dest%vector_feature%array(:, it, lbound_x:ubound_x, lbound_y:ubound_y, lbound_z:ubound_z) = pressure_voxel_velocity
+      mri_dest2%vector_feature%array(:, it, lbound_x:ubound_x, lbound_y:ubound_y, lbound_z:ubound_z) = pressure_voxel_velocity
   end do
 
 
@@ -222,11 +222,11 @@ program mr_io_test_impact_mri
 !                   work3(lbound_x+0:ubound_x+0, lbound_y+0:ubound_y+0, lbound_z+1:ubound_z+1) + &
 !                   work3(lbound_x+0:ubound_x+0, lbound_y+0:ubound_y+0, lbound_z+0:ubound_z+0) )
 !
-!      mri_dest%vector_feature%array(:, it, lbound_x:ubound_x, lbound_y:ubound_y, lbound_z:ubound_z) = pressure_voxel_velocity
+!      mri_dest2%vector_feature%array(:, it, lbound_x:ubound_x, lbound_y:ubound_y, lbound_z:ubound_z) = pressure_voxel_velocity
 !  end do
 
   ! Write MRI-assimilated fluid simulation to output file
-  call mr_io_write_parallel_spacetime(MPI_COMM_WORLD, MPI_INFO_NULL, kalman_mri_output_file_path, mri_dest)
+  call mr_io_write_parallel_spacetime(MPI_COMM_WORLD, MPI_INFO_NULL, kalman_mri_output_file_path, mri_dest2)
 
   CALL h5open_f(herror)
 

@@ -47,8 +47,8 @@ MODULE mod_timeint
 
   !--- diverse Files <F6>ffnen ----------------------------------------------------------------------------------
   NULLIFY(kalman_first)
-  CALL open_kalman
-  CALL open_stats
+  IF (dtime_out_kalm /= 0.) CALL open_kalman
+  IF (dtime_out_scal /= 0. .or. dtime_out_kalm /=  0. ) CALL open_stats
 
   IF (restart == 0) THEN
      time          = time_start
@@ -173,8 +173,8 @@ MODULE mod_timeint
   CALL interpolate_vel(.FALSE.) ! TEST!!! Wurde teilweise schon bei Zeitschritt-Bestimmung erledigt!
 
   !--- Ausschreiben ------------------------------------------------------------------------------------------
-  CALL compute_kalman
-  CALL compute_stats
+  IF (write_out_kalm .and. write_kalm_count.eq.0 ) CALL compute_kalman
+  IF (write_out_scal .and. write_stats_count.eq.0) CALL compute_stats
   IF (write_xdmf_yes .AND. write_out_vect) CALL write_xdmf_xml ! bbecsek
   IF (write_out_vect) CALL write_fields
   !===========================================================================================================

@@ -252,6 +252,16 @@ subroutine mr_io_deallocate_dist_spacetime_mri(mri)
 
 end subroutine mr_io_deallocate_dist_spacetime_mri
 
+
+subroutine mr_io_deallocate_dist_spacetime_mri_padded(mri)
+
+    implicit none
+    type(DistSpacetimeMRIPadded), intent(inout) :: mri
+    call mr_io_deallocate_dist_spacetime_mri(mri%mri)
+
+end subroutine mr_io_deallocate_dist_spacetime_mri_padded
+
+
 subroutine mr_io_deallocate_flow_mri(mri)
 
     implicit none

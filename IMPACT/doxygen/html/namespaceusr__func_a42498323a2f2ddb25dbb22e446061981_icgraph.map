@@ -1,7 +1,0 @@
-<map id="usr_func::total_n_local_tet_elements" name="usr_func::total_n_local_tet_elements">
-<area shape="rect" id="node2" href="$namespaceusr__func.html#a492d7deed3c4e78876e4d2060528a4e6" title="usr_func::check_node_ids" alt="" coords="421,10,599,37"/>
-<area shape="rect" id="node4" href="$namespaceusr__func.html#a1312339d00053561e16a28f68b1805e2" title="returns the local node_id to the node_no&#45;th node of elem_no element " alt="" coords="226,32,357,73"/>
-<area shape="rect" id="node5" href="$namespaceusr__func.html#a39a8a779032d6d31e4abf2372a4bc746" title="usr_func::local_to\l_global_tet_elem_id" alt="" coords="221,97,362,139"/>
-<area shape="rect" id="node6" href="$namespaceusr__func.html#a784e907cb6a438b74d1c62f81aed6000" title="usr_func::total_n_global\l_tet_elements" alt="" coords="209,163,373,204"/>
-<area shape="rect" id="node3" href="$impact_8f90.html#a5081faae3f9d2c8ac0786a77368babfe" title="Main routine of IMPACT. All of the initialization is done here. Depending on the parameter task eithe..." alt="" coords="647,10,708,37"/>
-</map>

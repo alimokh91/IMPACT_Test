@@ -64,13 +64,14 @@
   !===========================================================================================================
   !=== read the observed data (components, time, x, y, z) ====================================================
   !===========================================================================================================
-!  if (associated(mri_inst).eqv..false.) then
+  if (associated(mri_inst).eqv..false.) then
      nullify(mri_inst); allocate(mri_inst)
      mri_inst%domain_padding = kalman_domain_padding
      CALL mr_io_read_parallel_segmentedflow_padded(MPI_COMM_WORLD, MPI_INFO_NULL, (/NB1,NB2,NB3/), &
           trim(kalman_mri_input_file_path), mri_inst)
+          !trim(kalman_mri_input_file_path)//'.h5', mri_inst)
      CALL h5open_f(herror) ! Required as hpc-predict-io closes HDF5 environment with h5close_f
-!  end if
+  end if
   mri_inst%mri%velocity_mean%array = mri_inst%mri%velocity_mean%array/U_ref
   mri_inst%mri%velocity_cov%array  = mri_inst%mri%velocity_cov%array/U_ref/U_ref
   !===========================================================================================================
@@ -258,9 +259,8 @@
   CHARACTER(LEN=8) :: count_char
   CHARACTER(LEN=2) :: count_char2
 
-  write_out_kalm = .FALSE.
-
   phase = mod(write_kalm_count,intervals) + 1
+
   IF (rank == 0) WRITE(*,'(a,i8,a,i8,a)') 'kalman repetition', write_kalm_count/intervals+1, '   for phase', phase,' ...'
 
   bounds(1,1) = lbound(mri_inst%mri%velocity_mean%array,3)
@@ -278,14 +278,14 @@
   !===========================================================================================================
 
 !  if (phase.eq.1) then
-!     CALL num_to_string(8,write_kalm_count/intervals+1,count_char)
+!     CALL num_to_string(2,write_kalm_count/intervals+1,count_char2)
 !   
 !     if (associated(mri_inst).eqv..true.) call mr_io_deallocate_dist_segmentedflow_mri_padded(mri_inst)
 !     nullify(mri_inst); allocate(mri_inst)
 !     mri_inst%domain_padding = kalman_domain_padding
 !
 !     CALL mr_io_read_parallel_segmentedflow_padded(MPI_COMM_WORLD, MPI_INFO_NULL, (/NB1,NB2,NB3/), &
-!          trim(kalman_mri_input_file_path)//'_cycle.'//count_char//'.h5', mri_inst)
+!          trim(kalman_mri_input_file_path)//'_single_rep_'//count_char2//'_dw2.h5', mri_inst)
 !     CALL h5open_f(herror) ! Required as hpc-predict-io closes HDF5 environment with h5close_f
 !
 !     mri_inst%mri%velocity_mean%array = mri_inst%mri%velocity_mean%array/U_ref
@@ -294,6 +294,7 @@
 
   klmn => kalman_first
   do while(associated(klmn))
+
     !========================================================================================================
     !=== forecast statistics ================================================================================
     !========================================================================================================
@@ -367,7 +368,7 @@
  
           m = 0
           klmn%obs_covar(3*m+1:3*m+3,3*m+1:3*m+3) = mri_inst%mri%velocity_cov%array(1:3,1:3,phase,i,j,k)
-          if (mri_inst%mri%segmentation_prob%array(phase,i,j,k).le.0.5) then
+          if (mri_inst%mri%segmentation_prob%array(phase,i,j,k).ge.0.0) then
              klmn%obs_covar(3*m+1:3*m+3,3*m+1:3*m+3) = 1.0e6+klmn%obs_covar(3*m+1:3*m+3,3*m+1:3*m+3)
           end if
           klmn%obs_data (3*m+1:3*m+3,1) = mri_inst%mri%velocity_mean%array (1:3,phase,i,j,k)
@@ -742,7 +743,7 @@
 
   ! d = (H*Sigma*transpose(H)+R)^-1*(d-H*mu_f)
   !call dsysv('U',m,1,R,m,IPIV,d,m,work,m,INFO)
-  if (INFO.ne.0) write(*,*) 'error in kalman gain',INFO
+  !if (INFO.ne.0) write(*,*) 'error in kalman gain',INFO
 
   ! d = (H*Sigma*transpose(H)+R)^-1*(d-H*mu_f)
   call dsysv_rook('U',m,1,R,m,IPIV,d,m,work,m,INFO)

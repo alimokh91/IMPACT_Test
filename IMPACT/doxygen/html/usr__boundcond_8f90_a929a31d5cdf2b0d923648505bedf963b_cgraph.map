@@ -1,4 +1,0 @@
-<map id="boundary_vel_stat" name="boundary_vel_stat">
-<area shape="rect" id="node2" href="$namespaceusr__func.html#a02e384b162e32790af575ccb8d1a93e8" title="usr_func::poiseuille\l_parabola" alt="" coords="195,5,331,47"/>
-<area shape="rect" id="node3" href="$namespaceusr__func.html#a501393bed3b0ffd9814d285ecab1a254" title="usr_func::smooth_step" alt="" coords="184,71,341,98"/>
-</map>

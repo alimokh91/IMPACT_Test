@@ -1,9 +1,0 @@
-<map id="usr_func::get_boundary_block_dims" name="usr_func::get_boundary_block_dims">
-<area shape="rect" id="node2" href="$namespaceusr__func.html#a492d7deed3c4e78876e4d2060528a4e6" title="usr_func::check_node_ids" alt="" coords="437,111,615,138"/>
-<area shape="rect" id="node4" href="$namespaceusr__func.html#a1618bddc84e08cac81dd2b5bd3f3726d" title="usr_func::local_to\l_global_node_id_loc_con" alt="" coords="216,39,389,80"/>
-<area shape="rect" id="node5" href="$namespaceusr__func.html#ad3b177db68d22ebd77c0a2cff6026310" title="usr_func::global_cart2id\l_glob_con" alt="" coords="221,104,385,145"/>
-<area shape="rect" id="node6" href="$namespaceusr__func.html#a155b917d40211080254e5a2694f5cffa" title="usr_func::global_id2cart\l_glob_con" alt="" coords="221,169,385,211"/>
-<area shape="rect" id="node7" href="$namespaceusr__func.html#a8e9b339830cf1f5fd8f8dea036c1f4da" title="usr_func::global_cart2id\l_loc_con2" alt="" coords="221,235,385,276"/>
-<area shape="rect" id="node8" href="$namespaceusr__func.html#a8df9865f7147d6068b8e7172321128b7" title="usr_func::global_id2cart\l_loc_con2" alt="" coords="221,300,385,341"/>
-<area shape="rect" id="node3" href="$impact_8f90.html#a5081faae3f9d2c8ac0786a77368babfe" title="Main routine of IMPACT. All of the initialization is done here. Depending on the parameter task eithe..." alt="" coords="663,111,724,138"/>
-</map>

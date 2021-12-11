@@ -1,6 +1,0 @@
-<map id="usr_func::local_elem_base_loc_con" name="usr_func::local_elem_base_loc_con">
-<area shape="rect" id="node2" href="$namespaceusr__func.html#a1312339d00053561e16a28f68b1805e2" title="returns the local node_id to the node_no&#45;th node of elem_no element " alt="" coords="197,5,328,47"/>
-<area shape="rect" id="node5" href="$namespaceusr__func.html#a3ea10d0eea356483e214e20b5e14e266" title="usr_func::local_tri\l_element_nodes" alt="" coords="199,71,326,112"/>
-<area shape="rect" id="node3" href="$namespaceusr__func.html#a492d7deed3c4e78876e4d2060528a4e6" title="usr_func::check_node_ids" alt="" coords="376,46,553,73"/>
-<area shape="rect" id="node4" href="$impact_8f90.html#a5081faae3f9d2c8ac0786a77368babfe" title="Main routine of IMPACT. All of the initialization is done here. Depending on the parameter task eithe..." alt="" coords="601,46,663,73"/>
-</map>

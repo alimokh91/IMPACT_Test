@@ -1,7 +1,0 @@
-<map id="compute_stats" name="compute_stats">
-<area shape="rect" id="node2" href="$namespacemod__diff.html#a52545c428bce85ff18162ffa8cb6d56b" title="mod_diff::interpolate_vel" alt="" coords="163,42,329,69"/>
-<area shape="rect" id="node6" href="$namespaceusr__func.html#a5c4f72b5789ab11ca1c86475aacfcf29" title="usr_func::rhs_l2_norm" alt="" coords="169,93,323,119"/>
-<area shape="rect" id="node3" href="$namespacemod__diff.html#a8a5722aa79a84d290052fa2c25010c0d" title="mod_diff::interpolate2\l_vel_pre" alt="" coords="377,5,528,47"/>
-<area shape="rect" id="node4" href="$namespacemod__exchange.html#a846feba7017358200b7c213847f573ae" title="subroutine for exchanging data between ghost cells. " alt="" coords="576,42,755,69"/>
-<area shape="rect" id="node5" href="$sub__other_8f90.html#a8238394447e69f8cacd32c4fe1128995" title="pseudo call for mod_exchange::exchange. " alt="" coords="803,42,888,69"/>
-</map>

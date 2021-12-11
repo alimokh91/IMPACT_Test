@@ -37,8 +37,6 @@
   CHARACTER(LEN=2) ::  id_char, phs
   CHARACTER(LEN=3) ::  M1_char, M2_char, M3_char
  
-  if (rank.eq.0) write(0,*) "open stats... "
-
   intervals = kalman_num_time_refinements*intervals
 
   ALLOCATE(dtime_phases(1:intervals)); dtime_phases(1:intervals) = kalman_mri_input_attr_t_heart_cycle_period/intervals !dtime_out_scal 
@@ -47,7 +45,6 @@
         j = (i-1)*kalman_num_time_refinements
         dtime_phases(j+1:j+kalman_num_time_refinements) = dtime_kalm_phases(i)/kalman_num_time_refinements
      end do
-
   end if
   dtime_out_scal = dtime_phases(1)
 
@@ -59,6 +56,7 @@
   !=== construct pressure-grid mri data-structure ============================================================
   !===========================================================================================================
   nullify(mri_flow) 
+  if (dtime_out_kalm.eq.0.) return
 
   !===========================================================================================================
   !added for writing tke_kalman with M1 M2 M3 ================================================================
@@ -247,7 +245,7 @@
   REAL    :: vel_voxel(1:3)
   CHARACTER(LEN=8) :: count_char
   CHARACTER(LEN=2) :: id
-  CHARACTER(LEN=50) :: write_file
+  CHARACTER(LEN=300) :: write_file
 
   intervals = intervals*kalman_num_time_refinements
   phase = mod(write_stats_count,intervals) + 1
@@ -374,17 +372,17 @@
     !=========================================================================================================
     !=== write mri_flow at the end of the current cycle ======================================================
     !=========================================================================================================
-    !if (phase.eq.intervals) then
-    !   mri%velocity_mean%array = mri%velocity_mean%array*U_ref
-    !   mri%velocity_cov%array  = mri%velocity_cov%array*U_ref*U_ref
-    !   CALL num_to_string(8,write_stats_count/intervals+1,count_char)
-    !   write_file = kalman_mri_output_file_path
-    !   !write_file = trim(kalman_mri_output_file_path)//'_cycle.'//count_char//'.h5' 
-    !   CALL mr_io_write_parallel_segmentedflow(MPI_COMM_WORLD, MPI_INFO_NULL, write_file, mri)
-    !   CALL h5open_f(herror)
-    !   mri%velocity_mean%array = mri%velocity_mean%array/U_ref
-    !   mri%velocity_cov%array  = mri%velocity_cov%array/U_ref/U_ref
-    !end if 
+    if (phase.eq.intervals) then
+       mri%velocity_mean%array = mri%velocity_mean%array*U_ref
+       mri%velocity_cov%array  = mri%velocity_cov%array*U_ref*U_ref
+       CALL num_to_string(8,write_stats_count/intervals+1,count_char)
+       write_file = kalman_mri_output_file_path
+       !write_file = trim(kalman_mri_output_file_path)//'_cycle.'//count_char//'.h5' 
+       CALL mr_io_write_parallel_segmentedflow(MPI_COMM_WORLD, MPI_INFO_NULL, write_file, mri)
+       CALL h5open_f(herror)
+       mri%velocity_mean%array = mri%velocity_mean%array/U_ref
+       mri%velocity_cov%array  = mri%velocity_cov%array/U_ref/U_ref
+    end if 
     !=========================================================================================================
  
   end if

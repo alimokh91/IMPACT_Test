@@ -66,7 +66,7 @@ MODULE mod_lib
   REAL                   ::  u_max, h_min, u_max_global, h_min_global
   !----------------------------------------------------------------------------------------------------------!
   ! Anmerkungen: - Die Auswertung bezieht sich generell nur auf den Feldbereich. Bei Ausfluss-Rand-          !
-  !                bedingungen ist die CFL-Bedingung naturgem√§ss irrelevant, Einfluss-Randbedingungen        !
+  !                bedingungen ist die CFL-Bedingung naturgem‰ss irrelevant, Einfluss-Randbedingungen        !
   !                sollten generell implizit in der Zeit diskretisiert werden (Dirichlet-, Neumann- oder     !
   !                Robin-Randbedingungen).                                                                   !
   !              - Bei den Geschwindigkeiten werden der Einfachheit halber nur die Druck-Gitterpunkte be-    !
@@ -74,8 +74,8 @@ MODULE mod_lib
   !                der sicheren Seite liegen.                                                                !
   !              - Explizite Differenzen: k^2_mod_max <= ||L||_inf                                           !
   !              - Implizite Differenzen: k^2_mod_max <= max((kdx_max/dx)^2)  (angenommen, nicht exakt!)     !
-  !              - Imagin√§rteile (z.B. bei schiefen Randstencils) werden der Einfachheit halber vernach-     !
-  !                l√§ssigt.                                                                                  !
+  !              - Imagin‰rteile (z.B. bei schiefen Randstencils) werden der Einfachheit halber vernach-     !
+  !                l‰ssigt.                                                                                  !
   !----------------------------------------------------------------------------------------------------------!
   
   
@@ -240,9 +240,9 @@ MODULE mod_lib
         finish_yes     = .TRUE.
      END IF
      
-     IF (timestep+1 .GE. n_timesteps) THEN
-        finish_yes     = .TRUE.
-     END IF
+     !IF (timestep+1 .GE. n_timesteps) THEN
+     !   finish_yes     = .TRUE.
+     !END IF
      
      array_real = (/time,dtime/)
      array_log  = (/finish_yes,new_dtime,write_out_vect,write_out_scal,write_out_kalm/)

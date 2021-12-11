@@ -74,6 +74,7 @@ MODULE mod_inout
   CHARACTER(LEN=1)       ::  conc_number
   CHARACTER(LEN=50)      ::  write_dir
 
+  
   IF (rank == 0) WRITE(*,'(a)') 'writing fields ...'
   
   !===========================================================================================================
@@ -107,7 +108,7 @@ MODULE mod_inout
            END DO
         END DO
      END DO
-     IF (write_large) CALL write_hdf('velX_large_'//count_char,'velX',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,nl(b1L,b2L,b3L,1)) ! TEST!!! velX --> vel1, etc. umbenennen!!
+     !IF (write_large) CALL write_hdf('velX_large_'//count_char,'velX',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,nl(b1L,b2L,b3L,1)) ! TEST!!! velX --> vel1, etc. umbenennen!!
      IF (write_med  ) CALL write_hdf('velX_med_'  //count_char,'velX',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_med  ,nl(b1L,b2L,b3L,1))
      IF (write_small) CALL write_hdf('velX_small_'//count_char,'velX',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_small,nl(b1L,b2L,b3L,1))
   ELSE
@@ -136,7 +137,7 @@ MODULE mod_inout
            END DO
         END DO
      END DO
-     IF (write_large) CALL write_hdf('velY_large_'//count_char,'velY',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,nl(b1L,b2L,b3L,2))
+     !IF (write_large) CALL write_hdf('velY_large_'//count_char,'velY',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,nl(b1L,b2L,b3L,2))
      IF (write_med  ) CALL write_hdf('velY_med_'  //count_char,'velY',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_med  ,nl(b1L,b2L,b3L,2))
      IF (write_small) CALL write_hdf('velY_small_'//count_char,'velY',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_small,nl(b1L,b2L,b3L,2))
   ELSE
@@ -165,7 +166,7 @@ MODULE mod_inout
            END DO
         END DO
      END DO
-     IF (write_large) CALL write_hdf('velZ_large_'//count_char,'velZ',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,nl(b1L,b2L,b3L,3))
+     !IF (write_large) CALL write_hdf('velZ_large_'//count_char,'velZ',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,nl(b1L,b2L,b3L,3))
      IF (write_med  ) CALL write_hdf('velZ_med_'  //count_char,'velZ',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_med  ,nl(b1L,b2L,b3L,3))
      IF (write_small) CALL write_hdf('velZ_small_'//count_char,'velZ',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_small,nl(b1L,b2L,b3L,3))
   END IF
@@ -189,7 +190,7 @@ MODULE mod_inout
   END IF
   !===========================================================================================================
   IF (dimens == 3) THEN
-     IF (write_large) CALL write_hdf('pre_large_'//count_char,'pre',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,pre)
+     !IF (write_large) CALL write_hdf('pre_large_'//count_char,'pre',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,pre)
      IF (write_med  ) CALL write_hdf('pre_med_'  //count_char,'pre',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_med  ,pre)
      IF (write_small) CALL write_hdf('pre_small_'//count_char,'pre',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_small,pre)
   ELSE
@@ -290,84 +291,84 @@ MODULE mod_inout
   END IF
   !===========================================================================================================
 
-  !IF (write_covariance_yes ) THEN
+  IF (write_covariance_yes ) THEN
 
-  !  if (dtime_out_kalm.ne.0.0) then
-  !     phase = mod(write_kalm_count-1,intervals) + 1
-  !     CALL num_to_string(2,phase,phs)
-  !     write_dir = './kf_result/phase_'//phs//'/'
-  !     CALL num_to_string(8,write_kalm_count,count_char)
+    if (dtime_out_kalm.ne.0.0) then
+       phase = mod(write_kalm_count-1,intervals) + 1
+       CALL num_to_string(2,phase,phs)
+       write_dir = './kf_result/phase_'//phs//'/'
+       CALL num_to_string(8,write_kalm_count,count_char)
 
-  !     write_field = 0.
-  !     if (associated(kalman_first)) then
-  !       DO kk = (lbound(mri_inst%mri%velocity_mean%array,5)-1)*kalman_num_spatial_refinements(3)+1, &
-  !                ubound(mri_inst%mri%velocity_mean%array,5)*kalman_num_spatial_refinements(3)+1
-  !         DO jj = (lbound(mri_inst%mri%velocity_mean%array,4)-1)*kalman_num_spatial_refinements(2)+1, &
-  !                  ubound(mri_inst%mri%velocity_mean%array,4)*kalman_num_spatial_refinements(2)+1
-  !           DO ii = (lbound(mri_inst%mri%velocity_mean%array,3)-1)*kalman_num_spatial_refinements(1)+1, &
-  !                    ubound(mri_inst%mri%velocity_mean%array,3)*kalman_num_spatial_refinements(1)+1
+       write_field = 0.
+       if (associated(kalman_first)) then
+         DO kk = (lbound(mri_inst%mri%velocity_mean%array,5)-1)*kalman_num_spatial_refinements(3)+1, &
+                  ubound(mri_inst%mri%velocity_mean%array,5)*kalman_num_spatial_refinements(3)+1
+           DO jj = (lbound(mri_inst%mri%velocity_mean%array,4)-1)*kalman_num_spatial_refinements(2)+1, &
+                    ubound(mri_inst%mri%velocity_mean%array,4)*kalman_num_spatial_refinements(2)+1
+             DO ii = (lbound(mri_inst%mri%velocity_mean%array,3)-1)*kalman_num_spatial_refinements(1)+1, &
+                      ubound(mri_inst%mri%velocity_mean%array,3)*kalman_num_spatial_refinements(1)+1
 
-  !             i =      ii-((lbound(mri_inst%mri%velocity_mean%array,3)-1)*kalman_num_spatial_refinements(1)+1)
-  !             i = i + (jj-((lbound(mri_inst%mri%velocity_mean%array,4)-1)*kalman_num_spatial_refinements(2)+1))* &
-  !                     (size(mri_inst%mri%velocity_mean%array,3)*kalman_num_spatial_refinements(1)+1)
-  !             i = i + (kk-((lbound(mri_inst%mri%velocity_mean%array,5)-1)*kalman_num_spatial_refinements(3)+1))* &
-  !                     (size(mri_inst%mri%velocity_mean%array,3)*kalman_num_spatial_refinements(1)+1) * &
-  !                     (size(mri_inst%mri%velocity_mean%array,4)*kalman_num_spatial_refinements(2)+1)
+               i =      ii-((lbound(mri_inst%mri%velocity_mean%array,3)-1)*kalman_num_spatial_refinements(1)+1)
+               i = i + (jj-((lbound(mri_inst%mri%velocity_mean%array,4)-1)*kalman_num_spatial_refinements(2)+1))* &
+                       (size(mri_inst%mri%velocity_mean%array,3)*kalman_num_spatial_refinements(1)+1)
+               i = i + (kk-((lbound(mri_inst%mri%velocity_mean%array,5)-1)*kalman_num_spatial_refinements(3)+1))* &
+                       (size(mri_inst%mri%velocity_mean%array,3)*kalman_num_spatial_refinements(1)+1) * &
+                       (size(mri_inst%mri%velocity_mean%array,4)*kalman_num_spatial_refinements(2)+1)
 
-  !             write_field(ii,jj,kk,1) = kalman_first%K(3*i+1,1)
-  !           END DO
-  !         END DO
-  !       END DO
-  !     end if
-  !     CALL write_hdf(trim(write_dir)//'gainX_phase'//phs//'_'//count_char,'gainX',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_field(b1L,b2L,b3L,1))
-  !     write_field = 0.
-  !     if (associated(kalman_first)) then
-  !       DO kk = (lbound(mri_inst%mri%velocity_mean%array,5)-1)*kalman_num_spatial_refinements(3)+1, &
-  !                ubound(mri_inst%mri%velocity_mean%array,5)*kalman_num_spatial_refinements(3)+1
-  !         DO jj = (lbound(mri_inst%mri%velocity_mean%array,4)-1)*kalman_num_spatial_refinements(2)+1, &
-  !                  ubound(mri_inst%mri%velocity_mean%array,4)*kalman_num_spatial_refinements(2)+1
-  !           DO ii = (lbound(mri_inst%mri%velocity_mean%array,3)-1)*kalman_num_spatial_refinements(1)+1, &
-  !                    ubound(mri_inst%mri%velocity_mean%array,3)*kalman_num_spatial_refinements(1)+1
+               write_field(ii,jj,kk,1) = kalman_first%K(3*i+1,1)
+             END DO
+           END DO
+         END DO
+       end if
+       CALL write_hdf(trim(write_dir)//'gainX_phase'//phs//'_'//count_char,'gainX',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_field(b1L,b2L,b3L,1))
+       write_field = 0.
+       if (associated(kalman_first)) then
+         DO kk = (lbound(mri_inst%mri%velocity_mean%array,5)-1)*kalman_num_spatial_refinements(3)+1, &
+                  ubound(mri_inst%mri%velocity_mean%array,5)*kalman_num_spatial_refinements(3)+1
+           DO jj = (lbound(mri_inst%mri%velocity_mean%array,4)-1)*kalman_num_spatial_refinements(2)+1, &
+                    ubound(mri_inst%mri%velocity_mean%array,4)*kalman_num_spatial_refinements(2)+1
+             DO ii = (lbound(mri_inst%mri%velocity_mean%array,3)-1)*kalman_num_spatial_refinements(1)+1, &
+                      ubound(mri_inst%mri%velocity_mean%array,3)*kalman_num_spatial_refinements(1)+1
 
-  !             i =      ii-((lbound(mri_inst%mri%velocity_mean%array,3)-1)*kalman_num_spatial_refinements(1)+1)
-  !             i = i + (jj-((lbound(mri_inst%mri%velocity_mean%array,4)-1)*kalman_num_spatial_refinements(2)+1))* &
-  !                     (size(mri_inst%mri%velocity_mean%array,3)*kalman_num_spatial_refinements(1)+1)
-  !             i = i + (kk-((lbound(mri_inst%mri%velocity_mean%array,5)-1)*kalman_num_spatial_refinements(3)+1))* &
-  !                     (size(mri_inst%mri%velocity_mean%array,3)*kalman_num_spatial_refinements(1)+1) * &
-  !                     (size(mri_inst%mri%velocity_mean%array,4)*kalman_num_spatial_refinements(2)+1)
+               i =      ii-((lbound(mri_inst%mri%velocity_mean%array,3)-1)*kalman_num_spatial_refinements(1)+1)
+               i = i + (jj-((lbound(mri_inst%mri%velocity_mean%array,4)-1)*kalman_num_spatial_refinements(2)+1))* &
+                       (size(mri_inst%mri%velocity_mean%array,3)*kalman_num_spatial_refinements(1)+1)
+               i = i + (kk-((lbound(mri_inst%mri%velocity_mean%array,5)-1)*kalman_num_spatial_refinements(3)+1))* &
+                       (size(mri_inst%mri%velocity_mean%array,3)*kalman_num_spatial_refinements(1)+1) * &
+                       (size(mri_inst%mri%velocity_mean%array,4)*kalman_num_spatial_refinements(2)+1)
 
-  !             write_field(ii,jj,kk,1) = kalman_first%K(3*i+2,1)
-  !           END DO
-  !         END DO
-  !       END DO
-  !     end if
-  !     CALL write_hdf(trim(write_dir)//'gainY_phase'//phs//'_'//count_char,'gainY',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_field(b1L,b2L,b3L,1))
-  !     write_field = 0.
-  !     if (associated(kalman_first)) then
-  !       DO kk = (lbound(mri_inst%mri%velocity_mean%array,5)-1)*kalman_num_spatial_refinements(3)+1, &
-  !                ubound(mri_inst%mri%velocity_mean%array,5)*kalman_num_spatial_refinements(3)+1
-  !         DO jj = (lbound(mri_inst%mri%velocity_mean%array,4)-1)*kalman_num_spatial_refinements(2)+1, &
-  !                  ubound(mri_inst%mri%velocity_mean%array,4)*kalman_num_spatial_refinements(2)+1
-  !           DO ii = (lbound(mri_inst%mri%velocity_mean%array,3)-1)*kalman_num_spatial_refinements(1)+1, &
-  !                    ubound(mri_inst%mri%velocity_mean%array,3)*kalman_num_spatial_refinements(1)+1
+               write_field(ii,jj,kk,1) = kalman_first%K(3*i+2,1)
+             END DO
+           END DO
+         END DO
+       end if
+       CALL write_hdf(trim(write_dir)//'gainY_phase'//phs//'_'//count_char,'gainY',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_field(b1L,b2L,b3L,1))
+       write_field = 0.
+       if (associated(kalman_first)) then
+         DO kk = (lbound(mri_inst%mri%velocity_mean%array,5)-1)*kalman_num_spatial_refinements(3)+1, &
+                  ubound(mri_inst%mri%velocity_mean%array,5)*kalman_num_spatial_refinements(3)+1
+           DO jj = (lbound(mri_inst%mri%velocity_mean%array,4)-1)*kalman_num_spatial_refinements(2)+1, &
+                    ubound(mri_inst%mri%velocity_mean%array,4)*kalman_num_spatial_refinements(2)+1
+             DO ii = (lbound(mri_inst%mri%velocity_mean%array,3)-1)*kalman_num_spatial_refinements(1)+1, &
+                      ubound(mri_inst%mri%velocity_mean%array,3)*kalman_num_spatial_refinements(1)+1
 
-  !             i =      ii-((lbound(mri_inst%mri%velocity_mean%array,3)-1)*kalman_num_spatial_refinements(1)+1)
-  !             i = i + (jj-((lbound(mri_inst%mri%velocity_mean%array,4)-1)*kalman_num_spatial_refinements(2)+1))* &
-  !                     (size(mri_inst%mri%velocity_mean%array,3)*kalman_num_spatial_refinements(1)+1)
-  !             i = i + (kk-((lbound(mri_inst%mri%velocity_mean%array,5)-1)*kalman_num_spatial_refinements(3)+1))* &
-  !                     (size(mri_inst%mri%velocity_mean%array,3)*kalman_num_spatial_refinements(1)+1) * &
-  !                     (size(mri_inst%mri%velocity_mean%array,4)*kalman_num_spatial_refinements(2)+1)
+               i =      ii-((lbound(mri_inst%mri%velocity_mean%array,3)-1)*kalman_num_spatial_refinements(1)+1)
+               i = i + (jj-((lbound(mri_inst%mri%velocity_mean%array,4)-1)*kalman_num_spatial_refinements(2)+1))* &
+                       (size(mri_inst%mri%velocity_mean%array,3)*kalman_num_spatial_refinements(1)+1)
+               i = i + (kk-((lbound(mri_inst%mri%velocity_mean%array,5)-1)*kalman_num_spatial_refinements(3)+1))* &
+                       (size(mri_inst%mri%velocity_mean%array,3)*kalman_num_spatial_refinements(1)+1) * &
+                       (size(mri_inst%mri%velocity_mean%array,4)*kalman_num_spatial_refinements(2)+1)
 
-  !             write_field(ii,jj,kk,1) = kalman_first%K(3*i+3,1)
-  !           END DO
-  !         END DO
-  !       END DO
-  !     end if
-  !     CALL write_hdf(trim(write_dir)//'gainZ_phase'//phs//'_'//count_char,'gainZ',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_field(b1L,b2L,b3L,1))
+               write_field(ii,jj,kk,1) = kalman_first%K(3*i+3,1)
+             END DO
+           END DO
+         END DO
+       end if
+       CALL write_hdf(trim(write_dir)//'gainZ_phase'//phs//'_'//count_char,'gainZ',S1p,S2p,S3p,N1p,N2p,N3p,0,stride_large,write_field(b1L,b2L,b3L,1))
 
-  !  end if
+    end if
  
-  !END IF
+  END IF
 
   write_count    = write_count   + 1
   time_out_vect  = time_out_vect + dtime_out_vect
@@ -601,16 +602,12 @@ MODULE mod_inout
   CALL write_hdf_infoINT (1     ,.TRUE. ,attr_yes,'restart'          ,scalar=restart          )
   CALL write_hdf_infoINT (1     ,.TRUE. ,attr_yes,'write_count'      ,scalar=write_count      )
   CALL write_hdf_infoINT (1     ,.TRUE. ,attr_yes,'write_stats_count',scalar=write_stats_count)
-  CALL write_hdf_infoINT (1     ,.TRUE. ,attr_yes,'write_kalm_count' ,scalar=write_kalm_count )
   CALL write_hdf_infoREAL(1     ,.TRUE. ,attr_yes,'time_out_vect'    ,scalar=time_out_vect    )
   CALL write_hdf_infoREAL(1     ,.TRUE. ,attr_yes,'time_out_scal'    ,scalar=time_out_scal    )
-  CALL write_hdf_infoREAL(1     ,.TRUE. ,attr_yes,'time_out_kalm'    ,scalar=time_out_kalm    )
   CALL write_hdf_infoREAL(1     ,.TRUE. ,attr_yes,'dtime_out_vect'   ,scalar=dtime_out_vect   )
   CALL write_hdf_infoREAL(1     ,.TRUE. ,attr_yes,'dtime_out_scal'   ,scalar=dtime_out_scal   )
-  CALL write_hdf_infoREAL(1     ,.TRUE. ,attr_yes,'dtime_out_kalm'   ,scalar=dtime_out_kalm   )
   CALL write_hdf_infoLOG (1     ,.TRUE. ,attr_yes,'write_out_vect'   ,scalar=write_out_vect   )
   CALL write_hdf_infoLOG (1     ,.TRUE. ,attr_yes,'write_out_scal'   ,scalar=write_out_scal   )
-  CALL write_hdf_infoLOG (1     ,.TRUE. ,attr_yes,'write_out_kalm'   ,scalar=write_out_kalm   )
   CALL write_hdf_infoLOG (1     ,.TRUE. ,attr_yes,'new_dtime'        ,scalar=new_dtime        )
   !--- ddemarinis: DA additions
   CALL write_hdf_infoINT (1         ,.TRUE. ,attr_yes,'write_kalm_count' ,scalar=write_kalm_count )
@@ -664,6 +661,8 @@ MODULE mod_inout
   !--- bbecsek: FSI additions
   CALL write_hdf_infoREAL(1        ,.TRUE. ,attr_yes,'U_ref',scalar=U_ref   )
   CALL write_hdf_infoREAL(1        ,.TRUE. ,attr_yes,'L_ref',scalar=L_ref   )
+
+
   !-----------------------------------------------------------------------------------------------------------
   ! Select hyperslab in the file space / memory space:
   CALL h5sselect_hyperslab_f(filespace,H5S_SELECT_SET_F,offset_file,dims_data,herror)
@@ -1545,14 +1544,11 @@ MODULE mod_inout
   CALL read_hdf_infoREAL(1,.TRUE. ,attr_yes,'dtime'            ,scalar=dtime            )
   CALL read_hdf_infoREAL(1,.TRUE. ,attr_yes,'time_out_vect'    ,scalar=time_out_vect    )
   CALL read_hdf_infoREAL(1,.TRUE. ,attr_yes,'time_out_scal'    ,scalar=time_out_scal    )
-  CALL read_hdf_infoREAL(1,.TRUE. ,attr_yes,'time_out_kalm'    ,scalar=time_out_kalm    )
   CALL read_hdf_infoINT (1,.TRUE. ,attr_yes,'timestep'         ,scalar=timestep         )
   CALL read_hdf_infoINT (1,.TRUE. ,attr_yes,'write_count'      ,scalar=write_count      )
   CALL read_hdf_infoINT (1,.TRUE. ,attr_yes,'write_stats_count',scalar=write_stats_count)
-  CALL read_hdf_infoINT (1,.TRUE. ,attr_yes,'write_kalm_count' ,scalar=write_kalm_count )
   CALL read_hdf_infoLOG (1,.TRUE. ,attr_yes,'write_out_vect'   ,scalar=write_out_vect   )
   CALL read_hdf_infoLOG (1,.TRUE. ,attr_yes,'write_out_scal'   ,scalar=write_out_scal   )
-  CALL read_hdf_infoLOG (1,.TRUE. ,attr_yes,'write_out_kalm'   ,scalar=write_out_kalm   )
   CALL read_hdf_infoLOG (1,.TRUE. ,attr_yes,'new_dtime'        ,scalar=new_dtime        )
   CALL read_hdf_infoINT (3,.FALSE.,attr_yes,'S1w S2w S3w'      ,array =Siw              )
   CALL read_hdf_infoINT (3,.FALSE.,attr_yes,'M1w M2w M3w'      ,array =Miw              )
@@ -2641,7 +2637,7 @@ MODULE mod_inout
      CALL h5aclose_f(attr_id,herror)
   ELSE
      CALL h5dcreate_f(file_id,name,H5T_NATIVE_DOUBLE,memspace,attr_id,herror)
-     CALL H5dwrite_f(attr_id,H5T_NATIVE_DOUBLE,value,dim_mem,herror,memspace)!,H5S_ALL_F,H5P_DEFAULT_F)
+     CALL H5dwrite_f(attr_id,H5T_NATIVE_DOUBLE,value,dim_mem,herror,memspace,H5S_ALL_F,H5P_DEFAULT_F)
      CALL h5dclose_f(attr_id ,herror)
   END IF
   
@@ -2693,7 +2689,7 @@ MODULE mod_inout
      CALL h5aclose_f(attr_id,herror)
   ELSE
      CALL h5dcreate_f(file_id,name,H5T_NATIVE_INTEGER,memspace,attr_id,herror)
-     CALL H5dwrite_f(attr_id,H5T_NATIVE_INTEGER,value,dim_mem,herror,memspace)!,H5S_ALL_F,H5P_DEFAULT_F)
+     CALL H5dwrite_f(attr_id,H5T_NATIVE_INTEGER,value,dim_mem,herror,memspace,H5S_ALL_F,H5P_DEFAULT_F)
      CALL h5dclose_f(attr_id ,herror)
   END IF
   
@@ -2756,7 +2752,7 @@ MODULE mod_inout
      CALL h5aclose_f(attr_id,herror)
   ELSE
      CALL h5dcreate_f(file_id,name,H5T_NATIVE_INTEGER,memspace,attr_id,herror)
-     CALL H5dwrite_f(attr_id,H5T_NATIVE_INTEGER,value,dim_mem,herror,memspace)!,H5S_ALL_F,H5P_DEFAULT_F)
+     CALL H5dwrite_f(attr_id,H5T_NATIVE_INTEGER,value,dim_mem,herror,memspace,H5S_ALL_F,H5P_DEFAULT_F)
      CALL h5dclose_f(attr_id ,herror)
   END IF
   
@@ -2799,7 +2795,7 @@ MODULE mod_inout
      CALL h5aclose_f(attr_id,herror)
   ELSE
      CALL h5dopen_f(file_id,name,attr_id,herror)
-     IF (rank == 0) CALL H5dread_f(attr_id,H5T_NATIVE_DOUBLE,value,dim_mem,herror) !,H5S_ALL_F,H5S_ALL_F,H5P_DEFAULT_F)
+     IF (rank == 0) CALL H5dread_f(attr_id,H5T_NATIVE_DOUBLE,value,dim_mem,herror,H5S_ALL_F,H5S_ALL_F,H5P_DEFAULT_F)
      CALL h5dclose_f(attr_id,herror)
   END IF
   
@@ -2848,7 +2844,7 @@ MODULE mod_inout
      CALL h5aclose_f(attr_id,herror)
   ELSE
      CALL h5dopen_f(file_id,name,attr_id,herror)
-     IF (rank == 0) CALL H5dread_f(attr_id,H5T_NATIVE_INTEGER,value,dim_mem,herror)!,H5S_ALL_F,H5S_ALL_F,H5P_DEFAULT_F)
+     IF (rank == 0) CALL H5dread_f(attr_id,H5T_NATIVE_INTEGER,value,dim_mem,herror,H5S_ALL_F,H5S_ALL_F,H5P_DEFAULT_F)
      CALL h5dclose_f(attr_id,herror)
   END IF
   
@@ -2898,7 +2894,7 @@ MODULE mod_inout
      CALL h5aclose_f(attr_id,herror)
   ELSE
      CALL h5dopen_f(file_id,name,attr_id,herror)
-     IF (rank == 0) CALL H5dread_f(attr_id,H5T_NATIVE_INTEGER,value,dim_mem,herror) !,H5S_ALL_F,H5S_ALL_F,H5P_DEFAULT_F)
+     IF (rank == 0) CALL H5dread_f(attr_id,H5T_NATIVE_INTEGER,value,dim_mem,herror,H5S_ALL_F,H5S_ALL_F,H5P_DEFAULT_F)
      CALL h5dclose_f(attr_id,herror)
   END IF
   

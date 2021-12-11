@@ -102,12 +102,6 @@ PROGRAM impact_debug
   write(0,*) "   local ubound: ",ubound(mri_inp%mri%velocity_cov%array)
   write(0,*) "   MRI offset:   ",0,0,mri_inp%mri%velocity_cov%time_offset,mri_inp%mri%velocity_cov%offset
 
-  write(0,*) "## MRI: segmentation probability field ##"
-  write(0,*) "   local  shape: ",shape(mri_inp%mri%segmentation_prob%array)
-  write(0,*) "   local lbound: ",lbound(mri_inp%mri%segmentation_prob%array)
-  write(0,*) "   local ubound: ",ubound(mri_inp%mri%segmentation_prob%array)
-  write(0,*) "   MRI offset:   ",mri_inp%mri%segmentation_prob%time_offset,mri_inp%mri%segmentation_prob%offset
-
 ! Main part of IMPACT currently commented out for demonstrating MRI I/O
 
 !  !===========================================================================================================

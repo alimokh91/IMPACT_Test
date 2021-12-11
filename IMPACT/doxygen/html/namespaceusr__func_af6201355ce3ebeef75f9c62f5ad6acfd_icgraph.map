@@ -1,6 +1,0 @@
-<map id="usr_func::atanh" name="usr_func::atanh">
-<area shape="rect" id="node2" href="$namespaceusr__func.html#a179e70771346f8e648f316267c8df732" title="subroutine that transforms and maps coordinates to user&#45;specified distributions " alt="" coords="167,5,313,32"/>
-<area shape="rect" id="node3" href="$usr__geometry_8f90.html#a6d992ead19c4ad9878948e2fd61abe8b" title="subroutine that sets up the global coordinates (2 coordinates in each direction, 1 for pressure..." alt="" coords="361,5,449,32"/>
-<area shape="rect" id="node4" href="$namespacemod__geometry.html#ab03da195b0a585837b1e7cb8e6aa8668" title="Subroutine that gets the coordinates by calling usr_geometry::get_coords. For every spacial dimension..." alt="" coords="497,5,684,32"/>
-<area shape="rect" id="node5" href="$impact_8f90.html#a5081faae3f9d2c8ac0786a77368babfe" title="Main routine of IMPACT. All of the initialization is done here. Depending on the parameter task eithe..." alt="" coords="732,5,793,32"/>
-</map>

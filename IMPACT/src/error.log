@@ -1,0 +1,274 @@
+mpifort -o ../prog/mod_exchange.o -ffree-form -ffree-line-length-none -cpp -fdefault-real-8 -O2 -g  -I/opt/hdf5/1.10.1/include -I/opt/mpi/MPICH/3.2/include -I/home/dario/av-flow/hpc-predict-io/install/include -DFTOPY -DALLOC -J../prog -c mod_exchange.f90
+mpif.h:9.25:
+    Included at mod_exchange.f90:25:
+
+       INTEGER MPI_SOURCE, MPI_TAG, MPI_ERROR
+                         1
+mod_exchange.f90:18.6:
+
+  USE mod_vars
+      2
+Error: Symbol 'mpi_source' at (1) conflicts with symbol from module 'mr_io', use-associated at (2)
+mpif.h:10:30: Error: Cannot change attributes of USE-associated symbol mpi_source at (1)
+mpif.h:11.30:
+    Included at mod_exchange.f90:25:
+
+       INTEGER MPI_STATUS_SIZE
+                              1
+mod_exchange.f90:18.6:
+
+  USE mod_vars
+      2
+Error: Symbol 'mpi_status_size' at (1) conflicts with symbol from module 'mr_io', use-associated at (2)
+mpif.h:12:35: Error: Cannot change attributes of USE-associated symbol mpi_status_size at (1)
+mpif.h:13.32:
+    Included at mod_exchange.f90:25:
+
+       INTEGER MPI_STATUS_IGNORE(MPI_STATUS_SIZE)
+                                1
+mod_exchange.f90:18.6:
+
+  USE mod_vars
+      2
+Error: Symbol 'mpi_status_ignore' at (1) conflicts with symbol from module 'mr_io', use-associated at (2)
+mpif.h:14.34:
+    Included at mod_exchange.f90:25:
+
+       INTEGER MPI_STATUSES_IGNORE(MPI_STATUS_SIZE,1)
+                                  1
+mod_exchange.f90:18.6:
+
+  USE mod_vars
+      2
+Error: Symbol 'mpi_statuses_ignore' at (1) conflicts with symbol from module 'mr_io', use-associated at (2)
+mpif.h:15.34:
+    Included at mod_exchange.f90:25:
+
+       INTEGER MPI_ERRCODES_IGNORE(1)
+                                  1
+mod_exchange.f90:18.6:
+
+  USE mod_vars
+      2
+Error: Symbol 'mpi_errcodes_ignore' at (1) conflicts with symbol from module 'mr_io', use-associated at (2)
+mpif.h:16.33:
+    Included at mod_exchange.f90:25:
+
+       CHARACTER*1 MPI_ARGVS_NULL(1,1)
+                                 1
+mod_exchange.f90:18.6:
+
+  USE mod_vars
+      2
+Error: Symbol 'mpi_argvs_null' at (1) conflicts with symbol from module 'mr_io', use-associated at (2)
+mpif.h:17.32:
+    Included at mod_exchange.f90:25:
+
+       CHARACTER*1 MPI_ARGV_NULL(1)
+                                1
+mod_exchange.f90:18.6:
+
+  USE mod_vars
+      2
+Error: Symbol 'mpi_argv_null' at (1) conflicts with symbol from module 'mr_io', use-associated at (2)
+mpif.h:18.26:
+    Included at mod_exchange.f90:25:
+
+       INTEGER MPI_SUCCESS
+                          1
+mod_exchange.f90:18.6:
+
+  USE mod_vars
+      2
+Error: Symbol 'mpi_success' at (1) conflicts with symbol from module 'mr_io', use-associated at (2)
+mpif.h:19:31: Error: Cannot change attributes of USE-associated symbol mpi_success at (1)
+mpif.h:20.27:
+    Included at mod_exchange.f90:25:
+
+       INTEGER MPI_ERR_SIZE
+                           1
+mod_exchange.f90:18.6:
+
+  USE mod_vars
+      2
+Error: Symbol 'mpi_err_size' at (1) conflicts with symbol from module 'mr_io', use-associated at (2)
+mpif.h:21:33: Error: Cannot change attributes of USE-associated symbol mpi_err_size at (1)
+mpif.h:22.31:
+    Included at mod_exchange.f90:25:
+
+       INTEGER MPI_ERR_INFO_KEY
+                               1
+mod_exchange.f90:18.6:
+
+  USE mod_vars
+      2
+Error: Symbol 'mpi_err_info_key' at (1) conflicts with symbol from module 'mr_io', use-associated at (2)
+mpif.h:23:37: Error: Cannot change attributes of USE-associated symbol mpi_err_info_key at (1)
+mpif.h:24.27:
+    Included at mod_exchange.f90:25:
+
+       INTEGER MPI_ERR_FILE
+                           1
+mod_exchange.f90:18.6:
+
+  USE mod_vars
+      2
+Error: Symbol 'mpi_err_file' at (1) conflicts with symbol from module 'mr_io', use-associated at (2)
+mpif.h:25:33: Error: Cannot change attributes of USE-associated symbol mpi_err_file at (1)
+mpif.h:26.28:
+    Included at mod_exchange.f90:25:
+
+       INTEGER MPI_ERR_AMODE
+                            1
+mod_exchange.f90:18.6:
+
+  USE mod_vars
+      2
+Error: Symbol 'mpi_err_amode' at (1) conflicts with symbol from module 'mr_io', use-associated at (2)
+mpif.h:27:34: Error: Cannot change attributes of USE-associated symbol mpi_err_amode at (1)
+mpif.h:28.31:
+    Included at mod_exchange.f90:25:
+
+       INTEGER MPI_ERR_TRUNCATE
+                               1
+mod_exchange.f90:18.6:
+
+  USE mod_vars
+      2
+Error: Symbol 'mpi_err_truncate' at (1) conflicts with symbol from module 'mr_io', use-associated at (2)
+mpif.h:29:37: Error: Cannot change attributes of USE-associated symbol mpi_err_truncate at (1)
+mpif.h:30.27:
+    Included at mod_exchange.f90:25:
+
+       INTEGER MPI_ERR_BASE
+                           1
+mod_exchange.f90:18.6:
+
+  USE mod_vars
+      2
+Error: Symbol 'mpi_err_base' at (1) conflicts with symbol from module 'mr_io', use-associated at (2)
+mpif.h:31:33: Error: Cannot change attributes of USE-associated symbol mpi_err_base at (1)
+mpif.h:32.25:
+    Included at mod_exchange.f90:25:
+
+       INTEGER MPI_ERR_OP
+                         1
+mod_exchange.f90:18.6:
+
+  USE mod_vars
+      2
+Error: Symbol 'mpi_err_op' at (1) conflicts with symbol from module 'mr_io', use-associated at (2)
+mpif.h:33:30: Error: Cannot change attributes of USE-associated symbol mpi_err_op at (1)
+mpif.h:34.29:
+    Included at mod_exchange.f90:25:
+
+       INTEGER MPI_ERR_ASSERT
+                             1
+mod_exchange.f90:18.6:
+
+  USE mod_vars
+      2
+Error: Symbol 'mpi_err_assert' at (1) conflicts with symbol from module 'mr_io', use-associated at (2)
+mpif.h:35:35: Error: Cannot change attributes of USE-associated symbol mpi_err_assert at (1)
+mpif.h:36.27:
+    Included at mod_exchange.f90:25:
+
+       INTEGER MPI_ERR_NAME
+                           1
+mod_exchange.f90:18.6:
+
+  USE mod_vars
+      2
+Error: Symbol 'mpi_err_name' at (1) conflicts with symbol from module 'mr_io', use-associated at (2)
+mpif.h:37:33: Error: Cannot change attributes of USE-associated symbol mpi_err_name at (1)
+mpif.h:38.29:
+    Included at mod_exchange.f90:25:
+
+       INTEGER MPI_ERR_NO_MEM
+                             1
+mod_exchange.f90:18.6:
+
+  USE mod_vars
+      2
+Error: Symbol 'mpi_err_no_mem' at (1) conflicts with symbol from module 'mr_io', use-associated at (2)
+mpif.h:39:35: Error: Cannot change attributes of USE-associated symbol mpi_err_no_mem at (1)
+mpif.h:40.27:
+    Included at mod_exchange.f90:25:
+
+       INTEGER MPI_ERR_INFO
+                           1
+mod_exchange.f90:18.6:
+
+  USE mod_vars
+      2
+Error: Symbol 'mpi_err_info' at (1) conflicts with symbol from module 'mr_io', use-associated at (2)
+mpif.h:41:33: Error: Cannot change attributes of USE-associated symbol mpi_err_info at (1)
+mpif.h:42.28:
+    Included at mod_exchange.f90:25:
+
+       INTEGER MPI_ERR_COUNT
+                            1
+mod_exchange.f90:18.6:
+
+  USE mod_vars
+      2
+Error: Symbol 'mpi_err_count' at (1) conflicts with symbol from module 'mr_io', use-associated at (2)
+mpif.h:43:33: Error: Cannot change attributes of USE-associated symbol mpi_err_count at (1)
+mpif.h:44.28:
+    Included at mod_exchange.f90:25:
+
+       INTEGER MPI_ERR_SPAWN
+                            1
+mod_exchange.f90:18.6:
+
+  USE mod_vars
+      2
+Error: Symbol 'mpi_err_spawn' at (1) conflicts with symbol from module 'mr_io', use-associated at (2)
+mpif.h:45:34: Error: Cannot change attributes of USE-associated symbol mpi_err_spawn at (1)
+mpif.h:46.33:
+    Included at mod_exchange.f90:25:
+
+       INTEGER MPI_ERR_CONVERSION
+                                 1
+mod_exchange.f90:18.6:
+
+  USE mod_vars
+      2
+Error: Symbol 'mpi_err_conversion' at (1) conflicts with symbol from module 'mr_io', use-associated at (2)
+mpif.h:47:39: Error: Cannot change attributes of USE-associated symbol mpi_err_conversion at (1)
+mpif.h:48.28:
+    Included at mod_exchange.f90:25:
+
+       INTEGER MPI_ERR_GROUP
+                            1
+mod_exchange.f90:18.6:
+
+  USE mod_vars
+      2
+Error: Symbol 'mpi_err_group' at (1) conflicts with symbol from module 'mr_io', use-associated at (2)
+mpif.h:49:33: Error: Cannot change attributes of USE-associated symbol mpi_err_group at (1)
+mpif.h:50.31:
+    Included at mod_exchange.f90:25:
+
+       INTEGER MPI_ERR_RMA_SYNC
+                               1
+mod_exchange.f90:18.6:
+
+  USE mod_vars
+      2
+Error: Symbol 'mpi_err_rma_sync' at (1) conflicts with symbol from module 'mr_io', use-associated at (2)
+mpif.h:51:37: Error: Cannot change attributes of USE-associated symbol mpi_err_rma_sync at (1)
+mpif.h:52.31:
+    Included at mod_exchange.f90:25:
+
+       INTEGER MPI_ERR_NOT_SAME
+                               1
+mod_exchange.f90:18.6:
+
+  USE mod_vars
+      2
+Error: Symbol 'mpi_err_not_same' at (1) conflicts with symbol from module 'mr_io', use-associated at (2)
+f951: Fatal Error: Error count reached limit of 25.
+compilation terminated.
+compile:132: recipe for target '../prog/mod_exchange.o' failed
+make: *** [../prog/mod_exchange.o] Error 1

@@ -1,5 +1,5 @@
 import os
-import mr_io
+from mr_io import FlowMRI
 from mr_io_domain_decomp import spatial_hyperslab_dims
 from jinja2 import Environment, FileSystemLoader
 import numpy as np
@@ -19,7 +19,7 @@ def main():
                     help='Amount of bilateral padding for periodic boundary conditions along each dimension relative to MRI grid')
     parser.add_argument('--tr', type=int,
                     help='Number of temporal refinements compared to MRI grid')
-    parser.add_argument('--config', type=str, default=os.path.join(os.path.dirname(os.path.realpath(__file__)), 'config.txt.j2'),
+    parser.add_argument('--config', type=str, default='config.txt.j2',
                     help='Jinja2 template for configuration file in IMPACT')
     parser.add_argument('--output', type=str,  default='config.txt',
                     help='Output configuration file for IMPACT')
@@ -27,10 +27,8 @@ def main():
     args = parser.parse_args()
 
     # Read MRI
-    mri = mr_io.read_hdf5(args.input_mri)
-    if not (isinstance(mri, mr_io.FlowMRI) or isinstance(mri, mr_io.SegmentedFlowMRI)):
-        raise ValueError("MRI must be of type FlowMRI or SegmentedFlowMRI to generate IMPACT configuration.")
- 
+    mri = FlowMRI.read_hdf5(args.input_mri)
+    
     for i in range(3):
         if len(mri.geometry[i]) == 1:
             raise(ValueError("MRI grid must have more than one voxel along each axis (has %d along %d-th)" % (len(mri.geometry[i]),i)))

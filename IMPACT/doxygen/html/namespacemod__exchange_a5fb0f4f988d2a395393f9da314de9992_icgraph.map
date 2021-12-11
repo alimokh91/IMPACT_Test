@@ -1,7 +1,0 @@
-<map id="mod_exchange::exchange_part" name="mod_exchange::exchange_part">
-<area shape="rect" id="node2" href="$namespacemod__ibm.html#ae3e28811bf328c9ba17381616acd45bf" title="subroutine to spread the individual force components from the Lagrangian grid onto the individual vel..." alt="" coords="263,5,425,47"/>
-<area shape="rect" id="node3" href="$usr__force_8f90.html#a385c4a7e691f2167035f0381da42e49d" title="volume forcing of the momentum equation " alt="" coords="473,13,560,39"/>
-<area shape="rect" id="node4" href="$namespacemod__rhs.html#a3f1ddf58b8e176fa55aea43a57dda2cc" title="computes the rhs of the velocity " alt="" coords="608,13,732,39"/>
-<area shape="rect" id="node5" href="$namespacemod__timeint.html#a481262183fa43a7abe56b74c7af82f2a" title="public subroutine that forms the center of the DNS simulation. " alt="" coords="780,13,969,39"/>
-<area shape="rect" id="node6" href="$impact_8f90.html#a5081faae3f9d2c8ac0786a77368babfe" title="Main routine of IMPACT. All of the initialization is done here. Depending on the parameter task eithe..." alt="" coords="1017,13,1079,39"/>
-</map>

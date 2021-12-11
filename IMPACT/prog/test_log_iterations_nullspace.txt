@@ -1,0 +1,28 @@
+ accuracy for null-space solution: eps =      0.100000000000000E-08
+
+  Iteration    0; ||res|| = 0.65093973164894414E-06
+  Iteration    1; ||res|| = 0.53777728717991918E-07
+  Iteration    2; ||res|| = 0.11585198948004283E-07
+  Iteration    3; ||res|| = 0.51150092066525573E-08
+  Iteration    4; ||res|| = 0.24940584557096782E-08
+  Iteration    5; ||res|| = 0.12013260820845104E-08
+  Iteration    6; ||res|| = 0.64317644036528038E-09  (Termination criterion satisfied)
+
+  Iteration    0; ||res|| = 0.10053376422978910E-05
+  Iteration    1; ||res|| = 0.87505790920066665E-07
+  Iteration    2; ||res|| = 0.11605960152050939E-07
+  Iteration    3; ||res|| = 0.64558538014633278E-08
+  Iteration    4; ||res|| = 0.39826343187433230E-08
+  Iteration    5; ||res|| = 0.27435697652596007E-08
+  Iteration    6; ||res|| = 0.17584447672801070E-08
+  Iteration    7; ||res|| = 0.12184109576761726E-08
+  Iteration    8; ||res|| = 0.91664507227974967E-09  (Termination criterion satisfied)
+
+  Iteration    0; ||res|| = 0.63326111443866038E-06
+  Iteration    1; ||res|| = 0.61684569550802376E-07
+  Iteration    2; ||res|| = 0.10210918450325159E-07
+  Iteration    3; ||res|| = 0.49104223107727052E-08
+  Iteration    4; ||res|| = 0.23380493511903749E-08
+  Iteration    5; ||res|| = 0.11586014134528070E-08
+  Iteration    6; ||res|| = 0.66576577899161626E-09  (Termination criterion satisfied)
+

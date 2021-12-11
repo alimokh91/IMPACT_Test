@@ -1,8 +1,0 @@
-<map id="mod_inout::write_restart_ibm" name="mod_inout::write_restart_ibm">
-<area shape="rect" id="node2" href="$namespacemod__lib.html#a94af4652fc7df2b92e974a0e2b3fcab3" title="mod_lib::num_to_string" alt="" coords="251,5,411,32"/>
-<area shape="rect" id="node3" href="$namespacemod__inout.html#a29e25eb93bbb7c7235a2321128ca2776" title="function to write the IB data into a separate HDF5 file " alt="" coords="249,107,413,133"/>
-<area shape="rect" id="node7" href="$namespacemod__inout.html#ac7ddbb29013175664e4a0052abc58e02" title="function to write the IB velocity data into a separate HDF5 file " alt="" coords="247,56,415,83"/>
-<area shape="rect" id="node4" href="$namespacemod__inout.html#aca083acda2b2648daebe3d6eeed33430" title="mod_inout::write_hdf\l_infolog" alt="" coords="463,9,608,50"/>
-<area shape="rect" id="node5" href="$namespacemod__inout.html#a45cab5920269de55386e3e6dd257789d" title="mod_inout::write_hdf\l_inforeal" alt="" coords="463,74,608,115"/>
-<area shape="rect" id="node6" href="$namespacemod__inout.html#a03865df16d9652201b1aad0948bd9cbc" title="mod_inout::write_hdf\l_infoint" alt="" coords="463,139,608,181"/>
-</map>
