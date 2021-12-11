@@ -1,0 +1,6 @@
+<map id="mod_ibm::init_ib" name="mod_ibm::init_ib">
+<area shape="rect" id="node2" href="$namespacemod__ibm.html#a261a43cdcf4211f849e518e22b4a5a8d" title="mod_ibm::calculate\l_node_volumes" alt="" coords="640,32,777,73"/>
+<area shape="rect" id="node3" href="$namespacemod__ibm.html#a492b20d155124d0e84300136eab46498" title="mod_ibm::fe_setup_triangular\l_3node" alt="" coords="172,32,371,73"/>
+<area shape="rect" id="node4" href="$namespacemod__ibm.html#a3bb4756c10528a68919141e7fc18804f" title="mod_ibm::setup_stiffness\l_matrix" alt="" coords="419,32,592,73"/>
+<area shape="rect" id="node5" href="$namespacemod__ibm.html#adae8a30420747cb1b8828894f97e5056" title="This is basically the same mass matrix as in setup_mass_matrix2 but requires less computation since t..." alt="" coords="427,97,583,139"/>
+</map>

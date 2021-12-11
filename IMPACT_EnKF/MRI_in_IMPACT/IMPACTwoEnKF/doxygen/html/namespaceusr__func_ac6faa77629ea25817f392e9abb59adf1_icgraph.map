@@ -1,0 +1,7 @@
+<map id="usr_func::total_n_local_tri_elements" name="usr_func::total_n_local_tri_elements">
+<area shape="rect" id="node2" href="$namespaceusr__func.html#a492d7deed3c4e78876e4d2060528a4e6" title="usr_func::check_node_ids" alt="" coords="421,38,599,65"/>
+<area shape="rect" id="node4" href="$namespaceusr__func.html#a9a24beeed1778cd6ec8e68f0f8198291" title="usr_func::local_to\l_global_tri_elem_id" alt="" coords="223,27,360,68"/>
+<area shape="rect" id="node5" href="$namespaceusr__func.html#a3ea10d0eea356483e214e20b5e14e266" title="usr_func::local_tri\l_element_nodes" alt="" coords="228,92,355,134"/>
+<area shape="rect" id="node6" href="$namespaceusr__func.html#ae69b3ca62eddd262376e7860eca37dcc" title="usr_func::total_n_global\l_tri_elements" alt="" coords="209,158,373,199"/>
+<area shape="rect" id="node3" href="$impact_8f90.html#a5081faae3f9d2c8ac0786a77368babfe" title="Main routine of IMPACT. All of the initialization is done here. Depending on the parameter task eithe..." alt="" coords="647,38,708,65"/>
+</map>

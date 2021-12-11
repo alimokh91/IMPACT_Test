@@ -1,0 +1,21 @@
+var searchData=
+[
+  ['pdot3ewk',['pdot3ewk',['../namespaceusr__func.html#ae69355b3d2d54bf4d5942e7334ab8377',1,'usr_func']]],
+  ['pdot4ewk',['pdot4ewk',['../namespaceusr__func.html#a918228da6035de5253b9b9a345d8834f',1,'usr_func']]],
+  ['plain_5frestrict',['plain_restrict',['../namespacemod__solvers.html#a08e239f3737bd0abe492ce74707a7127',1,'mod_solvers']]],
+  ['poiseuille_5fparabola',['poiseuille_parabola',['../namespaceusr__func.html#a02e384b162e32790af575ccb8d1a93e8',1,'usr_func']]],
+  ['poiseuille_5fparaboloid',['poiseuille_paraboloid',['../namespaceusr__func.html#af071a72e451d8a3f616ff5cb12980dd3',1,'usr_func']]],
+  ['postprocess',['postprocess',['../usr__post_8f90.html#a3a3c0b70654c3b529d4523767971973d',1,'usr_post.f90']]],
+  ['print_5ffcomm_5fsize',['print_fcomm_size',['../namespaceusr__func.html#ab79221aca52e7276f292f238bb924e4f',1,'usr_func']]],
+  ['product_5fdiv_5fgrad',['product_div_grad',['../namespacemod__laplace.html#a554319de5d5801d92804bbec6f98986f',1,'mod_laplace']]],
+  ['product_5fdiv_5fgrad_5frelax',['product_div_grad_relax',['../namespacemod__laplace.html#adbb6f3cfccc8562bc4ccb6611ddecf0f',1,'mod_laplace']]],
+  ['product_5fdiv_5fgrad_5ftransp',['product_div_grad_transp',['../namespacemod__laplace.html#af0780de7d82deb5220088b416e53bbd7',1,'mod_laplace']]],
+  ['product_5fdiv_5fgrad_5ftransp_5f1d',['product_div_grad_transp_1d',['../namespacemod__solvers.html#a6a3c9f1b186c206e685da2edbc1a915d',1,'mod_solvers']]],
+  ['product_5fhelmholtz',['product_helmholtz',['../namespacemod__helmholtz.html#a0442f77860a8d27e4efd78d5de576c84',1,'mod_helmholtz']]],
+  ['product_5fhelmholtz_5frelax',['product_helmholtz_relax',['../namespacemod__helmholtz.html#a3400820da904ec57885fcf5d95633fed',1,'mod_helmholtz']]],
+  ['product_5fhelmholtz_5frelax_5fcoarse',['product_helmholtz_relax_coarse',['../namespacemod__helmholtz.html#abbaac559182ce3e9e65c367c99ccfc1c',1,'mod_helmholtz']]],
+  ['product_5fscalar',['product_scalar',['../namespacemod__solvers.html#a6e06016f1142ef1c70fb0b9468fba665',1,'mod_solvers']]],
+  ['product_5fscalar2',['product_scalar2',['../namespacemod__solvers.html#ac9e707f8d08e909d728defd0ce7b1926',1,'mod_solvers']]],
+  ['pseudocall',['pseudocall',['../sub__other_8f90.html#a8238394447e69f8cacd32c4fe1128995',1,'sub_other.f90']]],
+  ['pseudocall_5fint',['pseudocall_int',['../sub__other_8f90.html#a27e553190a74fccde6799305f56303f7',1,'sub_other.f90']]]
+];

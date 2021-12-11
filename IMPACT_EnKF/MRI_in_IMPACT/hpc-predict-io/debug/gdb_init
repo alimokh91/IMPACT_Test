@@ -1,0 +1,5 @@
+up 2
+set variable gdb = 1
+tui enable
+break mr_io_test_impact_mri.f90:28
+continue

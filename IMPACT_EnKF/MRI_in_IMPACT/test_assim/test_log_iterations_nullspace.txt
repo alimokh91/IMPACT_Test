@@ -1,0 +1,8 @@
+ accuracy for null-space solution: eps =      0.100000000000000E-08
+
+  Iteration    0; ||res|| = 0.41451298773629265E-10  (Termination criterion satisfied)
+
+  Iteration    0; ||res|| = 0.23508512001448486E-10  (Termination criterion satisfied)
+
+  Iteration    0; ||res|| = 0.16575329554118761E-10  (Termination criterion satisfied)
+
