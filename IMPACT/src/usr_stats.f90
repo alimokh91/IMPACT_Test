@@ -392,6 +392,8 @@
   write_stats_count = write_stats_count + 1
   dtime_out_scal = dtime_phases(phase)
   dtime_out_vect = dtime_out_scal
+  if (rank == 0) WRITE(*,*) 'dtime_out_scal changed to', dtime_out_scal ,' ...'
+  if (rank == 0) WRITE(*,*) 'dtime_out_vect changed to', dtime_out_vect ,' ...'
   time_out_scal = time_out_scal + dtime_out_scal
   write_out_scal = .FALSE.
  
